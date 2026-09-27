@@ -28,3 +28,25 @@
 
 /* [hidden] must win over the display rule above, or JS hiding does nothing. */
 .account-panel a[hidden]{display:none}
+
+/* Buttons inside the panel (Menu, Sign out) match the links exactly, so the
+   menu reads as one list rather than links with controls bolted on. */
+.account-panel .account-action{
+  display:flex;justify-content:space-between;align-items:center;gap:20px;width:100%;
+  padding:13px 10px;font:600 15px/1.25 Manrope,Arial,sans-serif;letter-spacing:0;
+  background:none;border:0;color:var(--ink);text-align:left;cursor:pointer;
+}
+.account-panel .account-action:hover,.account-panel .account-action:focus-visible{background:var(--orange);color:var(--ink);outline-offset:-2px}
+/* Sign out is the last item and the quiet one, like the old final link. */
+.account-panel .account-action[data-sign-out]{border-top:1px solid var(--line);margin-top:4px;font-weight:400}
+.account-panel .account-action:disabled{opacity:.5;cursor:default}
+
+@media(max-width:650px){
+  /* On a phone the header is two icons, so the panel becomes a sheet under
+     them rather than a narrow dropdown squeezed against the edge. */
+  .site-nav .account-panel{
+    position:fixed;left:12px;right:12px;top:72px;width:auto;
+    padding:12px;box-shadow:6px 6px 0 var(--orange);
+  }
+  .account-panel>a,.account-panel .account-action{padding:15px 12px;font-size:16px}
+}
