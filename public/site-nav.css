@@ -26,6 +26,11 @@
   gap: 28px;
 }
 
+/* .account-menu carries order:2 from the old home header, which pushed the
+   profile icon past the bag and the menu button. Here document order is the
+   intended order: links, profile, bag, menu. */
+.site-nav .account-menu { order: 0; }
+
 .site-nav nav > a {
   color: var(--orange);
   font-size: 22px;
