@@ -1,0 +1,19 @@
+.page-loader,.page-curtain{position:fixed;inset:0;z-index:1000;background:#181815;color:var(--cream);pointer-events:none;visibility:hidden;clip-path:inset(0 0 100% 0)}
+.page-loader{display:grid;place-items:center;isolation:isolate}
+html.is-loading .page-loader{visibility:visible;pointer-events:auto;clip-path:inset(0 0 0 0)}
+.loader-brand{width:min(450px,64vw);position:relative;z-index:3;overflow:hidden}
+.loader-brand img{display:block;width:100%;filter:url(#logo-cream);opacity:0;transform:translateY(110%);transition:opacity .5s,transform .8s var(--ease)}
+.loader-count{position:absolute;left:calc(50% + min(250px,35vw));top:calc(50% - 85px);font-size:24px;font-variant-numeric:tabular-nums;z-index:4}
+.loader-stack{position:absolute;inset:0;display:grid;place-items:center}
+.loader-stack img{grid-area:1/1;width:clamp(130px,14vw,200px);height:clamp(175px,19vw,270px);object-fit:contain;background:var(--cream);opacity:0;transform:rotate(var(--r,0deg)) scale(.2);will-change:transform,opacity}
+.loader-stack img.is-shown{animation:photo-stack .6s var(--ease) both}
+@keyframes photo-stack{0%{opacity:0;transform:rotate(calc(var(--r) - 9deg)) scale(.45)}25%,75%{opacity:1;transform:rotate(var(--r)) scale(1)}100%{opacity:0;transform:rotate(var(--r)) scale(.92)}}
+.page-loader.brand-reveal .loader-brand img{opacity:1;transform:translateY(0)}
+.page-loader.is-finishing{transition:clip-path .9s cubic-bezier(.76,0,.24,1);clip-path:inset(0 0 100% 0)!important}
+.page-loader.is-finishing .loader-brand img{transform:translateY(-110%);transition-duration:.6s}
+.page-curtain{display:grid;place-items:center;z-index:1100;background:var(--orange);clip-path:inset(100% 0 0);transition:clip-path .55s cubic-bezier(.76,0,.24,1)}
+.page-curtain img{width:min(370px,65vw);filter:url(#logo-cream)}
+.page-curtain.is-covering{visibility:visible;pointer-events:auto;clip-path:inset(0 0 0)}
+body.is-leaving main{transform:translateY(-20px);transition:transform .55s ease}
+@media(max-width:650px){.loader-count{font-size:18px;left:auto;right:9vw;top:calc(50% + 100px)}}
+@media(prefers-reduced-motion:reduce){.page-loader,.page-curtain{display:none!important}}

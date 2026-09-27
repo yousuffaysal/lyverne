@@ -1,0 +1,41 @@
+/* The game shares the footer's open composition, never covering its navigation. */
+.lyverne-footer .footer-brand-space{min-height:440px;isolation:isolate;overflow:hidden;padding:105px 4vw 95px}
+.footer-game-canvas{position:absolute;inset:0;width:100%;height:100%;z-index:3;outline:none;touch-action:pan-y;cursor:crosshair}
+.footer-game-canvas:focus-visible{outline:2px dashed var(--orange);outline-offset:-8px}
+.footer-game-canvas.is-playing{touch-action:none}
+.footer-game-canvas[hidden]{display:none}
+.footer-game-hud{display:flex;justify-content:space-between;align-items:center;gap:24px;position:relative;z-index:4;margin:-4px 0 34px}
+.footer-game-hud[hidden]{display:none}
+.footer-game-instruction{font-size:14px;line-height:1.5;max-width:420px;color:var(--cream)}
+.footer-game-instruction strong{display:block;font-family:Khand,sans-serif;letter-spacing:.06em;font-size:23px;color:var(--orange)}
+.footer-game-keyboard{font-size:12px;opacity:.65;display:block;margin-top:5px}
+.footer-game-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.footer-game-button{background:var(--orange);color:var(--ink);min-height:44px;padding:10px 20px;border-radius:28px;font-size:14px;font-weight:600}
+.footer-game-button.secondary{background:transparent;color:var(--cream);border:1px solid #f3eee455}
+.footer-game-button[hidden]{display:none}
+.footer-game-scoreboard{display:flex;align-items:center;gap:16px;border:1px solid #f3eee44a;border-radius:50px;padding:7px 20px;min-height:50px;white-space:nowrap}
+.footer-game-scoreboard>span{font-size:12px;letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+.footer-game-scoreboard output{color:var(--orange);font:700 32px/1 Khand,sans-serif;min-width:1ch}
+.footer-game-lives{display:flex;gap:6px;padding-left:14px;border-left:1px solid #f3eee44a}
+.footer-game-lives i{width:7px;height:7px;border-radius:50%;background:var(--orange);transition:opacity .2s}
+.footer-game-lives i.is-lost{opacity:.18}
+.footer-game-best{font-size:12px;color:var(--cream);opacity:.65;text-align:right;flex-basis:100%;margin-top:0}
+.footer-game-result{position:absolute;z-index:5;inset:0;display:grid;place-content:center;justify-items:center;text-align:center;padding:30px;background:#20201cd9;backdrop-filter:blur(7px)}
+.footer-game-result[hidden]{display:none}
+.footer-game-result h2{font-size:clamp(60px,8vw,116px);line-height:1;color:var(--orange)}
+.footer-game-result p{font-size:16px;margin:15px 0 24px;line-height:1.6}
+.footer-game-result .footer-game-button{min-width:145px}
+.footer-game-noscript{font-size:14px;padding:20px 0;color:var(--cream)}
+.footer-game-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+@media(max-width:750px){
+ .lyverne-footer .footer-brand-space{min-height:390px;padding:125px 0 100px;margin-left:-3vw;margin-right:-3vw}
+ .footer-game-hud{gap:20px;align-items:flex-start;flex-direction:column;margin-top:15px}
+ .footer-game-controls{justify-content:flex-start;width:100%;gap:10px}
+ .footer-game-instruction{font-size:14px;max-width:100%}
+ .footer-game-best{text-align:left}.footer-game-keyboard{display:none}
+ .footer-game-scoreboard{margin-left:auto;padding:7px 14px;gap:10px}
+ .footer-game-lives{padding-left:10px}
+ .footer-game-button{padding:10px 17px}
+}
+@media(max-width:370px){.footer-game-scoreboard{order:-1;margin:0;flex-basis:100%;justify-content:space-between}.footer-game-scoreboard>span{font-size:14px}}
+@media(prefers-reduced-motion:reduce){.footer-game-lives i{transition:none}}

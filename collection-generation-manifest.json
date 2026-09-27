@@ -1,0 +1,37 @@
+{
+  "mode": "built-in image_gen",
+  "intent": "edit",
+  "use_case": "precise-object-edit",
+  "execution": "Three parallel built-in imagegen calls; exactly one per requested colorway. No variants or retries.",
+  "references": [
+    "/Users/yusuf/Downloads/Jarvis/lyverne/public/assets/tee-front.png",
+    "/Users/yusuf/Downloads/logo icon.PNG"
+  ],
+  "alpha": "Generated transparency preserved by byte-for-byte copy.",
+  "assets": [
+    {
+      "file": "tee-cream.png",
+      "fabric": "warm cream #F3EEE4",
+      "logo": "orange #F26B24",
+      "prompt": "Use case: precise-object-edit\nAsset type: Lyverne collection ecommerce product photo, one square transparent PNG.\nPrimary request: Recolor the approved tee in reference image 1 to warm cream #F3EEE4 fabric with a small orange #F26B24 embroidered monogram. Change only the fabric and monogram colors; retain the approved shirt silhouette, construction, slight three-quarter front viewpoint, scale, drape and premium photoreal product finish.\nInput images: Image 1 is the edit target and strict shirt shape/composition reference. Image 2 is the exact Lyverne monogram reference; reproduce only its cream symbol shape as the small chest embroidery, recolored as specified, never its square orange background.\nScene/backdrop: Actual fully transparent alpha background, with no background color and no checkerboard drawn into the image.\nSubject: One boxy drop-shoulder heavyweight cotton crewneck T-shirt on an invisible ghost mannequin, ribbed collar, substantial sleeves, subtle stitchwork and realistic fabric texture.\nComposition/framing: Full front view with the same slight three-quarter angle as image 1; centered and entirely contained including sleeves, collar, and hem with comfortable transparent margins. Square approximately 1254 by 1254.\nLighting/mood: Soft premium studio product lighting, realistic highlights and gentle garment self-shadow.\nConstraints: Preserve the reference shirt silhouette and proportions. The exact supplied Lyverne monogram stays small on wearer's left chest, viewer's right, at the same location and scale as image 1. Only the supplied mark is permitted.\nAvoid: Person, visible mannequin, hanger, props, words, labels, extra logos, watermark, cropped garment, background, floor, background shadow, redesigning the monogram.",
+      "source": "/Users/yusuf/.codex/generated_images/01a0d22a-15a8-7d21-962b-a32185f16337/exec-f6331a44-45b3-4244-ab63-937b33d3a1b0.png",
+      "path": "/Users/yusuf/Downloads/Jarvis/lyverne-generated-assets/collection/tee-cream.png"
+    },
+    {
+      "file": "tee-charcoal.png",
+      "fabric": "washed charcoal gray",
+      "logo": "warm cream #F3EEE4",
+      "prompt": "Use case: precise-object-edit\nAsset type: Lyverne collection ecommerce product photo, one square transparent PNG.\nPrimary request: Recolor the approved tee in reference image 1 to washed charcoal gray fabric with a small warm cream #F3EEE4 embroidered monogram. Change only the fabric and monogram colors; retain the approved shirt silhouette, construction, slight three-quarter front viewpoint, scale, drape and premium photoreal product finish.\nInput images: Image 1 is the edit target and strict shirt shape/composition reference. Image 2 is the exact Lyverne monogram reference; reproduce only its cream symbol shape as the small chest embroidery, recolored as specified, never its square orange background.\nScene/backdrop: Actual fully transparent alpha background, with no background color and no checkerboard drawn into the image.\nSubject: One boxy drop-shoulder heavyweight cotton crewneck T-shirt on an invisible ghost mannequin, ribbed collar, substantial sleeves, subtle stitchwork and realistic fabric texture.\nComposition/framing: Full front view with the same slight three-quarter angle as image 1; centered and entirely contained including sleeves, collar, and hem with comfortable transparent margins. Square approximately 1254 by 1254.\nLighting/mood: Soft premium studio product lighting, realistic highlights and gentle garment self-shadow.\nConstraints: Preserve the reference shirt silhouette and proportions. The exact supplied Lyverne monogram stays small on wearer's left chest, viewer's right, at the same location and scale as image 1. Only the supplied mark is permitted.\nAvoid: Person, visible mannequin, hanger, props, words, labels, extra logos, watermark, cropped garment, background, floor, background shadow, redesigning the monogram.",
+      "source": "/Users/yusuf/.codex/generated_images/01a0d22a-15a8-7d21-962b-a32185f16337/exec-2654fadc-44f7-4ade-a078-d3f85a81775a.png",
+      "path": "/Users/yusuf/Downloads/Jarvis/lyverne-generated-assets/collection/tee-charcoal.png"
+    },
+    {
+      "file": "tee-orange.png",
+      "fabric": "vivid burnt orange #F26B24",
+      "logo": "warm cream #F3EEE4",
+      "prompt": "Use case: precise-object-edit\nAsset type: Lyverne collection ecommerce product photo, one square transparent PNG.\nPrimary request: Recolor the approved tee in reference image 1 to vivid burnt orange #F26B24 fabric with a small warm cream #F3EEE4 embroidered monogram. Change only the fabric and monogram colors; retain the approved shirt silhouette, construction, slight three-quarter front viewpoint, scale, drape and premium photoreal product finish.\nInput images: Image 1 is the edit target and strict shirt shape/composition reference. Image 2 is the exact Lyverne monogram reference; reproduce only its cream symbol shape as the small chest embroidery, recolored as specified, never its square orange background.\nScene/backdrop: Actual fully transparent alpha background, with no background color and no checkerboard drawn into the image.\nSubject: One boxy drop-shoulder heavyweight cotton crewneck T-shirt on an invisible ghost mannequin, ribbed collar, substantial sleeves, subtle stitchwork and realistic fabric texture.\nComposition/framing: Full front view with the same slight three-quarter angle as image 1; centered and entirely contained including sleeves, collar, and hem with comfortable transparent margins. Square approximately 1254 by 1254.\nLighting/mood: Soft premium studio product lighting, realistic highlights and gentle garment self-shadow.\nConstraints: Preserve the reference shirt silhouette and proportions. The exact supplied Lyverne monogram stays small on wearer's left chest, viewer's right, at the same location and scale as image 1. Only the supplied mark is permitted.\nAvoid: Person, visible mannequin, hanger, props, words, labels, extra logos, watermark, cropped garment, background, floor, background shadow, redesigning the monogram.",
+      "source": "/Users/yusuf/.codex/generated_images/01a0d22a-15a8-7d21-962b-a32185f16337/exec-391657e2-dd69-4ffc-828f-8ed4f6e8b12d.png",
+      "path": "/Users/yusuf/Downloads/Jarvis/lyverne-generated-assets/collection/tee-orange.png"
+    }
+  ]
+}

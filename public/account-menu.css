@@ -1,0 +1,27 @@
+/* Shared account entry point, kept visible at every storefront breakpoint. */
+.account-menu{position:relative;flex-shrink:0;order:2;color:var(--ink)}
+.account-menu>summary{width:44px;height:44px;list-style:none;display:grid;place-items:center;background:var(--orange);color:var(--ink);border:1px solid var(--orange);border-radius:3px;cursor:pointer}
+.account-menu>summary::-webkit-details-marker{display:none}
+.account-menu>summary svg{width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.account-menu[open]>summary{background:var(--cream);border-color:var(--orange)}
+.account-menu>summary:focus-visible{outline:2px solid var(--orange);outline-offset:4px}
+.account-panel{position:absolute;top:calc(100% + 12px);right:0;z-index:45;width:244px;padding:10px;background:var(--cream);color:var(--ink);border:1px solid var(--ink);box-shadow:5px 5px 0 var(--orange);text-align:left}
+.account-panel>p{font-size:12px;font-weight:600;letter-spacing:.08em;padding:10px 10px 14px;border-bottom:1px solid var(--line);margin:0 0 4px}
+.account-panel>a{display:flex;justify-content:space-between;gap:20px;padding:13px 10px;font:600 15px/1.25 Manrope,Arial,sans-serif;letter-spacing:0;text-decoration:none;color:var(--ink)}
+.account-panel>a:hover,.account-panel>a:focus-visible{background:var(--orange);color:var(--ink);outline-offset:-2px}
+.account-panel>a:last-child{border-top:1px solid var(--line);margin-top:4px;font-weight:400}
+.header-right>.bag-toggle,.catalog-nav nav>.bag-toggle,.studio-nav nav>.bag-toggle{order:3}
+.header-right>.menu-toggle,.catalog-nav nav>.menu-toggle,.studio-nav nav>.menu-toggle{order:4}
+@media(max-width:650px){
+ .catalog-nav nav,.studio-nav nav{gap:12px}
+ .catalog-nav .brand,.studio-nav .brand{width:128px;flex-shrink:0}
+ .studio-nav .studio-current{display:none}
+ .account-panel{right:-75px;width:min(244px,calc(100vw - 32px))}
+ .catalog-nav .account-panel{right:-70px}
+}
+@media(max-width:370px){
+ .home-page .header .brand{width:112px}
+ .home-page .header-right{gap:5px}
+ .catalog-nav .brand,.studio-nav .brand{width:110px}
+ .catalog-nav nav,.studio-nav nav{gap:9px}
+}

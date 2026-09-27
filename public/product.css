@@ -1,0 +1,123 @@
+/* Product page layout.
+   Only layout glue: colour, type and rhythm all come from style.css tokens and
+   the existing .product-info / .catalog-* classes, so the page reads as part of
+   the same collection rather than a bolt-on. */
+
+/* .collection-page paints its text orange, which is right for the catalog
+   chrome and the grid. Detail content is ink, exactly as collection.css
+   already does for .product-dialog -- without this the description, the size
+   buttons and the ADD TO BAG label all sit orange-on-orange. */
+.collection-page .product-page-layout,
+.collection-page .product-page-breadcrumb,
+.collection-page .product-page-missing {
+  color: var(--ink);
+}
+
+.product-page main {
+  padding: 0 3.15vw 90px;
+}
+
+.product-page-breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--muted);
+  padding: 26px 0 34px;
+}
+
+.product-page-breadcrumb a:hover { color: var(--ink); text-decoration: underline; }
+.product-page-breadcrumb [aria-current="page"] { color: var(--ink); }
+
+.product-page-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(28px, 4vw, 70px);
+  align-items: start;
+}
+
+.product-page-gallery { display: grid; gap: 16px; }
+
+.product-page-view {
+  position: relative;
+  margin: 0;
+  background: #e8e2d7;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.product-page-view img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+.product-page-view figcaption {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--muted);
+}
+
+/* .product-info is shared with the dialog, where it carries dialog padding.
+   Reset that here and let the page grid own the spacing. */
+.product-page-info {
+  padding: 0;
+  position: sticky;
+  top: 108px;
+}
+
+.product-page-info h1 {
+  font-size: clamp(46px, 5.2vw, 78px);
+  line-height: .92;
+  letter-spacing: -.02em;
+  margin: 18px 0 16px;
+}
+
+.product-page-info .color-line { margin-bottom: 22px; }
+.product-page-info .product-description { max-width: 46ch; }
+
+.product-page-related { margin-top: clamp(70px, 9vw, 130px); }
+
+.product-page-related-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 23px;
+}
+
+.product-page-missing {
+  min-height: 62svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 22px;
+  padding-bottom: 90px;
+}
+
+.product-page-missing h1 {
+  font-size: clamp(64px, 9vw, 150px);
+  line-height: .86;
+  letter-spacing: -.03em;
+}
+
+.product-page-missing p { font-size: 16px; line-height: 1.6; max-width: 42ch; }
+
+@media (max-width: 1000px) {
+  .product-page-layout { grid-template-columns: 1fr; }
+  .product-page-info { position: static; }
+  .product-page-related-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 620px) {
+  .product-page-breadcrumb { padding: 18px 0 24px; }
+  .product-page-related-grid { grid-template-columns: 1fr; }
+}

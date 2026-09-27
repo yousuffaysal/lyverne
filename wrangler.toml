@@ -1,0 +1,54 @@
+# Cloudflare Workers deployment.
+#
+# Deploy with:  npm run build && npx wrangler deploy
+#
+# Everything here fits the free plan: 100,000 requests/day, and Static Assets
+# are served free and uncounted.
+
+name = "lyverne"
+main = "dist/server/index.js"
+
+# nodejs_compat lets postgres.js open a TCP connection to Supabase from the
+# Worker. Without it the database driver cannot load at all.
+compatibility_date = "2025-09-01"
+compatibility_flags = ["nodejs_compat"]
+
+[observability]
+enabled = true
+
+# Serve the Worker on the real domain. custom_domain makes Cloudflare create and
+# maintain the DNS records itself, replacing the registrar's old web records.
+# Mail is unaffected: MX and the SPF/DMARC TXT records are separate.
+[[routes]]
+pattern = "lyverne.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.lyverne.com"
+custom_domain = true
+
+[assets]
+directory = "./dist/client"
+binding = "ASSETS"
+# The Worker runs first on every request and decides what to do: it renders
+# /collection/ and /collection/<slug>/ from the database, serves /robots.txt and
+# /sitemap.xml, handles /api/, and falls through to env.ASSETS.fetch() for
+# everything else. Without this, Cloudflare would serve the static
+# collection page straight from disk and the live product grid would never run.
+run_worker_first = true
+
+# Public values. These are readable in the browser by design: SITE_ORIGIN
+# appears in every canonical, and the publishable key grants nothing on its own
+# because row-level security denies it everything but active products.
+[vars]
+SITE_ORIGIN = "https://lyverne.com"
+SUPABASE_URL = "https://thgogjkistktzcdujlcx.supabase.co"
+SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BNTa1XmFXrCJgG8U2lddHA_H7SIhI5o"
+AI_BASE_URL = "https://api.groq.com/openai/v1"
+AI_MODEL = "openai/gpt-oss-120b"
+
+# Secrets are NOT set here. Set each once with `npx wrangler secret put NAME`:
+#   DATABASE_URL         Supabase transaction pooler URI (password %40-encoded)
+#   SUPABASE_SECRET_KEY  server-only key, used for Storage uploads
+#   AI_API_KEY           Groq key
+#   ADMIN_EMAIL          the owner address; the root of trust for admin access
