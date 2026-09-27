@@ -27,6 +27,14 @@ function returnTarget(){
  return raw.startsWith('/')&&!raw.startsWith('//')?raw:'/dashboard/';
 }
 let authMode='password';
+// Where to send someone once they are signed in. The owner wants the control
+// room, not the customer dashboard, and previously had to know to type /admin/.
+// An explicit ?return_to is honoured as-is.
+async function destinationAfterSignIn(){
+ if(new URLSearchParams(location.search).get('return_to'))return returnTarget();
+ try{const {user}=await api('/api/me');return user&&user.admin?'/admin/':'/dashboard/';}
+ catch{return '/dashboard/';}
+}
 async function submitAuth(form,action){
  const error=$('.error',form),button=$('button',form);
  const set=m=>{if(error)error.textContent=m;};
@@ -53,7 +61,7 @@ async function boot(){
  if(demo){sampleData();render();return;}
  const redirect=auth.consumeRedirect();
  if(redirect?.error){notify(redirect.error);}
- else if(redirect?.session&&['login','signup'].includes(page)){location.replace(returnTarget());return;}
+ else if(redirect?.session&&['login','signup'].includes(page)){location.replace(await destinationAfterSignIn());return;}
  try{config=await api('/api/config');state.connections.ai=config.ai;state.connections.uploads=config.uploads;const result=await api('/api/me');state.user=result.user;
  if(['login','signup'].includes(page)){renderAuth();return;}
  if(!state.user){renderGate();return;}
@@ -71,7 +79,7 @@ function authForms(signup){
 }
 function renderAuth(){
  const signup=page==='signup';const done=state.user;
- root.innerHTML=`<main id="workspace-main" class="auth-layout"><section class="auth-art" aria-label="Lyverne everyday style"><img src="/assets/studio-editorial.png" alt="Lyverne black tee styled with cream trousers"><div class="roundel" aria-hidden="true">A LITTLE<br>MORE YOU.</div><div class="auth-art-copy"><p class="eyebrow">YOUR EVERYDAY, RECONSIDERED.</p><h2>GOOD TO<br>HAVE YOU HERE.</h2></div></section><section class="auth-form-wrap"><div class="auth-tabs"><a href="/login/" ${!signup?'aria-current="page"':''}>SIGN IN</a><a href="/signup/" ${signup?'aria-current="page"':''}>CREATE ACCOUNT</a></div><p class="eyebrow">THE LYVERNE CIRCLE</p><h1>${signup?'MAKE YOURSELF<br>AT HOME.':'WELCOME<br>BACK.'}</h1><p class="auth-copy">${signup?'Keep your favorite pieces close. Follow every order. Find a little more you.':'Your pieces, your orders, your next everyday favorite.'}</p>${done?`<div class="auth-success"><p class="small">Signed in as ${e(done.email)}</p>${signup?`<form id="signup-form"><label>Your name<input name="name" maxlength="100" value="${e(done.name)}" autocomplete="name" required></label><button class="btn orange">CREATE MY LYVERNE PROFILE ↗</button><p class="error" role="alert"></p></form>`:`<a class="btn orange" href="/dashboard/">OPEN MY SPACE ↗</a>${done.admin?'<a class="text-btn" href="/admin/">Open the control room ↗</a>':''}<button class="text-btn" data-action="sign-out">Sign out</button>`}</div>`:authForms(signup)}<div class="auth-divider">TAKE A LOOK AROUND</div><div class="auth-preview"><a href="/dashboard/?demo=1">Customer preview ↗</a><a href="/admin/?demo=1">Admin preview ↗</a></div></section></main>`;
+ root.innerHTML=`<main id="workspace-main" class="auth-layout"><section class="auth-art" aria-label="Lyverne everyday style"><img src="/assets/studio-editorial.png" alt="Lyverne black tee styled with cream trousers"><div class="roundel" aria-hidden="true">A LITTLE<br>MORE YOU.</div><div class="auth-art-copy"><p class="eyebrow">YOUR EVERYDAY, RECONSIDERED.</p><h2>GOOD TO<br>HAVE YOU HERE.</h2></div></section><section class="auth-form-wrap"><div class="auth-tabs"><a href="/login/" ${!signup?'aria-current="page"':''}>SIGN IN</a><a href="/signup/" ${signup?'aria-current="page"':''}>CREATE ACCOUNT</a></div><p class="eyebrow">THE LYVERNE CIRCLE</p><h1>${signup?'MAKE YOURSELF<br>AT HOME.':'WELCOME<br>BACK.'}</h1><p class="auth-copy">${signup?'Keep your favorite pieces close. Follow every order. Find a little more you.':'Your pieces, your orders, your next everyday favorite.'}</p>${done?`<div class="auth-success"><p class="small">Signed in as ${e(done.email)}</p>${signup?`<form id="signup-form"><label>Your name<input name="name" maxlength="100" value="${e(done.name)}" autocomplete="name" required></label><button class="btn orange">CREATE MY LYVERNE PROFILE ↗</button><p class="error" role="alert"></p></form>`:`${done.admin?'<a class="btn orange" href="/admin/">OPEN THE CONTROL ROOM ↗</a><a class="text-btn" href="/dashboard/">My customer space ↗</a>':'<a class="btn orange" href="/dashboard/">OPEN MY SPACE ↗</a>'}<button class="text-btn" data-action="sign-out">Sign out</button>`}</div>`:authForms(signup)}<div class="auth-divider">TAKE A LOOK AROUND</div><div class="auth-preview"><a href="/dashboard/?demo=1">Customer preview ↗</a><a href="/admin/?demo=1">Admin preview ↗</a></div></section></main>`;
 }
 function renderGate(denied=false){root.innerHTML=`<main id="workspace-main" class="auth-layout"><section class="auth-art"><img src="/assets/studio-editorial.png" alt="Lyverne everyday style"><div class="auth-art-copy"><p class="eyebrow">${isAdmin?'BEHIND THE EVERYDAY.':'THE LYVERNE CIRCLE'}</p><h2>${isAdmin?'A LITTLE<br>MORE CONTROL.':'YOUR STYLE.<br>YOUR SPACE.'}</h2></div></section><section class="auth-form-wrap"><p class="eyebrow">${isAdmin?'LYVERNE / THE CONTROL ROOM':'LYVERNE / YOUR SPACE'}</p><h1>${denied?'OWNER<br>ACCESS ONLY.':isAdmin?'HELLO,<br>LYVERNE.':'YOUR EVERYDAY.<br>ALL TOGETHER.'}</h1><p class="auth-copy">${denied?'This account is a customer account. The control room is reserved for the store owner.':isAdmin?'Orders, pieces, people and a clearer picture of your business. Sign in with the store owner account.':'Sign in to follow your orders, keep your details up to date, and save your favorite pieces.'}</p><a class="btn orange" href="${denied?'/dashboard/':authLink(location.pathname+location.search+location.hash)}">${denied?'OPEN MY SPACE':'SIGN IN'} ↗</a><div class="auth-divider">CURIOUS?</div><a class="pill-link" href="/${page}/?demo=1">Explore the sample dashboard ↗</a>${!isAdmin?'<p class="auth-note">New here? <a class="text-btn" href="/signup/">Create your account</a></p>':''}</section></main>`;}
 const customerNav=[['overview','⌂','Overview'],['orders','▤','My orders'],['tracking','↗','Track an order'],['saved','♡','Saved pieces'],['addresses','⌖','Delivery details'],['profile','○','My profile']];
@@ -190,7 +198,7 @@ document.addEventListener('submit',async ev=>{
    }else{
     await auth.signIn({email:data.email,password:data.password});
    }
-   location.assign(back);
+   location.assign(await destinationAfterSignIn());
   });
   return;
  }
