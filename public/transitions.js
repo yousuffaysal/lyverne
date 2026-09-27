@@ -35,6 +35,23 @@ if(loader&&!reduced&&!fromInternal){
  }
  requestAnimationFrame(tick);
 }else reveal();
+// Arriving from an internal link: the curtain is still conceptually covering
+// the screen, so play it out upward instead of letting it disappear.
+if(fromInternal&&!reduced){
+ const curtain=document.querySelector('.page-curtain');
+ if(curtain){
+  curtain.style.transition='none';
+  curtain.classList.add('is-covering');
+  void curtain.offsetHeight; // commit the covering state before animating
+  curtain.style.transition='';
+  requestAnimationFrame(()=>{
+   curtain.classList.add('is-lifting');
+   const done=()=>{curtain.classList.remove('is-covering','is-lifting');curtain.removeEventListener('transitionend',done);};
+   curtain.addEventListener('transitionend',done);
+   setTimeout(done,900); // in case the transition never fires
+  });
+ }
+}
 window.addEventListener('pageshow',event=>{if(event.persisted){reveal();document.body.classList.remove('is-leaving');document.querySelector('.page-curtain')?.classList.remove('is-covering')}});
 document.addEventListener('click',event=>{
  const a=event.target.closest('a[href]');

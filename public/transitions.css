@@ -14,6 +14,7 @@ html.is-loading .page-loader{visibility:visible;pointer-events:auto;clip-path:in
 .page-curtain{display:grid;place-items:center;z-index:1100;background:var(--orange);clip-path:inset(100% 0 0);transition:clip-path .55s cubic-bezier(.76,0,.24,1)}
 .page-curtain img{width:min(370px,65vw);filter:url(#logo-cream)}
 .page-curtain.is-covering{visibility:visible;pointer-events:auto;clip-path:inset(0 0 0)}
+.page-curtain.is-lifting{visibility:visible;pointer-events:none;clip-path:inset(0 0 100% 0)}
 body.is-leaving main{transform:translateY(-20px);transition:transform .55s ease}
 @media(max-width:650px){.loader-count{font-size:18px;left:auto;right:9vw;top:calc(50% + 100px)}}
 @media(prefers-reduced-motion:reduce){.page-loader,.page-curtain{display:none!important}}
