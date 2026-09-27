@@ -62,17 +62,25 @@ function render(user) {
   }
 }
 
+// The session is held in localStorage, not a cookie, so the token has to be
+// attached explicitly -- a bare fetch looks anonymous to the server.
+async function whoAmI() {
+  try {
+    const token = await auth.getToken();
+    const res = await fetch('/api/me', {
+      headers: {'Cache-Control': 'no-cache', ...(token ? {Authorization: 'Bearer ' + token} : {})},
+    });
+    if (!res.ok) return null;
+    return (await res.json()).user ?? null;
+  } catch { return null; }
+}
+
 // Draw the signed-out menu immediately so the icon is never empty, then correct
 // it once the server says who this is.
 render(null);
-fetch('/api/me', {headers: {'Cache-Control': 'no-cache'}})
-  .then(r => (r.ok ? r.json() : null))
-  .then(data => render(data?.user ?? null))
-  .catch(() => {});
+whoAmI().then(render);
 // The breakpoint decides whether Menu belongs in the panel, so redraw on change.
-PHONE.addEventListener('change', () => {
-  fetch('/api/me').then(r => (r.ok ? r.json() : null)).then(d => render(d?.user ?? null)).catch(() => render(null));
-});
+PHONE.addEventListener('change', () => { whoAmI().then(render); });
 
 // ------------------------------------------------------------------- actions
 
