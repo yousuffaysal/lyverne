@@ -49,3 +49,33 @@ if (adminLinks.length) {
     .then(data => { if (data?.user?.admin) for (const link of adminLinks) link.hidden = false; })
     .catch(() => {});
 }
+
+// The nav markup is shared by every page, so the active link is marked here
+// from the pathname rather than baked into each generated page.
+{
+  const path = location.pathname;
+  for (const link of document.querySelectorAll('.site-nav nav > a[data-nav]')) {
+    const target = link.dataset.nav;
+    const active = target === '/' ? path === '/' : path.startsWith(target);
+    if (active) link.setAttribute('aria-current', 'page');
+    else link.removeAttribute('aria-current');
+  }
+}
+
+// app.js owns the menu dialog wherever it is loaded. The account pages do not
+// load it, which left their Menu button doing nothing at all -- so bind it here
+// only when app.js is absent, to avoid two handlers fighting over one dialog.
+if (!document.querySelector('script[src="/app.js"]')) {
+  const toggle = document.querySelector('.site-nav .menu-toggle');
+  const dialog = document.querySelector('#menu-dialog');
+  if (toggle && dialog) {
+    toggle.addEventListener('click', () => {
+      for (const open of document.querySelectorAll('dialog[open]')) open.close();
+      dialog.showModal();
+      toggle.setAttribute('aria-expanded', 'true');
+    });
+    dialog.addEventListener('close', () => toggle.setAttribute('aria-expanded', 'false'));
+    for (const close of dialog.querySelectorAll('[data-close]')) close.addEventListener('click', () => dialog.close());
+    for (const link of dialog.querySelectorAll('a')) link.addEventListener('click', () => dialog.close());
+  }
+}
