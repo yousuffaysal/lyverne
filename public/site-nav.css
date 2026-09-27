@@ -1,0 +1,101 @@
+/* The one site navigation, used on every page.
+   Previously three headers existed -- .header on the home page, .catalog-nav on
+   the collection and product pages, and .workspace-header on the account pages
+   -- which drifted apart in spacing, type size and which controls they carried.
+   This is the collection header, with the bag as a square icon matching the
+   profile icon rather than a "Bag (0)" text button. */
+
+.site-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+  padding: 24px;
+  min-height: 96px;
+  position: relative;
+  z-index: 30;
+  background: var(--cream);
+}
+
+.site-nav .brand { display: block; width: 185px; flex-shrink: 0; }
+.site-nav .brand img { display: block; width: 100%; height: auto; filter: none; }
+
+.site-nav nav {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.site-nav nav > a {
+  color: var(--orange);
+  font-size: 22px;
+  letter-spacing: -.06em;
+  line-height: 1.2;
+}
+.site-nav nav > a:hover { color: var(--ink); }
+.site-nav nav > a[aria-current="page"] { color: var(--ink); }
+
+/* The bag matches the profile icon: same square, same radius, so the two read
+   as a pair. The count becomes a corner badge -- a square this size has no
+   room for it inline, and "Bag (0)" was the thing being replaced. */
+.site-nav .bag-toggle {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  gap: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 3px;
+  background: var(--ink);
+  color: var(--cream);
+  border: 1px solid var(--ink);
+}
+.site-nav .bag-toggle svg { width: 23px; height: 23px; }
+.site-nav .bag-toggle:hover { background: var(--orange); color: var(--ink); border-color: var(--orange); }
+
+.site-nav .bag-count {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  background: var(--orange);
+  color: var(--ink);
+  border-radius: 9px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.site-nav .menu-toggle {
+  background: none;
+  color: var(--orange);
+  font-size: 14px;
+  padding: 0;
+  height: auto;
+  gap: 12px;
+}
+.site-nav .menu-toggle:hover { color: var(--ink); }
+
+@media (max-width: 1000px) {
+  .site-nav { padding: 20px; min-height: 85px; }
+  .site-nav .brand { width: 170px; }
+  .site-nav nav { gap: 23px; }
+}
+
+@media (max-width: 650px) {
+  .site-nav { padding: 16px; min-height: 76px; gap: 15px; }
+  .site-nav .brand { width: 145px; }
+  .site-nav nav { gap: 12px; }
+  /* On a phone the header is the two icons. The text links live in the menu,
+     which the profile icon opens. */
+  .site-nav nav > a,
+  .site-nav .menu-toggle { display: none; }
+  .site-nav .account-menu > summary,
+  .site-nav .bag-toggle { width: 40px; height: 40px; }
+  .site-nav .bag-toggle svg { width: 21px; height: 21px; }
+}

@@ -11,7 +11,7 @@
 // second visual language. Only layout glue is new, in public/product.css.
 
 import {money} from './catalog.js';
-import {filters, accountMenu, dialogs} from './shell.js';
+import {filters, accountMenu, dialogs, siteNav} from './shell.js';
 import {
   esc, jsonLd, metaTags, productMeta, productSchema,
   breadcrumbs, organisation, productUrl, assetUrl,
@@ -51,7 +51,7 @@ export function catalogGrid(products) {
 }
 
 function header() {
-  return `<header class="catalog-nav"><a class="brand" href="/" aria-label="Lyverne home"><img src="/assets/lyverne-navbar.png" alt="LYVERNE" width="3715" height="925"></a><nav aria-label="Collection navigation">${accountMenu}<a href="/studio/" class="home-link">Style studio</a><a href="/collection/">Shop</a><button class="bag-toggle" aria-label="Open shopping bag">Bag (<span class="bag-count">0</span>)</button><button class="menu-toggle" aria-label="Open menu" aria-expanded="false">Menu <span class="menu-lines"><i></i><i></i></span></button></nav></header>`;
+  return siteNav;
 }
 
 function footer() {
@@ -108,7 +108,7 @@ export function productPage({product, origin, others = [], campaignEnabled = tru
     jsonLd(organisation(origin)),
   ].join('');
 
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#F3EEE4"><title>${esc(title)}</title>${head}<link rel="icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/transitions.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"><link rel="stylesheet" href="/account-menu.css">${campaignEnabled ? '<link rel="stylesheet" href="/promotion-popup.css">' : ''}<script type="module" src="/transitions.js"></script><script type="module" src="/app.js"></script><script type="module" src="/account-menu.js"></script>${campaignEnabled ? '<script type="module" src="/promotion-popup.js"></script>' : ''}<script type="module" src="/product-page.js"></script></head>
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#F3EEE4"><title>${esc(title)}</title>${head}<link rel="icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/transitions.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"><link rel="stylesheet" href="/account-menu.css">${campaignEnabled ? '<link rel="stylesheet" href="/promotion-popup.css">' : ''}<script type="module" src="/transitions.js"></script><script type="module" src="/app.js"></script><script type="module" src="/account-menu.js"></script>${campaignEnabled ? '<script type="module" src="/promotion-popup.js"></script>' : ''}<script type="module" src="/product-page.js"></script></head>
 <body class="collection-page product-page">
 ${filters}
 <a class="skip-link" href="#main">Skip to product</a>
@@ -127,7 +127,7 @@ ${dialogs}
 // archived product is never indexed, and so a mistyped URL does not quietly
 // return a 200 page that Google would add to the index.
 export function productNotFound(origin) {
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Piece not found — LYVERNE</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"></head>
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Piece not found — LYVERNE</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"></head>
 <body class="collection-page product-page">
 ${header()}
 <main id="main" class="product-page-missing">
