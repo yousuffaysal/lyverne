@@ -30,7 +30,7 @@ export function catalogCard(p, index = 0) {
   const href = `/collection/${p.slug}/`;
   const price = p.price === null || p.price === undefined ? 'PRICE TBA' : money(p.price);
   const reverse = p.back ? '' : 'catalog-closeup';
-  return `<article class="catalog-card" style="--order:${index % 4}"><a class="catalog-product" href="${esc(href)}" aria-label="View ${esc(p.name)} in ${esc(p.color)}"><span class="catalog-image"><img class="catalog-front" ${index < 4 ? 'data-eager-image' : 'loading="lazy"'} src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}, front mockup" width="1254" height="1254"><span style="--detail-origin:${esc(p.detailFocus || '68% 31%')}" class="catalog-reverse ${reverse}"><img src="${esc(assetUrl(p.back || p.image))}" alt="" width="1254" height="1254" loading="lazy"></span><span class="catalog-view">${p.back ? 'FRONT / BACK' : 'VIEW PIECE'} ↗</span></span><span class="catalog-meta"><span class="catalog-title">${esc(p.name)}</span><span class="catalog-price">${esc(price)}</span><span class="catalog-color"><i style="background:${esc(p.swatch || '#20201c')}"></i>${esc(p.color)}</span><span class="catalog-category">${esc(p.category || 'SIGNATURE')}</span></span></a></article>`;
+  return `<article class="catalog-card" style="--order:${index % 4}"><a class="catalog-product" href="${esc(href)}" aria-label="View ${esc(p.name)} in ${esc(p.color)}"><span class="catalog-image"><img class="catalog-front" ${index < 4 ? 'data-eager-image' : 'loading="lazy"'} src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}, front mockup" width="1254" height="1254"><span style="--detail-origin:${esc(p.detailFocus || '68% 31%')}" class="catalog-reverse ${reverse}"><img src="${esc(assetUrl(p.back || p.image))}" alt="" width="1254" height="1254" loading="lazy"></span><span class="catalog-view">${p.back ? 'FRONT / BACK' : 'VIEW PIECE'} ↗︎</span></span><span class="catalog-meta"><span class="catalog-title">${esc(p.name)}</span><span class="catalog-price">${esc(price)}</span><span class="catalog-color"><i style="background:${esc(p.swatch || '#20201c')}"></i>${esc(p.color)}</span><span class="catalog-category">${esc(p.category || 'SIGNATURE')}</span></span></a></article>`;
 }
 
 export const GRID_START = '<!--products:start-->';
@@ -80,7 +80,7 @@ function info(product) {
 <p class="product-description">${esc(product.description)}</p>
 <div class="price-line"><strong>${priced ? esc(money(product.price)) : 'PRICE TBA'}</strong><span>${inStock ? 'IN STOCK' : 'SOLD OUT'}</span></div>
 ${sizes.length ? `<fieldset class="size-selector"><legend>SELECT SIZE</legend><div>${sizes.map(s => `<button type="button" data-size="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join('')}</div></fieldset><p class="size-error" role="alert"></p>` : ''}
-<button class="add-to-bag" data-add-product="${esc(product.id)}"${inStock && priced ? '' : ' disabled'}>${inStock && priced ? 'ADD TO BAG' : 'NOT AVAILABLE YET'} <span aria-hidden="true">↗</span></button>
+<button class="add-to-bag" data-add-product="${esc(product.id)}"${inStock && priced ? '' : ' disabled'}>${inStock && priced ? 'ADD TO BAG' : 'NOT AVAILABLE YET'} <span aria-hidden="true">↗︎</span></button>
 <details><summary>Fit and fabric <span aria-hidden="true">+</span></summary><p>A relaxed, dropped-shoulder silhouette with room to move. Cut for everyday wear, not for trying too hard.</p></details>
 <details><summary>Delivery and returns <span aria-hidden="true">+</span></summary><p>Delivered across Bangladesh. Orders are confirmed by Lyverne before dispatch; payment and delivery details are arranged directly with you.</p></details>
 </div>`;
@@ -134,7 +134,7 @@ ${header()}
 <p class="eyebrow">LYVERNE / 404</p>
 <h1>THIS PIECE<br>ISN'T HERE.</h1>
 <p>It may have sold out, or the link may be out of date. The rest of the collection is waiting.</p>
-<a class="oval-link" href="/collection/">Back to the collection <span aria-hidden="true">↗</span></a>
+<a class="oval-link" href="/collection/">Back to the collection <span aria-hidden="true">↗︎</span></a>
 </main>
 ${footer()}
 </body></html>`;

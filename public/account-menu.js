@@ -37,3 +37,15 @@ for (const menu of menus) {
 document.addEventListener('click', event => {
   for (const menu of menus) if (menu.open && !menu.contains(event.target)) menu.open = false;
 });
+
+// The admin link is hidden until the server confirms this visitor is the owner.
+// /api/admin/* already returns 403 to everyone else, so this is about not
+// showing a door that will not open -- not about access control.
+const adminLinks = [...document.querySelectorAll('.account-panel a[href="/admin/"]')];
+for (const link of adminLinks) link.hidden = true;
+if (adminLinks.length) {
+  fetch('/api/me', {headers: {'Cache-Control': 'no-cache'}})
+    .then(r => r.ok ? r.json() : null)
+    .then(data => { if (data?.user?.admin) for (const link of adminLinks) link.hidden = false; })
+    .catch(() => {});
+}

@@ -6,6 +6,7 @@ import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,
 import {productPage,productNotFound,catalogGrid,GRID_START,GRID_END} from './render.mjs';
 import {createStorage} from './storage.mjs';
 import {createDatabase} from './db.mjs';
+import {webAssets} from './web-assets.js';
 import {analyst,productCopy,shopper,shopperCatalogue,aiConfigured} from './ai.mjs';
 const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin',...headers}});
 // Defence in depth for the server-rendered pages. Escaping is the control that
@@ -274,6 +275,11 @@ export default {async fetch(req,originalEnv,ctx){
   // ASSETS is the platform's static-file binding. Without it there is nothing
   // to serve, which is a 404, not a server fault.
   if(!env.ASSETS)return new Response('Not found',{status:404});
+  const png=/^\/assets\/([a-z0-9-]+)\.png$/i.exec(url.pathname);
+  if(png&&webAssets.has(png[1])){
+   const webp=new URL(`/assets/${png[1]}.webp`,url);
+   return env.ASSETS.fetch(new Request(webp,req));
+  }
   return env.ASSETS.fetch(req);
  }catch(error){if(!(error instanceof Problem))console.error('Lyverne request failed',error.message,error.stack);return json({error:error instanceof Problem?error.message:'Something went wrong. Your changes have not been confirmed; please refresh and try again.'},error.status||500);}
  finally{
