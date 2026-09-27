@@ -27,3 +27,9 @@
 /* Google's mark sits left of the label, at text size, on its own baseline. */
 .google-btn{display:inline-flex;align-items:center;justify-content:center;gap:10px}
 .google-btn .g-mark{flex:0 0 auto}
+
+/* Campaign image picker: the thumbnail is the point, so it leads. */
+.campaign-image{display:flex;align-items:center;gap:16px;margin-top:8px}
+.campaign-image img{width:120px;height:120px;object-fit:contain;background:#e8e2d7;border:1px solid var(--line);border-radius:3px}
+.campaign-image-controls{display:grid;gap:8px;flex:1;min-width:0}
+.campaign-image-controls input[readonly]{font-size:12px;color:var(--muted);background:transparent}

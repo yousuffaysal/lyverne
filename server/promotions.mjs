@@ -1,5 +1,5 @@
 import {Problem,str} from './domain.mjs';
-export const defaultCampaign={enabled:true,title:'YOUR NEXT EVERYDAY.',text:'Meet the first edition. Quiet signatures. Original graphics. A little more you.',button:'Explore the collection',destination:'/collection/',code:'',version:0};
+export const defaultCampaign={enabled:true,title:'YOUR NEXT EVERYDAY.',text:'Meet the first edition. Quiet signatures. Original graphics. A little more you.',button:'Explore the collection',destination:'/collection/',code:'',image:'/assets/tee-front.png',version:0};
 export function couponInput(b){
  const code=str(b.code,24).toUpperCase();
  if(!/^[A-Z0-9][A-Z0-9-]{2,23}$/.test(code))throw new Problem('Use 3–24 letters, numbers or hyphens for the code.');
@@ -24,7 +24,11 @@ export function campaignInput(b){
  if(!title||!text||!button)throw new Problem('Add a headline, message and button label.');
  if(!['/collection/','/studio/'].includes(b.destination))throw new Problem('Choose a collection or Style Studio destination.');
  if(code&&!/^[A-Z0-9][A-Z0-9-]{2,23}$/.test(code))throw new Problem('Choose a valid promo code.');
- return {title,text,button,code,destination:b.destination,enabled:b.enabled===true||b.enabled==='on'};
+ // Same allow-list the product images use: a build asset or an uploaded file,
+ // never an arbitrary URL, so the popup cannot be pointed at another site.
+ const image=str(b.image,200)||defaultCampaign.image;
+ if(!/^\/(assets\/[a-z0-9-]+\.(png|webp)|media\/[a-z0-9-]+\.(png|jpeg|webp))$/i.test(image))throw new Problem('Choose or upload a popup image.');
+ return {title,text,button,code,image,destination:b.destination,enabled:b.enabled===true||b.enabled==='on'};
 }
 export async function readCampaign(db){
  const row=await db.prepare("SELECT * FROM shop_settings WHERE id='opening-promotion'").first();
