@@ -25,3 +25,6 @@
  .catalog-nav .brand,.studio-nav .brand{width:110px}
  .catalog-nav nav,.studio-nav nav{gap:9px}
 }
+
+/* [hidden] must win over the display rule above, or JS hiding does nothing. */
+.account-panel a[hidden]{display:none}

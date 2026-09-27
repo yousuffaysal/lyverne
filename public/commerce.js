@@ -40,7 +40,13 @@ export function analytics(orders,products,days=30,now=Date.now()){
 export function insights(m){
  return [{title:m.lowStock.length?`${m.lowStock.length} product${m.lowStock.length===1?'':'s'} need a stock check`:'Stock is within the threshold',body:m.lowStock.length?m.lowStock.map(p=>`${p.name} / ${p.color}: ${p.stock} left`).join('. '):'No active products currently have fewer than six units.'},{title:`${m.open} orders in progress`,body:m.open?'Review the oldest open orders before taking on the next dispatch.':'No open orders are waiting for fulfillment.'},{title:m.top[0]?`${m.top[0].name} leads paid sales`:'A little more data will help',body:m.top[0]?`${m.top[0].quantity} units sold in the selected period. Compare that demand with available stock before reordering.`:'Paid orders will unlock product rankings and an average order value. No forecast is shown without sales history.'}];
 }
-export function allowedStatus(from,to){return to===from||(from!=='delivered'&&from!=='cancelled'&&(to==='cancelled'||statuses.indexOf(to)===statuses.indexOf(from)+1));}
+export function allowedStatus(from,to){
+ if(to===from)return true;
+ // Delivered and cancelled are final: reopening them would contradict what the
+ // customer has already been told.
+ if(from==='delivered'||from==='cancelled')return false;
+ return to==='cancelled'||statuses.includes(to);
+}
 
 export function promotionStatus(p,now=Date.now()){
  if(!p.active)return 'inactive';

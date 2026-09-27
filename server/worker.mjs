@@ -186,10 +186,23 @@ async function api(req,env){
  if(/^\/api\/admin\/orders\/[^/]+$/.test(path)&&method==='PUT'){
   const oid=path.split('/').pop(),b=await body(req),current=await row(env.DB,'SELECT * FROM orders WHERE id=?',oid);if(!current)throw new Problem('Order not found.',404);if(Number(b.version)!==current.version)throw new Problem('This order changed. Reopen it before saving.',409);if(!allowedStatus(current.status,b.status))throw new Problem('Move an order one step forward, or cancel an unfinished order.');if(!['pending','paid','refunded'].includes(b.payment))throw new Problem('Choose a payment record.');
   const date=str(b.delivery_date,10);if(date&&!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Problem('Choose a valid delivery date.');
+  // Dispatch details fill themselves in once an order ships, so the owner is
+  // not typing a tracking number and a date on every order. Anything already
+  // set -- by the owner now, or on a previous save -- always wins.
+  const dispatched=['shipped','out-for-delivery','delivered'].includes(b.status);
+  const carrier=str(b.carrier,80)||current.carrier;
+  let tracking=str(b.tracking_number,100)||current.tracking_number;
+  let delivery=date||current.delivery_date;
+  if(dispatched){
+   if(!tracking)tracking='LY-'+id().replace(/-/g,'').slice(0,10).toUpperCase();
+   // Three days is the usual door-to-door window inside Bangladesh; the owner
+   // can overwrite it, and doing so sticks.
+   if(!delivery)delivery=new Date(Date.now()+3*86400000).toISOString().slice(0,10);
+  }
   const message=str(b.message,500)||`${statusLabels[b.status]}. ${b.status===current.status?'Delivery details updated.':''}`;const statements=[];
   if(b.status==='cancelled'&&current.status!=='cancelled')for(const item of JSON.parse(current.items))statements.push(env.DB.prepare("UPDATE products SET stock=stock+?,version=version+1 WHERE id=? AND EXISTS(SELECT 1 FROM orders WHERE id=? AND version=? AND status!='cancelled')").bind(item.quantity,item.id,oid,current.version));
   statements.push(env.DB.prepare('INSERT INTO order_events(id,order_id,status,message,created_at) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM orders WHERE id=? AND version=?)').bind(id(),oid,b.status,message,now(),oid,current.version));
-  statements.push(env.DB.prepare('UPDATE orders SET status=?,payment=?,carrier=?,tracking_number=?,delivery_date=?,note=?,version=version+1,updated_at=? WHERE id=? AND version=?').bind(b.status,b.payment,str(b.carrier,80),str(b.tracking_number,100),date,str(b.note,500),now(),oid,current.version));
+  statements.push(env.DB.prepare('UPDATE orders SET status=?,payment=?,carrier=?,tracking_number=?,delivery_date=?,note=?,version=version+1,updated_at=? WHERE id=? AND version=?').bind(b.status,b.payment,carrier,tracking,delivery,str(b.note,500),now(),oid,current.version));
   const result=await env.DB.batch(statements);if(!result.at(-1).meta.changes)throw new Problem('The order changed. Refresh and try again.',409);await activity(env.DB,user,'Updated order',oid+' / '+statusLabels[b.status]).run();return json({ok:true});
  }
  if(path==='/api/admin/upload'&&method==='POST'){
