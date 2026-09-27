@@ -6,14 +6,18 @@ const count=document.querySelector('.loader-count');
 let fromInternal=false;
 try{fromInternal=sessionStorage.getItem('lyverne-page-transition')==='1';sessionStorage.removeItem('lyverne-page-transition')}catch{}
 function reveal(){root.classList.remove('is-loading');root.classList.add('page-ready');loader?.setAttribute('aria-hidden','true')}
-if(loader&&!reduced){
+// The stacked-photo counter is the arrival sequence for a first visit only.
+// Moving between pages already has the orange curtain, and playing both meant
+// every navigation ran two loaders back to back. Arriving from an internal
+// link reveals immediately, so the curtain is the whole transition.
+if(loader&&!reduced&&!fromInternal){
  const start=performance.now();let loaded=0,shown=-1,progress=0,finishing=false;
  const assets=[...new Set([...document.querySelectorAll('[data-eager-image]')].map(i=>i.src).concat(['/assets/lyverne-navbar.png']))];
  const total=assets.length+1;
  const ready=()=>loaded++;
  assets.forEach(src=>{const img=new Image();img.onload=ready;img.onerror=ready;img.src=src});
  document.fonts.ready.then(ready,ready);
- const duration=fromInternal?850:2100;
+ const duration=2100;
  function tick(now){
   if(finishing)return;
   const elapsed=now-start;
@@ -24,7 +28,7 @@ if(loader&&!reduced){
   if(elapsed>5000)progress=100;
   if(count)count.textContent=String(Math.floor(progress)).padStart(3,'0');
   const frame=Math.floor(elapsed/(duration/stack.length));
-  if(frame!==shown&&frame<stack.length&&!fromInternal){shown=frame;stack[frame]?.classList.add('is-shown')}
+  if(frame!==shown&&frame<stack.length){shown=frame;stack[frame]?.classList.add('is-shown')}
   if(elapsed>duration*.55)loader.classList.add('brand-reveal');
   if(progress>=100){finishing=true;if(count)count.textContent='100';loader.classList.add('is-finishing');root.classList.add('page-ready');setTimeout(reveal,900);return}
   requestAnimationFrame(tick);
