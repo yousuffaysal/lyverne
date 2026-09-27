@@ -46,12 +46,19 @@ if(fromInternal&&!reduced){
   curtain.style.transition='';
   requestAnimationFrame(()=>{
    curtain.classList.add('is-lifting');
-   const done=()=>{curtain.classList.remove('is-covering','is-lifting');curtain.removeEventListener('transitionend',done);};
-   curtain.addEventListener('transitionend',done);
-   setTimeout(done,900); // in case the transition never fires
+   // Clear the classes without animating back: removing them mid-transition
+   // would send the curtain travelling down again to its resting state, which
+   // reads as a flash at the end of an otherwise clean exit.
+   setTimeout(()=>{
+    curtain.style.transition='none';
+    curtain.classList.remove('is-covering','is-lifting');
+    void curtain.offsetHeight;
+    curtain.style.transition='';
+   },620); // the clip-path transition is .55s
   });
  }
 }
+
 window.addEventListener('pageshow',event=>{if(event.persisted){reveal();document.body.classList.remove('is-leaving');document.querySelector('.page-curtain')?.classList.remove('is-covering')}});
 document.addEventListener('click',event=>{
  const a=event.target.closest('a[href]');
