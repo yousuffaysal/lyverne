@@ -46,6 +46,7 @@ SUPABASE_URL = "https://thgogjkistktzcdujlcx.supabase.co"
 SUPABASE_PUBLISHABLE_KEY = "sb_publishable_BNTa1XmFXrCJgG8U2lddHA_H7SIhI5o"
 AI_BASE_URL = "https://api.groq.com/openai/v1"
 AI_MODEL = "openai/gpt-oss-120b"
+AI_REASONING_EFFORT = "low"
 
 # Secrets are NOT set here. Set each once with `npx wrangler secret put NAME`:
 #   DATABASE_URL         Supabase transaction pooler URI (password %40-encoded)

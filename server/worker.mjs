@@ -7,7 +7,7 @@ import {productPage,productNotFound,catalogGrid,GRID_START,GRID_END} from './ren
 import {createStorage} from './storage.mjs';
 import {createDatabase} from './db.mjs';
 import {webAssets} from './web-assets.js';
-import {analyst,productCopy,shopper,shopperCatalogue,aiConfigured} from './ai.mjs';
+import {analyst,productCopy,shopper,shopperCatalogue,stylist,aiConfigured} from './ai.mjs';
 const json=(body,status=200,headers={})=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff','Referrer-Policy':'strict-origin-when-cross-origin',...headers}});
 // Defence in depth for the server-rendered pages. Escaping is the control that
 // prevents XSS; these headers are what stop a future slip in it from becoming
@@ -109,6 +109,12 @@ async function api(req,env){
  if(!env.DB)throw new Problem('The store database is temporarily unavailable. Please try again shortly.',503);
  if(path==='/api/products'&&method==='GET')return json({products:(await all(env.DB,"SELECT * FROM products WHERE status='active' ORDER BY created_at DESC")).map(decodeProduct),managedIds:(await all(env.DB,'SELECT id FROM products')).map(p=>p.id)});
  if(path==='/api/storefront/promotion'&&method==='GET')return json({campaign:await publicCampaign(env.DB)});
+ if(path==='/api/stylist'&&method==='POST'){
+  // Public and deliberately unconnected to the catalogue: this answers "what
+  // should I wear", not "what should I buy". It reads no store data at all.
+  if(!aiConfigured(env))throw new Problem('The stylist is not available right now.',503);
+  return json({look:await stylist(env,{question:(await body(req)).question})});
+ }
  if(path==='/api/assistant'&&method==='POST'){
   // Public, so it is rate-limited by request size and given only the public
   // catalogue. See shopperCatalogue in server/ai.mjs for the exact whitelist.

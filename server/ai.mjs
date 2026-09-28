@@ -18,7 +18,7 @@ export function aiConfigured(env) {
   return !!env.AI_API_KEY;
 }
 
-async function complete(env, {system, user, maxTokens = 700, temperature = 0.3, timeout = 25000}) {
+async function complete(env, {system, user, maxTokens = 700, temperature = 0.3, timeout = 25000, json = false}) {
   if (!env.AI_API_KEY) throw new Problem('The AI service is not connected.', 503);
   const base = (env.AI_BASE_URL || DEFAULT_BASE).replace(/\/+$/, '');
   const res = await fetch(`${base}/chat/completions`, {
@@ -29,6 +29,14 @@ async function complete(env, {system, user, maxTokens = 700, temperature = 0.3, 
       messages: [{role: 'system', content: system}, {role: 'user', content: user}],
       max_tokens: maxTokens,
       temperature,
+      // Reasoning models spend a large share of the budget thinking before they
+      // write. Measured on gpt-oss-120b: 441 reasoning tokens unprompted, which
+      // truncated the JSON mid-object. Asking for JSON directly and lowering the
+      // reasoning effort cut a reply from 855 tokens to 300, and made it parse
+      // every time. AI_REASONING_EFFORT is a variable because it is a
+      // provider-specific parameter; clear it if you move off Groq.
+      ...(json ? {response_format: {type: 'json_object'}} : {}),
+      ...(env.AI_REASONING_EFFORT ? {reasoning_effort: env.AI_REASONING_EFFORT} : {}),
     }),
     signal: AbortSignal.timeout(timeout),
   });
@@ -80,8 +88,9 @@ export async function productCopy(env, {name, color, category, notes}) {
       name: str(name, 100), color: str(color, 60),
       category: str(category, 60), notes: str(notes, 600),
     }),
-    maxTokens: 500,
+    maxTokens: 900,
     temperature: 0.6,
+    json: true,
   });
   // Models sometimes wrap JSON in prose or a code fence; recover the object
   // rather than failing the request over formatting.
@@ -142,4 +151,79 @@ export function shopper(env, {question, products}) {
     maxTokens: 400,
     temperature: 0.4,
   });
+}
+
+// ------------------------------------------------------------- the stylist
+// Open to anyone, and deliberately not a shop assistant: it answers "what
+// should I wear" for whatever the person describes, using real garments and
+// real colours. Lyverne is mentioned only where a piece genuinely fits, so the
+// advice is worth having even to someone who never buys anything.
+
+const STYLIST_SYSTEM = `You are Lyverne's stylist. You help anyone dress well, whatever they own and wherever they shop.
+Give specific, wearable advice: name the garment, the cut and the colour. Never answer in vague terms like "something nice".
+Assume a Bangladeshi context unless told otherwise -- heat, humidity, monsoon, modesty preferences, and what is realistically available in Dhaka.
+Work with what the person tells you: occasion, weather, body, skin tone, budget, what they already own, what they feel good in.
+Do not push products. You may mention a relaxed black or cream tee as a base layer because that is what Lyverne makes, but only when it genuinely fits, and never more than once.
+If the request is not about clothing, style or appearance, say that is outside what you help with and offer to help with an outfit instead.
+
+Respond with a single JSON object and nothing else:
+{"headline": string,
+ "outfit": [{"part": string, "item": string, "colour": string, "hex": string}],
+ "palette": [string],
+ "why": string,
+ "tip": string}
+
+headline: at most 6 words, the idea of the look.
+outfit: 3 to 5 pieces, ordered top to bottom then accessories. part is like "Top", "Bottom", "Shoes", "Layer", "Finish". item names the garment and cut. colour is the colour in words. hex is that colour as #RRGGBB.
+palette: 3 to 5 hex codes for the whole look, most dominant first.
+why: one or two sentences on why it works -- proportion, colour, climate.
+tip: one short practical line, such as a fit or fabric note.`;
+
+const HEX = /^#[0-9a-f]{6}$/i;
+
+export async function stylist(env, {question}) {
+  const asked = str(question, 600);
+  if (!asked) throw new Problem('Tell the stylist what you need to dress for.');
+  const answer = await complete(env, {
+    system: STYLIST_SYSTEM,
+    // The person's words are nested as data, not concatenated into the prompt.
+    user: JSON.stringify({request: asked}),
+    maxTokens: 1200,
+    temperature: 0.7,
+    json: true,
+  });
+  const json = answer.slice(answer.indexOf('{'), answer.lastIndexOf('}') + 1);
+  let parsed;
+  try { parsed = JSON.parse(json); } catch { throw new Problem('The stylist lost its thread. Ask again.', 502); }
+
+  // Colours are rendered as swatches, so anything that is not a hex code is
+  // dropped rather than trusted into a style attribute.
+  const outfit = (Array.isArray(parsed.outfit) ? parsed.outfit : []).slice(0, 6).map(piece => ({
+    part: str(piece?.part, 24),
+    item: str(piece?.item, 120),
+    colour: str(piece?.colour, 40),
+    hex: HEX.test(String(piece?.hex || '')) ? String(piece.hex) : '',
+  })).filter(piece => piece.item);
+  // An off-topic question gets a refusal, not an outfit. That is the stylist
+  // working correctly, so it comes back as a message rather than an error.
+  if (!outfit.length) {
+    return {
+      declined: true,
+      headline: str(parsed.headline, 70) || 'Outside my wheelhouse',
+      outfit: [],
+      palette: [],
+      why: str(parsed.why || parsed.message || parsed.answer, 400)
+        || 'I only help with what to wear. Tell me the occasion and I will put a look together.',
+      tip: '',
+    };
+  }
+
+  return {
+    declined: false,
+    headline: str(parsed.headline, 70),
+    outfit,
+    palette: (Array.isArray(parsed.palette) ? parsed.palette : []).filter(h => HEX.test(String(h))).slice(0, 6),
+    why: str(parsed.why, 400),
+    tip: str(parsed.tip, 200),
+  };
 }

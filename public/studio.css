@@ -24,3 +24,52 @@
 .look-identity h3{font-size:clamp(34px,3.3vw,63px)}.look-items>div{grid-template-columns:95px 1fr}.palette-bars>span{font-size:12px}.palette-bars small{font-size:11px}.assistant-label span{line-height:1.45}.prompt-label{gap:12px;line-height:1.5}.prompt-label span{font-size:10px}.studio-hero-note{left:auto;right:0}.studio-page .toast{max-width:min(92vw,420px)}
 @media(max-width:1000px){.studio-hero-note{display:none}.look-items>div{grid-template-columns:80px 1fr}.look-actions{flex-wrap:wrap}}
 @media(max-width:700px){.style-fields{grid-template-columns:1fr}.style-fields select{font-size:16px;padding:13px 10px}.style-form textarea{font-size:16px}.look-items>div{font-size:14px}.look-identity h3{font-size:10vw}.studio-page .studio-intro,.studio-page .studio-section-head>p{font-size:15px}.look-topline>span:last-child{font-size:10px;max-width:125px}.color-buttons button{font-size:11px}.daily-label{grid-template-columns:auto 1fr}.daily-label time{grid-column:2;margin-top:-8px}.daily-action{display:block}.daily-action button{margin-top:17px}.look-actions .oval-link{font-size:13px}.followup-chips button{font-size:12px}.notebook-empty{align-items:flex-start}.saved-card-actions button{font-size:12px}.saved-heading>p{font-size:14px}.prompt-chips button{font-size:12px}.look-tee>span{font-size:6px}.saved-card>p{font-size:11px}.palette-bars>span{font-size:10px}.palette-bars small{font-size:10px}}
+
+/* ---------------------------------------------------------- the stylist
+   Free-text styling advice. The colours carry the answer, so swatches sit
+   beside every piece rather than the colour being named in prose alone. */
+.stylist{margin-top:36px;padding-top:30px;border-top:1px solid var(--line)}
+.stylist-head h3{font-size:clamp(28px,3vw,38px);line-height:1;margin-bottom:8px}
+.stylist-head .form-help{max-width:52ch}
+#stylist-form{margin-top:18px}
+#stylist-form textarea{width:100%;padding:14px 16px;border:1px solid var(--line);background:var(--cream);
+  color:var(--ink);font:400 15px/1.55 Manrope,Arial,sans-serif;border-radius:3px;resize:vertical}
+#stylist-form textarea:focus-visible{outline:2px solid var(--orange);outline-offset:2px;border-color:var(--orange)}
+.stylist-actions{display:flex;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap}
+.stylist-status{font-size:13px;color:var(--muted)}
+#stylist-form .error{color:#a33b12;font-size:13px;margin-top:8px;min-height:18px}
+
+.stylist-examples{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:16px;font-size:13px;color:var(--muted)}
+.stylist-examples button{border:1px solid var(--line);background:none;color:var(--ink);
+  padding:7px 12px;border-radius:999px;font-size:13px;cursor:pointer}
+.stylist-examples button:hover{background:var(--orange);border-color:var(--orange)}
+
+.stylist-result{margin-top:26px;padding:24px;border:1px solid var(--ink);background:var(--cream);
+  box-shadow:6px 6px 0 var(--orange)}
+.stylist-headline{font:700 clamp(26px,3.2vw,38px)/1.05 Khand,sans-serif;text-transform:uppercase;margin:0 0 14px}
+.stylist-palette{display:flex;gap:0;margin-bottom:20px;border:1px solid var(--ink);overflow:hidden;border-radius:3px}
+.stylist-palette i{flex:1;height:34px}
+.stylist-outfit{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.stylist-outfit li{display:grid;grid-template-columns:18px 78px 1fr auto;align-items:baseline;gap:12px;
+  padding:11px 0;border-bottom:1px solid var(--line)}
+.stylist-outfit li:last-child{border-bottom:0}
+.stylist-dot{width:14px;height:14px;border-radius:50%;border:1px solid #20201c33;align-self:center}
+.stylist-dot.is-empty{background:repeating-linear-gradient(45deg,#fff,#fff 3px,var(--line) 3px,var(--line) 6px)}
+.stylist-part{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.stylist-item{font-size:15px;line-height:1.4}
+.stylist-colour{font-size:12px;color:var(--muted);white-space:nowrap}
+.stylist-why{font-size:14px;line-height:1.6;margin-top:18px}
+.stylist-tip{font-size:13px;line-height:1.55;margin-top:10px;color:var(--muted)}
+.stylist-tip strong{color:var(--ink);letter-spacing:.06em;font-size:11px;text-transform:uppercase;margin-right:6px}
+.stylist-declined{font-size:15px;line-height:1.6;margin:0}
+
+@media(max-width:650px){
+  .stylist-result{padding:18px;box-shadow:4px 4px 0 var(--orange)}
+  /* Four columns do not fit a phone: stack the label above the garment and let
+     the colour sit under it. */
+  .stylist-outfit li{grid-template-columns:16px 1fr;gap:10px}
+  .stylist-part{grid-column:2;margin-bottom:-6px}
+  .stylist-item{grid-column:2}
+  .stylist-colour{grid-column:2;white-space:normal}
+  .stylist-palette i{height:28px}
+}
