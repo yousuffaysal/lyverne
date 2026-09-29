@@ -9,7 +9,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import worker from '../server/worker.mjs';
 import {localDatabase} from '../scripts/local-database.mjs';
-import {verifyRequest, isOwner, readSessionCookie, projectRef} from '../server/auth.mjs';
+import {verifyRequest, isChief, isStaff, readSessionCookie, projectRef} from '../server/auth.mjs';
 import {SignJWT, exportJWK, generateKeyPair, createLocalJWKSet} from 'jose';
 
 const origin = 'https://lyverne.test';
@@ -101,12 +101,12 @@ test('a valid token for a non-owner cannot reach admin endpoints', async () => {
   } finally { app.DB.close(); }
 });
 
-test('the owner is admitted, and the role column is mirrored from ADMIN_EMAIL', async () => {
+test('the chief is admitted, and the role column is mirrored from ADMIN_EMAIL', async () => {
   const app = await setup();
   try {
     assert.equal(await app.call('/api/admin/overview', {Authorization: 'Bearer ' + await app.sign('owner')}), 200);
     const row = await app.env.DB.prepare('SELECT role FROM customers WHERE email=?').bind(OWNER).first();
-    assert.equal(row.role, 'owner');
+    assert.equal(row.role, 'chief');
     const shopper = await app.sign('shopper');
     await app.call('/api/me', {Authorization: 'Bearer ' + shopper});
     const other = await app.env.DB.prepare('SELECT role FROM customers WHERE email=?').bind('shopper@example.test').first();
@@ -114,12 +114,25 @@ test('the owner is admitted, and the role column is mirrored from ADMIN_EMAIL', 
   } finally { app.DB.close(); }
 });
 
-test('ownership needs both the ADMIN_EMAIL match and the stored role', () => {
-  assert.equal(isOwner({email: OWNER}, 'owner', OWNER), true);
-  assert.equal(isOwner({email: OWNER}, 'customer', OWNER), false, 'email alone is not enough');
-  assert.equal(isOwner({email: 'other@example.test'}, 'owner', OWNER), false, 'role alone is not enough');
-  assert.equal(isOwner({email: OWNER}, 'owner', ''), false, 'unset ADMIN_EMAIL grants nobody');
-  assert.equal(isOwner(null, 'owner', OWNER), false, 'anonymous is never the owner');
+test('being chief needs both the ADMIN_EMAIL match and the stored role', () => {
+  assert.equal(isChief({email: OWNER}, 'chief', OWNER), true);
+  assert.equal(isChief({email: OWNER}, 'owner', OWNER), true, 'the pre-team spelling still counts');
+  assert.equal(isChief({email: OWNER}, 'customer', OWNER), false, 'email alone is not enough');
+  assert.equal(isChief({email: 'other@example.test'}, 'chief', OWNER), false, 'role alone is not enough');
+  assert.equal(isChief({email: OWNER}, 'chief', ''), false, 'unset ADMIN_EMAIL grants nobody');
+  assert.equal(isChief(null, 'chief', OWNER), false, 'anonymous is never the chief');
+  // An appointed admin must never be mistaken for the chief, whatever email
+  // they sign in with -- this is the line that keeps user management exclusive.
+  assert.equal(isChief({email: OWNER}, 'admin', OWNER), false, 'an admin is not the chief');
+});
+
+test('staff covers admins and the chief, never customers', () => {
+  assert.equal(isStaff('admin'), true);
+  assert.equal(isStaff('chief'), true);
+  assert.equal(isStaff('owner'), true);
+  assert.equal(isStaff('customer'), false);
+  assert.equal(isStaff(''), false);
+  assert.equal(isStaff(undefined), false);
 });
 
 test('session cookies are parsed safely and malformed ones read as anonymous', async () => {
