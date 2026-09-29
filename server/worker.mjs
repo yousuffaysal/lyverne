@@ -1,7 +1,7 @@
 import {couponInput,campaignInput,readCampaign,publicCampaign,quoteOrder} from './promotions.mjs';
 import {products as originalProducts} from './catalog.js';
 import {Problem,str,productInput,productSlug,decodeProduct,decodeOrder,analytics,insights,allowedStatus,statusLabels} from './domain.mjs';
-import {verifyRequest,isOwner} from './auth.mjs';
+import {verifyRequest,isChief,isStaff} from './auth.mjs';
 import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc} from './seo.mjs';
 import {productPage,productNotFound,catalogGrid,GRID_START,GRID_END} from './render.mjs';
 import {createStorage} from './storage.mjs';
@@ -60,16 +60,23 @@ async function identity(req,env){
  // ADMIN_EMAIL is the root of trust for ownership and is mirrored onto the row
  // on every sign-in, so changing the env var promotes or demotes on next login
  // and the column can never drift away from it.
- const role=!!env.ADMIN_EMAIL&&claims.email===env.ADMIN_EMAIL.trim().toLowerCase()?'owner':'customer';
+ const chiefEmail=!!env.ADMIN_EMAIL&&claims.email===env.ADMIN_EMAIL.trim().toLowerCase();
  // Read first and write only when something actually differs. The previous
  // version upserted on every authenticated request, including plain reads,
  // which turned each page view into a database write.
  let record=await row(env.DB,'SELECT * FROM customers WHERE id=?',claims.id);
+ // An appointed admin must keep their role across sign-ins. Deriving the role
+ // purely from ADMIN_EMAIL would silently demote every admin the chief added.
+ const role=chiefEmail?'chief':(record&&record.role==='admin'?'admin':'customer');
  if(!record||record.email!==claims.email||record.role!==role){
   await env.DB.prepare('INSERT INTO customers(id,email,name,role,created_at) VALUES(?,?,?,?,?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,role=excluded.role').bind(claims.id,claims.email,str(claims.name,100),role,now()).run();
   record=await row(env.DB,'SELECT * FROM customers WHERE id=?',claims.id);
  }
- return {...record,admin:isOwner(claims,record.role,env.ADMIN_EMAIL)};
+ // A blocked account is refused everywhere, including the storefront, rather
+ // than being quietly treated as a signed-out visitor.
+ if(record.blocked)throw new Problem('This account has been blocked. Contact Lyverne if you think that is wrong.',403);
+ const chief=isChief(claims,record.role,env.ADMIN_EMAIL);
+ return {...record,chief,admin:chief||isStaff(record.role)};
 }
 async function createOrder(db,user,b){
  if(!Array.isArray(b.items)||!b.items.length||b.items.length>20)throw new Problem('Choose at least one product.');

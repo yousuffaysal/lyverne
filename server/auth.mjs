@@ -110,10 +110,22 @@ export async function verifyRequest(req, env) {
   };
 }
 
-// Ownership needs two independent signals: the private ADMIN_EMAIL env var is
+// The chief needs two independent signals: the private ADMIN_EMAIL env var is
 // the root of trust, and customers.role mirrors it. A database compromise alone
-// therefore cannot mint an owner, and neither can a forged token.
-export function isOwner(claims, storedRole, adminEmail) {
+// therefore cannot mint a chief, and neither can a forged token. Crucially the
+// chief cannot be granted from inside the app at all -- only by changing the
+// environment variable and redeploying.
+export function isChief(claims, storedRole, adminEmail) {
   if (!claims || !adminEmail) return false;
-  return claims.email === adminEmail.trim().toLowerCase() && storedRole === 'owner';
+  if (claims.email !== adminEmail.trim().toLowerCase()) return false;
+  // 'owner' is the pre-team spelling and still counts, so an existing session
+  // is not locked out between the migration and the next sign-in.
+  return storedRole === 'chief' || storedRole === 'owner';
+}
+
+// Staff reach the admin panel. Admins are appointed by the chief and stored in
+// the database, so unlike the chief this role does come from data -- which is
+// why admins can never manage people or appoint each other.
+export function isStaff(storedRole) {
+  return storedRole === 'admin' || storedRole === 'chief' || storedRole === 'owner';
 }
