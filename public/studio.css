@@ -28,7 +28,7 @@
 /* ---------------------------------------------------------- the stylist
    Free-text styling advice. The colours carry the answer, so swatches sit
    beside every piece rather than the colour being named in prose alone. */
-.stylist{margin-top:36px;padding-top:30px;border-top:1px solid var(--line)}
+.stylist{margin-top:0}
 .stylist-head h3{font-size:clamp(28px,3vw,38px);line-height:1;margin-bottom:8px}
 .stylist-head .form-help{max-width:52ch}
 #stylist-form{margin-top:18px}
@@ -73,3 +73,8 @@
   .stylist-colour{grid-column:2;white-space:normal}
   .stylist-palette i{height:28px}
 }
+
+/* The stylist is its own section now, not a column inside the guided picker's
+   two-column grid, where it had displaced the result panel. */
+.studio-stylist{padding:0 5vw calc(10vw + 70px)}
+.studio-stylist .stylist{margin-top:0;padding-top:0;border-top:0;max-width:820px}
