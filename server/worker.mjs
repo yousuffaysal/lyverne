@@ -150,6 +150,95 @@ async function api(req,env){
   const order=await row(env.DB,'SELECT * FROM orders WHERE id=? AND customer_id=?',path.split('/').pop(),user.id);if(!order)throw new Problem('Order not found.',404);return json({order:customerOrder(order),events:await all(env.DB,'SELECT * FROM order_events WHERE order_id=? ORDER BY created_at DESC',order.id)});
  }
  if(path.startsWith('/api/admin/')&&!user.admin)throw new Problem('This area is for the Lyverne owner.',403);
+
+ // ------------------------------------------------------------------ people
+ // Any staff member may see who the team is; only the chief may change it.
+ if(path==='/api/admin/users'&&method==='GET'){
+  const q=str(url.searchParams.get('q'),80).toLowerCase();
+  const people=await all(env.DB,"SELECT id,email,name,role,blocked,city,created_at FROM customers ORDER BY CASE role WHEN 'chief' THEN 0 WHEN 'admin' THEN 1 ELSE 2 END, created_at DESC");
+  const rows=q?people.filter(p=>(p.email+' '+p.name).toLowerCase().includes(q)):people;
+  return json({users:rows,chiefEmail:env.ADMIN_EMAIL||'',you:{id:user.id,chief:user.chief}});
+ }
+ if(/^\/api\/admin\/users\/[^/]+$/.test(path)&&method==='PUT'){
+  // Deliberately chief-only. An admin who could appoint admins is effectively
+  // a chief, and one compromised admin account would become all of them.
+  if(!user.chief)throw new Problem('Only the chief can manage people.',403);
+  const id=path.split('/').pop(),b=await body(req);
+  const target=await row(env.DB,'SELECT * FROM customers WHERE id=?',id);
+  if(!target)throw new Problem('That person was not found.',404);
+  if(target.id===user.id)throw new Problem('You cannot change your own access.');
+  // The chief is defined by ADMIN_EMAIL, so their row is not editable here --
+  // otherwise a mistake in this form could lock the store out of itself.
+  if(env.ADMIN_EMAIL&&target.email===env.ADMIN_EMAIL.trim().toLowerCase())throw new Problem('The chief account is set by configuration, not here.');
+  const role=['customer','admin'].includes(b.role)?b.role:null;
+  if(!role)throw new Problem('Choose either admin or customer.');
+  const blocked=b.blocked===true||b.blocked==='on'?1:0;
+  await env.DB.batch([
+   env.DB.prepare('UPDATE customers SET role=?,blocked=? WHERE id=?').bind(role,blocked,id),
+   activity(env.DB,user,blocked?'Blocked account':(role==='admin'?'Made admin':'Removed admin'),target.email),
+  ]);
+  return json({ok:true});
+ }
+
+ // ------------------------------------------------------------------- tasks
+ if(path==='/api/admin/tasks'&&method==='GET'){
+  // The chief sees the whole board; an admin sees only what is theirs, so the
+  // list is never a directory of everyone else's workload.
+  const rows=user.chief
+   ? await all(env.DB,'SELECT t.*,a.name AS assignee_name,a.email AS assignee_email,c.name AS creator_name FROM admin_tasks t LEFT JOIN customers a ON a.id=t.assignee_id LEFT JOIN customers c ON c.id=t.created_by ORDER BY CASE t.status WHEN \'open\' THEN 0 WHEN \'doing\' THEN 1 ELSE 2 END, t.created_at DESC')
+   : await all(env.DB,'SELECT t.*,a.name AS assignee_name,a.email AS assignee_email,c.name AS creator_name FROM admin_tasks t LEFT JOIN customers a ON a.id=t.assignee_id LEFT JOIN customers c ON c.id=t.created_by WHERE t.assignee_id=? ORDER BY CASE t.status WHEN \'open\' THEN 0 WHEN \'doing\' THEN 1 ELSE 2 END, t.created_at DESC',user.id);
+  const team=await all(env.DB,"SELECT id,name,email FROM customers WHERE role IN ('admin','chief','owner') AND blocked=false ORDER BY name");
+  return json({tasks:rows,team});
+ }
+ if(path==='/api/admin/tasks'&&method==='POST'){
+  if(!user.chief)throw new Problem('Only the chief can assign work.',403);
+  const b=await body(req),title=str(b.title,140);
+  if(!title)throw new Problem('Give the task a title.');
+  const due=str(b.due_date,10);
+  if(due&&!/^\d{4}-\d{2}-\d{2}$/.test(due))throw new Problem('Choose a valid due date.');
+  let assignee=str(b.assignee_id,60)||null;
+  if(assignee){
+   const person=await row(env.DB,'SELECT id,role FROM customers WHERE id=?',assignee);
+   if(!person||!['admin','chief','owner'].includes(person.role))throw new Problem('Assign the task to a team member.');
+  }
+  const date=now();
+  await env.DB.batch([
+   env.DB.prepare('INSERT INTO admin_tasks(id,title,detail,assignee_id,created_by,status,due_date,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?)')
+    .bind('task-'+id(),title,str(b.detail,1000),assignee,user.id,'open',due,date,date),
+   activity(env.DB,user,'Assigned a task',title),
+  ]);
+  return json({ok:true},201);
+ }
+ if(/^\/api\/admin\/tasks\/[^/]+$/.test(path)&&['PUT','DELETE'].includes(method)){
+  const tid=path.split('/').pop();
+  const task=await row(env.DB,'SELECT * FROM admin_tasks WHERE id=?',tid);
+  if(!task)throw new Problem('That task was not found.',404);
+  // An admin may move their own task along; only the chief may delete or
+  // reassign, so the board stays the chief's record of who owns what.
+  const mine=task.assignee_id===user.id;
+  if(method==='DELETE'){
+   if(!user.chief)throw new Problem('Only the chief can remove a task.',403);
+   await env.DB.prepare('DELETE FROM admin_tasks WHERE id=?').bind(tid).run();
+   return json({ok:true});
+  }
+  if(!user.chief&&!mine)throw new Problem('That task belongs to someone else.',403);
+  const b=await body(req);
+  if(!['open','doing','done'].includes(b.status))throw new Problem('Choose a valid status.');
+  await env.DB.prepare('UPDATE admin_tasks SET status=?,version=version+1,updated_at=? WHERE id=?').bind(b.status,now(),tid).run();
+  return json({ok:true});
+ }
+
+ // -------------------------------------------------------------- team chat
+ if(path==='/api/admin/messages'&&method==='GET'){
+  const rows=await all(env.DB,'SELECT m.id,m.body,m.created_at,m.author_id,c.name AS author_name,c.role AS author_role FROM admin_messages m JOIN customers c ON c.id=m.author_id ORDER BY m.created_at DESC LIMIT 100');
+  return json({messages:rows.reverse(),you:{id:user.id}});
+ }
+ if(path==='/api/admin/messages'&&method==='POST'){
+  const b=await body(req),text=str(b.body,1000);
+  if(!text)throw new Problem('Write a message first.');
+  await env.DB.prepare('INSERT INTO admin_messages(id,author_id,body,created_at) VALUES(?,?,?,?)').bind('msg-'+id(),user.id,text,now()).run();
+  return json({ok:true},201);
+ }
  if(path==='/api/admin/promotions'&&method==='GET')return json({promotions:await all(env.DB,'SELECT * FROM promotions ORDER BY created_at DESC'),campaign:await readCampaign(env.DB)});
  if(path==='/api/admin/promotions'&&method==='POST'){
   const p=couponInput(await body(req));if(await row(env.DB,'SELECT id FROM promotions WHERE code=?',p.code))throw new Problem('That code already exists. Edit it instead.',409);
