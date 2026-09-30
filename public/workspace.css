@@ -33,3 +33,61 @@
 .campaign-image img{width:120px;height:120px;object-fit:contain;background:#e8e2d7;border:1px solid var(--line);border-radius:3px}
 .campaign-image-controls{display:grid;gap:8px;flex:1;min-width:0}
 .campaign-image-controls input[readonly]{font-size:12px;color:var(--muted);background:transparent}
+
+/* ---------------------------------------------------------------- the team
+   People, the work board and the staff thread. Same tokens as the rest of the
+   admin: one hairline, no shadows, orange only where something is live. */
+tr.is-blocked td{opacity:.55}
+tr.is-blocked td:first-child strong{text-decoration:line-through;text-decoration-thickness:1px}
+.text-btn.danger{color:#8c3a27}
+
+/* label is flex-column globally, so both of these opt back into a row. */
+.role-choice{border:1px solid var(--line);padding:18px;margin:0 0 20px;display:grid;gap:14px}
+.role-choice legend{padding:0 8px;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.role-choice label,.switch-row{flex-direction:row;align-items:flex-start;gap:12px;font-weight:400;cursor:pointer}
+.role-choice span,.switch-row span{display:grid;gap:4px;font-size:14px;line-height:1.5;color:var(--muted)}
+.role-choice strong,.switch-row strong{font-size:15px;color:var(--ink)}
+.role-choice input,.switch-row input{width:18px;height:18px;flex:none;margin-top:3px;accent-color:var(--orange)}
+.switch-row{border:1px solid var(--line);padding:18px;margin-bottom:20px}
+#person-form .actions{display:flex;gap:12px;justify-content:flex-end;flex-wrap:wrap}
+#task-form label{margin-bottom:16px}
+#task-form button{margin-top:4px}
+
+.task-list{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+.task{border:1px solid var(--line);padding:18px;display:grid;gap:9px}
+.task.done{opacity:.6}
+.task.doing{border-left:3px solid var(--orange);padding-left:16px}
+.task-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.task-top strong{font-size:16px;line-height:1.35}
+.task p{font-size:14px;line-height:1.55;color:var(--muted)}
+.task-meta{font-size:13px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.task-actions{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.task-actions .text-btn{padding:0;font-size:13px}
+
+.chat-panel{display:grid;gap:20px}
+/* A fixed height, so the composer stays put and the thread scrolls under it
+   rather than the whole page growing with every message. */
+.chat-thread{height:min(52vh,460px);overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);background:var(--soft);padding:18px;display:grid;gap:14px;align-content:start}
+.chat-day{text-align:center;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
+.chat-empty{font-size:14px;color:var(--muted);text-align:center;align-self:center}
+.chat-message{background:var(--cream);border:1px solid var(--line);padding:12px 14px;max-width:min(78%,520px);display:grid;gap:5px}
+.chat-message.is-mine{justify-self:end;background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.chat-who{display:flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:600}
+.chat-message.is-mine .chat-who{color:#cfc8b8}
+.chat-who time{font-weight:400;letter-spacing:0;text-transform:none;color:var(--muted)}
+.chat-message.is-mine .chat-who time{color:#a8a294}
+.chat-who .status{padding:1px 6px;font-size:10px}
+.chat-body{font-size:15px;line-height:1.55;white-space:pre-wrap;overflow-wrap:anywhere}
+.chat-composer{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+.chat-composer textarea{grid-column:1}
+.chat-composer button{white-space:nowrap}
+.chat-composer .error{grid-column:1/-1}
+
+@media(max-width:760px){
+ .role-choice,.switch-row,.task{padding:15px}
+ .chat-message{max-width:88%}
+ .chat-thread{height:min(58vh,380px);padding:14px}
+ .chat-composer{grid-template-columns:1fr}
+ .chat-composer button{width:100%}
+ .task-top{flex-direction:column;gap:8px}
+}

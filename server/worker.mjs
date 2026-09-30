@@ -135,7 +135,7 @@ async function api(req,env){
  if(!user)throw new Problem('Please sign in to continue.',401);
  if(path==='/api/me'&&method==='PUT'){
   const b=await body(req),name=str(b.name,100);if(!name)throw new Problem('Enter your name.');
-  await env.DB.prepare('UPDATE customers SET name=?,phone=?,address=?,city=?,postcode=? WHERE id=?').bind(name,str(b.phone,40),str(b.address,700),str(b.city,100),str(b.postcode,20),user.id).run();return json({user:{...await row(env.DB,'SELECT * FROM customers WHERE id=?',user.id),admin:user.admin}});
+  await env.DB.prepare('UPDATE customers SET name=?,phone=?,address=?,city=?,postcode=? WHERE id=?').bind(name,str(b.phone,40),str(b.address,700),str(b.city,100),str(b.postcode,20),user.id).run();return json({user:{...await row(env.DB,'SELECT * FROM customers WHERE id=?',user.id),admin:user.admin,chief:user.chief}});
  }
  if(path==='/api/wishlist'&&method==='PUT'){
   const b=await body(req);if(!Array.isArray(b.items)||b.items.length>30)throw new Problem('Save up to 30 pieces.');const items=[...new Set(b.items.filter(x=>typeof x==='string'&&/^[a-z0-9-]{1,60}$/i.test(x)))];await env.DB.prepare('UPDATE customers SET wishlist=? WHERE id=?').bind(JSON.stringify(items),user.id).run();return json({items});

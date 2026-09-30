@@ -55,6 +55,11 @@ function sampleData(){
  state.activity=[{action:'Updated order',target:'LY-1024 / On the way',actor_name:'Store owner',created_at:d(0)},{action:'Updated stock',target:'Talk Less Tee / 4 units',actor_name:'Store owner',created_at:d(1)},{action:'Published product',target:'Café Orbit Tee',actor_name:'Store owner',created_at:d(2)}];
  state.promotions=[{id:'sample-promo',code:'WELCOME10',kind:'percent',value:10,minimum:1800,usage_limit:100,used:3,active:1,starts:'',ends:'',version:1},{id:'sample-weekend',code:'WEEKEND200',kind:'fixed',value:200,minimum:1800,usage_limit:50,used:0,active:1,starts:new Date(now+3*86400000).toISOString(),ends:new Date(now+6*86400000).toISOString(),version:1},{id:'sample-paused',code:'LYVERNE15',kind:'percent',value:15,minimum:0,usage_limit:null,used:0,active:0,starts:'',ends:'',version:1}];state.campaign={...blankCampaign,code:'WELCOME10'};
  for(const order of state.orders.slice(0,3)){order.promo_code='WELCOME10';order.subtotal=order.total;order.discount=Math.floor(order.total*.1);order.total-=order.discount;}
+ state.team=[{id:'sample-customer',name:'Alex',email:'alex@example.com',role:'chief',blocked:0,city:'Dhaka',created_at:d(25)},{id:'sample-admin',name:'Nadia Rahman',email:'nadia@example.com',role:'admin',blocked:0,city:'Dhaka',created_at:d(12)},{id:'sample-2',name:'Jordan Lee',email:'jordan@example.com',role:'customer',blocked:0,city:'Chattogram',created_at:d(15)}];
+ state.staff=state.team.filter(p=>p.role!=='customer').map(({id,name,email})=>({id,name,email}));
+ state.tasks=[{id:'sample-task-1',title:'Photograph the cream tee',detail:'Daylight, no flash. Front and back.',assignee_id:'sample-admin',assignee_name:'Nadia Rahman',status:'doing',due_date:new Date(now+2*86400000).toISOString().slice(0,10),created_at:d(1)},{id:'sample-task-2',title:'Reply to Friday’s order questions',detail:'',assignee_id:'sample-customer',assignee_name:'Alex',status:'open',due_date:'',created_at:d(0)}];
+ state.messages=[{id:'sample-msg-1',author_id:'sample-customer',author_name:'Alex',author_role:'chief',body:'Morning. Let’s get the cream tee shot today.',created_at:d(0)},{id:'sample-msg-2',author_id:'sample-admin',author_name:'Nadia Rahman',author_role:'admin',body:'On it — light is good until about four.',created_at:new Date(now-3600000).toISOString()}];
+ state.user.chief=true;
  state.connections={ai:false,uploads:true,courier:false};state.selectedOrder=state.orders[0].id;state.events=sampleEvents(state.orders[0]);state.lastCheck=new Date();
 }
 function sampleEvents(order){const i=statuses.indexOf(order.status);return statuses.slice(0,i+1).reverse().map((s,j)=>({status:s,message:{confirmed:'Your order has been received.',packing:'Your Lyverne pieces are packed and checked.',shipped:'Your parcel has been handed to the delivery partner.',delivered:'Your parcel has arrived.'}[s]||statusLabels[s],created_at:new Date(Date.now()-(j+1)*86400000).toISOString()}));}
@@ -254,5 +259,6 @@ document.addEventListener('submit',async ev=>{
  }catch(error){if(err)err.textContent=error.message;else notify(error.message);}finally{if(submit?.isConnected)submit.disabled=form.id==='checkout-form'&&(!state.checkout?.quote||form.elements.promoCode.value.trim().toUpperCase()!==state.checkout.quote.promo_code);}
 });
 $('#editor').addEventListener('click',ev=>{if(ev.target===$('#editor')){const r=$('#editor').getBoundingClientRect();if(ev.clientX<r.left||ev.clientX>r.right||ev.clientY<r.top||ev.clientY>r.bottom)closeEditor();}});
+document.addEventListener('keydown',ev=>{if(ev.target.id==='chat-body'&&ev.key==='Enter'&&!ev.shiftKey){ev.preventDefault();ev.target.form.requestSubmit();}});
 window.addEventListener('hashchange',()=>{state.view=location.hash.slice(1)||'overview';if(state.user)render();});
 boot();
