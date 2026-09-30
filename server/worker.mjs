@@ -1,6 +1,7 @@
 import {couponInput,campaignInput,readCampaign,publicCampaign,quoteOrder} from './promotions.mjs';
 import {products as originalProducts} from './catalog.js';
 import {DIVISIONS,isRegion,normalisePhone,isPostcode,formatAddress} from './bangladesh.mjs';
+import {ORG_TYPES,PRODUCTS,DESIGN_ROUTES,SIZES,MIN_QUANTITY,MAX_QUANTITY,STATUS_LABELS,isStatus,customOrderInput,decodeCustomOrder} from './custom-orders.mjs';
 import {Problem,str,productInput,productSlug,decodeProduct,decodeOrder,analytics,insights,allowedStatus,statusLabels} from './domain.mjs';
 import {verifyRequest,isChief,isStaff} from './auth.mjs';
 import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc} from './seo.mjs';
@@ -128,6 +129,24 @@ async function api(req,env){
  if(path==='/api/config')return json({auth:'supabase',supabaseUrl:env.SUPABASE_URL||'',supabaseKey:env.SUPABASE_PUBLISHABLE_KEY||'',ai:!!env.AI_API_KEY,uploads:!!bucketOf(env)});
  if(!env.DB)throw new Problem('The store database is temporarily unavailable. Please try again shortly.',503);
  if(path==='/api/products'&&method==='GET')return json({products:(await all(env.DB,"SELECT * FROM products WHERE status='active' ORDER BY created_at DESC")).map(decodeProduct),managedIds:(await all(env.DB,'SELECT id FROM products')).map(p=>p.id)});
+ // The form builds its steps from these, so a choice can never appear that
+ // the server would refuse.
+ if(path==='/api/custom-orders/options'&&method==='GET')
+  return json({orgTypes:ORG_TYPES,products:PRODUCTS,designRoutes:DESIGN_ROUTES,sizes:SIZES,
+   minQuantity:MIN_QUANTITY,maxQuantity:MAX_QUANTITY,divisions:DIVISIONS},200,{'Cache-Control':'public, max-age=86400'});
+ if(path==='/api/custom-orders'&&method==='POST'){
+  // Open to anyone: a university society has no reason to hold a shop account
+  // before asking for a quote. The body cap in body() is the size guard, and
+  // nothing here is priced or reserved, so there is nothing to oversell.
+  const input=customOrderInput(await body(req));
+  const date=now(),reference='LYC-'+id().slice(0,6).toUpperCase();
+  const cols=Object.keys(input);
+  await env.DB.prepare(`INSERT INTO custom_orders(id,reference,${cols.join(',')},status,created_at,updated_at) VALUES(${new Array(cols.length+5).fill('?').join(',')})`)
+   .bind('custom-'+id(),reference,...cols.map(c=>input[c]),'new',date,date).run();
+  // Only the reference goes back. Echoing the stored row would hand a stranger
+  // whatever defaults the table applied.
+  return json({reference},201);
+ }
  if(path==='/api/regions'&&method==='GET')return json({divisions:DIVISIONS},200,{'Cache-Control':'public, max-age=86400'});
  if(path==='/api/storefront/promotion'&&method==='GET')return json({campaign:await publicCampaign(env.DB)});
  if(path==='/api/stylist'&&method==='POST'){
@@ -164,6 +183,26 @@ async function api(req,env){
   const order=await row(env.DB,'SELECT * FROM orders WHERE id=? AND customer_id=?',path.split('/').pop(),user.id);if(!order)throw new Problem('Order not found.',404);return json({order:customerOrder(order),events:await all(env.DB,'SELECT * FROM order_events WHERE order_id=? ORDER BY created_at DESC',order.id)});
  }
  if(path.startsWith('/api/admin/')&&!user.admin)throw new Problem('This area is for the Lyverne owner.',403);
+
+ // ----------------------------------------------------------- custom orders
+ if(path==='/api/admin/custom-orders'&&method==='GET'){
+  const filter=str(url.searchParams.get('status'),20);
+  const rows=isStatus(filter)
+   ? await all(env.DB,'SELECT * FROM custom_orders WHERE status=? ORDER BY created_at DESC LIMIT 200',filter)
+   : await all(env.DB,'SELECT * FROM custom_orders ORDER BY created_at DESC LIMIT 200');
+  return json({enquiries:rows.map(decodeCustomOrder),labels:STATUS_LABELS});
+ }
+ if(/^\/api\/admin\/custom-orders\/[^/]+$/.test(path)&&method==='PUT'){
+  const cid=path.split('/').pop(),b=await body(req);
+  if(!isStatus(b.status))throw new Problem('Choose a valid status.');
+  // The customer's own note is never touched here -- only the internal one --
+  // so an internal remark can never be read back as their words.
+  const result=await env.DB.prepare('UPDATE custom_orders SET status=?,admin_note=?,version=version+1,updated_at=? WHERE id=? AND version=?')
+   .bind(b.status,str(b.admin_note,2000),now(),cid,Number(b.version)).run();
+  if(!result.meta.changes)throw new Problem('That enquiry changed while you were editing it. Reopen it and try again.',409);
+  await activity(env.DB,user,'Updated a custom order',str(b.reference,40)||cid).run();
+  return json({ok:true});
+ }
 
  // ------------------------------------------------------------------ people
  // Any staff member may see who the team is; only the chief may change it.
