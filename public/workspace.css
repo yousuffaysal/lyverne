@@ -67,7 +67,7 @@ tr.is-blocked td:first-child strong{text-decoration:line-through;text-decoration
 .chat-panel{display:grid;gap:20px}
 /* A fixed height, so the composer stays put and the thread scrolls under it
    rather than the whole page growing with every message. */
-.chat-thread{height:min(52vh,460px);overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);background:var(--soft);padding:18px;display:grid;gap:14px;align-content:start}
+.chat-thread{height:min(52vh,460px);overflow-y:auto;overscroll-behavior:contain;border:1px solid var(--line);background:var(--soft);padding:18px;display:grid;gap:14px;align-content:end}
 .chat-day{text-align:center;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
 .chat-empty{font-size:14px;color:var(--muted);text-align:center;align-self:center}
 .chat-message{background:var(--cream);border:1px solid var(--line);padding:12px 14px;max-width:min(78%,520px);display:grid;gap:5px}

@@ -92,7 +92,7 @@ const customerNav=[['overview','⌂','Overview'],['orders','▤','My orders'],['
 // The team tabs sit after Customers because they are about the people running
 // the store rather than the storefront. People is visible to every admin -- the
 // chief-only part is the controls inside it, not knowing who the team is.
-const adminTabs=[['overview','⌂','Overview'],['orders','▤','Orders'],['products','▧','Products'],['inventory','≡','Inventory'],['promotions','%','Promotions'],['customers','♧','Customers'],['team','☍','People'],['tasks','✓','Work board'],['chat','✉','Team thread'],['analytics','↗︎','Analytics'],['assistant','✳','AI companion'],['activity','◷','Activity log'],['settings','⚙','Settings']];
+const adminTabs=[['overview','⌂','Overview'],['orders','▤','Orders'],['products','▧','Products'],['inventory','≡','Inventory'],['promotions','%','Promotions'],['customers','♧','Customers'],['team','☍','People'],['tasks','✓','Work board'],['chat','✉︎','Team thread'],['analytics','↗︎','Analytics'],['assistant','✳','AI companion'],['activity','◷','Activity log'],['settings','⚙','Settings']];
 const adminNav=adminTabs;
 function render(){
  clearTimeout(timer);if(['login','signup'].includes(page)){renderAuth();return;}
