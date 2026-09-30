@@ -34,7 +34,7 @@ export async function renderCustom() {
   const description = 'Custom jerseys, t-shirts and hoodies for universities, clubs and companies in Bangladesh. Send your own artwork or let Lyverne design it. From 10 pieces.';
 
   const stepNav = STEPS.map(([n, name], i) =>
-    `<li><button type="button" class="step-dot" data-goto="${i}" ${i ? 'disabled' : 'aria-current="step"'}><span>${n}</span>${name}</button></li>`).join('');
+    `<li><button type="button" class="step-dot" data-goto="${i}" ${i ? 'disabled' : 'aria-current="step"'}><i aria-hidden="true"><span>${n}</span></i>${name}</button></li>`).join('');
 
   const html = `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#F3EEE4"><title>${title}</title><meta name="description" content="${description}"><link rel="canonical" href="https://lyverne.com/custom/"><meta property="og:title" content="${title}"><meta property="og:description" content="${description}"><meta property="og:type" content="website"><meta property="og:url" content="https://lyverne.com/custom/"><meta property="og:image" content="https://lyverne.com/assets/studio-editorial.png"><link rel="icon" href="/assets/lyverne-monogram.png"><link rel="apple-touch-icon" href="/assets/lyverne-monogram.png"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Khand:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/transitions.css"><link rel="stylesheet" href="/home.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/custom.css"><link rel="stylesheet" href="/account-menu.css"><script type="module" src="/transitions.js"></script><script type="module" src="/account-menu.js"></script><script type="module" src="/custom.js"></script></head>
 <body data-page="custom">
@@ -87,7 +87,7 @@ ${shared}
     <form id="team-form" novalidate>
      <div class="step-progress" role="status" aria-live="polite">
       <div class="step-progress-bar"><i style="--progress:20%"></i></div>
-      <p><span data-step-label>Your team</span> · step <span data-step-now>1</span> of ${STEPS.length}</p>
+      <p><b data-step-label>Your team</b> · step <span data-step-now>1</span> of ${STEPS.length}</p>
      </div>
 
      <div class="step-window">
@@ -99,9 +99,9 @@ ${shared}
      <p class="error" role="alert" data-form-error></p>
 
      <div class="step-actions">
-      <button type="button" class="btn ghost" data-back hidden>← Back</button>
-      <button type="button" class="btn orange" data-next>Continue <span>↗︎</span></button>
-      <button type="submit" class="btn orange" data-send hidden>SEND MY ENQUIRY <span>↗︎</span></button>
+      <button type="button" class="btn ghost" data-back hidden>Back</button>
+      <button type="button" class="btn orange" data-next>Continue <span aria-hidden="true">↗︎</span></button>
+      <button type="submit" class="btn orange" data-send hidden>Send my enquiry <span aria-hidden="true">↗︎</span></button>
      </div>
     </form>
 
@@ -109,7 +109,8 @@ ${shared}
      <div class="team-done-seal" aria-hidden="true">✓</div>
      <p class="eyebrow">ENQUIRY RECEIVED</p>
      <h2>THAT'S WITH US.</h2>
-     <p>Your reference is <strong data-reference></strong>. Keep it for when we speak.</p>
+     <p class="team-reference" data-reference></p>
+     <p>That is your reference. Keep it for when we speak.</p>
      <p class="small muted">We reply within two working days, on the number you gave us. Nothing is charged until you approve a quote.</p>
      <div class="actions"><a class="btn" href="/collection/">See the collection <span>↗︎</span></a><button type="button" class="text-btn" data-restart>Send another enquiry</button></div>
     </div>

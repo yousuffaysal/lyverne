@@ -47,12 +47,12 @@
    </div>
 
    <div class="team-form-shell">
-    <nav class="step-rail" aria-label="Order steps"><ol><li><button type="button" class="step-dot" data-goto="0" aria-current="step"><span>01</span>Your team</button></li><li><button type="button" class="step-dot" data-goto="1" disabled><span>02</span>What you need</button></li><li><button type="button" class="step-dot" data-goto="2" disabled><span>03</span>The design</button></li><li><button type="button" class="step-dot" data-goto="3" disabled><span>04</span>Getting it to you</button></li><li><button type="button" class="step-dot" data-goto="4" disabled><span>05</span>One last look</button></li></ol></nav>
+    <nav class="step-rail" aria-label="Order steps"><ol><li><button type="button" class="step-dot" data-goto="0" aria-current="step"><i aria-hidden="true"><span>01</span></i>Your team</button></li><li><button type="button" class="step-dot" data-goto="1" disabled><i aria-hidden="true"><span>02</span></i>What you need</button></li><li><button type="button" class="step-dot" data-goto="2" disabled><i aria-hidden="true"><span>03</span></i>The design</button></li><li><button type="button" class="step-dot" data-goto="3" disabled><i aria-hidden="true"><span>04</span></i>Getting it to you</button></li><li><button type="button" class="step-dot" data-goto="4" disabled><i aria-hidden="true"><span>05</span></i>One last look</button></li></ol></nav>
 
     <form id="team-form" novalidate>
      <div class="step-progress" role="status" aria-live="polite">
       <div class="step-progress-bar"><i style="--progress:20%"></i></div>
-      <p><span data-step-label>Your team</span> · step <span data-step-now>1</span> of 5</p>
+      <p><b data-step-label>Your team</b> · step <span data-step-now>1</span> of 5</p>
      </div>
 
      <div class="step-window">
@@ -64,9 +64,9 @@
      <p class="error" role="alert" data-form-error></p>
 
      <div class="step-actions">
-      <button type="button" class="btn ghost" data-back hidden>← Back</button>
-      <button type="button" class="btn orange" data-next>Continue <span>↗︎</span></button>
-      <button type="submit" class="btn orange" data-send hidden>SEND MY ENQUIRY <span>↗︎</span></button>
+      <button type="button" class="btn ghost" data-back hidden>Back</button>
+      <button type="button" class="btn orange" data-next>Continue <span aria-hidden="true">↗︎</span></button>
+      <button type="submit" class="btn orange" data-send hidden>Send my enquiry <span aria-hidden="true">↗︎</span></button>
      </div>
     </form>
 
@@ -74,7 +74,8 @@
      <div class="team-done-seal" aria-hidden="true">✓</div>
      <p class="eyebrow">ENQUIRY RECEIVED</p>
      <h2>THAT'S WITH US.</h2>
-     <p>Your reference is <strong data-reference></strong>. Keep it for when we speak.</p>
+     <p class="team-reference" data-reference></p>
+     <p>That is your reference. Keep it for when we speak.</p>
      <p class="small muted">We reply within two working days, on the number you gave us. Nothing is charged until you approve a quote.</p>
      <div class="actions"><a class="btn" href="/collection/">See the collection <span>↗︎</span></a><button type="button" class="text-btn" data-restart>Send another enquiry</button></div>
     </div>

@@ -170,12 +170,13 @@ if (form) {
 
   // Movement is a short slide in the direction of travel. Anyone who has asked
   // for reduced motion gets the same steps without it -- handled in custom.css.
-  function render(direction = 1) {
+  function stagger(root) {
+    [...root.children].forEach((el, i) => el.style.setProperty('--i', i));
+  }
+
+  function render() {
     shell.innerHTML = stepMarkup(step);
-    const panel = $('.team-step', shell);
-    panel.style.setProperty('--from', direction > 0 ? '26px' : '-26px');
-    panel.classList.add('is-entering');
-    requestAnimationFrame(() => panel.classList.remove('is-entering'));
+    stagger($('.team-step', shell));
 
     $('.step-progress-bar i').style.setProperty('--progress', ((step + 1) / STEP_NAMES.length * 100) + '%');
     $('[data-step-now]').textContent = step + 1;
@@ -183,6 +184,7 @@ if (form) {
     $$('.step-dot', rail).forEach((dot, i) => {
       dot.disabled = i > step;
       dot.classList.toggle('is-done', i < step);
+      dot.parentElement.classList.toggle('is-done', i < step);
       if (i === step) dot.setAttribute('aria-current', 'step'); else dot.removeAttribute('aria-current');
     });
     backBtn.hidden = step === 0;
@@ -217,13 +219,18 @@ if (form) {
       }
     }
     step = to;
-    render(direction);
+    render();
     // Keep the step under the reader's eye on a phone, where the form is taller
     // than the screen.
     $('.team-form-shell').scrollIntoView({behavior: 'smooth', block: 'start'});
   }
 
   nextBtn.addEventListener('click', () => go(Math.min(step + 1, STEP_NAMES.length - 1), 1));
+  shell.addEventListener('keydown', ev => {
+    if (ev.key !== 'Enter' || ev.target.tagName === 'TEXTAREA') return;
+    ev.preventDefault();
+    if (step < STEP_NAMES.length - 1) go(step + 1, 1); else form.requestSubmit();
+  });
   backBtn.addEventListener('click', () => go(Math.max(step - 1, 0), -1));
   rail.addEventListener('click', ev => {
     const dot = ev.target.closest('[data-goto]');
@@ -270,12 +277,13 @@ if (form) {
       form.hidden = true;
       rail.hidden = true;
       done.hidden = false;
+      stagger(done);
       done.focus();
       done.scrollIntoView({behavior: 'smooth', block: 'center'});
     } catch (err) {
       errorLine.textContent = err.message;
       sendBtn.disabled = false;
-      sendBtn.innerHTML = 'SEND MY ENQUIRY <span>↗︎</span>';
+      sendBtn.innerHTML = 'Send my enquiry <span aria-hidden="true">↗︎</span>';
     }
   });
 
@@ -284,7 +292,7 @@ if (form) {
   (async () => {
     try {
       options = await (await fetch('/api/custom-orders/options')).json();
-      render(1);
+      render();
     } catch {
       shell.innerHTML = '<p class="step-loading">The form could not load. Please refresh, or email us and we will take it from there.</p>';
       nextBtn.hidden = true;
