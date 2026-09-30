@@ -38,6 +38,25 @@ export const GRID_END = '<!--products:end-->';
 
 // Rebuilds the two catalog sections from live rows, preserving the chapter
 // headings between them.
+// ---------------------------------------------------------------- homepage
+// The "EXPLORE ALL COLORS" grid. Three cards used to be written into
+// index.html by hand; they now come from whichever pieces the chief gave a
+// home_slot, in that order.
+export const HOME_START = '<!--home-products:start-->';
+export const HOME_END = '<!--home-products:end-->';
+
+export function homeGrid(products) {
+  return products.map(p => {
+    // A link, not a button. These opened a quick-look dialog, which meant the
+    // piece's own page -- the one with the price, the sizes and the structured
+    // data Google reads -- was unreachable from the homepage.
+    const href = `/collection/${p.slug}/`;
+    return `<article><a class="edition-card" href="${esc(href)}" aria-label="View ${esc(p.name)} in ${esc(p.color)}">`
+      + `<span class="edition-image"><img src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}" width="1254" height="1254" loading="lazy"></span>`
+      + `<span class="edition-caption">${esc(p.color)} <span class="edition-plus">+</span></span></a></article>`;
+  }).join('');
+}
+
 export function catalogGrid(products) {
   const graphic = products.filter(p => (p.category || '').toUpperCase().includes('GRAPHIC'));
   const signature = products.filter(p => !(p.category || '').toUpperCase().includes('GRAPHIC'));

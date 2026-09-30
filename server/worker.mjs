@@ -3,7 +3,7 @@ import {products as originalProducts} from './catalog.js';
 import {Problem,str,productInput,productSlug,decodeProduct,decodeOrder,analytics,insights,allowedStatus,statusLabels} from './domain.mjs';
 import {verifyRequest,isChief,isStaff} from './auth.mjs';
 import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc} from './seo.mjs';
-import {productPage,productNotFound,catalogGrid,GRID_START,GRID_END} from './render.mjs';
+import {productPage,productNotFound,catalogGrid,GRID_START,GRID_END,homeGrid,HOME_START,HOME_END} from './render.mjs';
 import {createStorage} from './storage.mjs';
 import {createDatabase} from './db.mjs';
 import {webAssets} from './web-assets.js';
@@ -280,7 +280,7 @@ async function api(req,env){
   await env.DB.batch(statements);return json({ok:true});
  }
  if(path==='/api/admin/products'&&method==='POST'){
-  const p=productInput(await body(req)),pid='product-'+id(),date=now(),slug=await uniqueSlug(env.DB,productSlug(p));await env.DB.batch([env.DB.prepare('INSERT INTO products(id,slug,name,color,description,category,price,stock,sizes,image,back,status,seo_title,seo_description,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(pid,slug,p.name,p.color,p.description,p.category,p.price,p.stock,JSON.stringify(p.sizes),p.image,p.back,p.status,p.seo_title,p.seo_description,date,date),activity(env.DB,user,'Created product',p.name)]);return json({product:decodeProduct(await row(env.DB,'SELECT * FROM products WHERE id=?',pid))},201);
+  const p=productInput(await body(req)),pid='product-'+id(),date=now(),slug=await uniqueSlug(env.DB,productSlug(p));await env.DB.batch([env.DB.prepare('INSERT INTO products(id,slug,name,color,description,category,price,stock,sizes,image,back,status,seo_title,seo_description,home_slot,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(pid,slug,p.name,p.color,p.description,p.category,p.price,p.stock,JSON.stringify(p.sizes),p.image,p.back,p.status,p.seo_title,p.seo_description,p.home_slot,date,date),activity(env.DB,user,'Created product',p.name)]);return json({product:decodeProduct(await row(env.DB,'SELECT * FROM products WHERE id=?',pid))},201);
  }
  if(/^\/api\/admin\/products\/[^/]+$/.test(path)&&['PUT','DELETE'].includes(method)){
   const pid=path.split('/').pop(),current=await row(env.DB,'SELECT * FROM products WHERE id=?',pid);if(!current)throw new Problem('Product not found.',404);
@@ -288,7 +288,7 @@ async function api(req,env){
   if(method==='DELETE'){
    const result=await env.DB.prepare("UPDATE products SET status='archived',version=version+1,updated_at=? WHERE id=? AND version=?").bind(now(),pid,current.version).run();if(!result.meta.changes)throw new Problem('This product changed. Refresh first.',409);await activity(env.DB,user,'Archived product',current.name).run();return json({ok:true});
   }
-  const p=productInput(b);const result=await env.DB.prepare('UPDATE products SET name=?,color=?,description=?,category=?,price=?,stock=?,sizes=?,image=?,back=?,status=?,seo_title=?,seo_description=?,version=version+1,updated_at=? WHERE id=? AND version=?').bind(p.name,p.color,p.description,p.category,p.price,p.stock,JSON.stringify(p.sizes),p.image,p.back,p.status,p.seo_title,p.seo_description,now(),pid,current.version).run();if(!result.meta.changes)throw new Problem('This product changed. Refresh first.',409);await activity(env.DB,user,'Updated product',p.name).run();return json({ok:true});
+  const p=productInput(b);const result=await env.DB.prepare('UPDATE products SET name=?,color=?,description=?,category=?,price=?,stock=?,sizes=?,image=?,back=?,status=?,seo_title=?,seo_description=?,home_slot=?,version=version+1,updated_at=? WHERE id=? AND version=?').bind(p.name,p.color,p.description,p.category,p.price,p.stock,JSON.stringify(p.sizes),p.image,p.back,p.status,p.seo_title,p.seo_description,p.home_slot,now(),pid,current.version).run();if(!result.meta.changes)throw new Problem('This product changed. Refresh first.',409);await activity(env.DB,user,'Updated product',p.name).run();return json({ok:true});
  }
  if(/^\/api\/admin\/orders\/[^/]+$/.test(path)&&method==='GET'){
   const order=await row(env.DB,'SELECT * FROM orders WHERE id=?',path.split('/').pop());if(!order)throw new Problem('Order not found.',404);return json({order:decodeOrder(order),events:await all(env.DB,'SELECT * FROM order_events WHERE order_id=? ORDER BY created_at DESC',order.id)});
@@ -338,6 +338,25 @@ async function api(req,env){
 // structured data replaced from live rows. The shell keeps its hand-built
 // design; only the grid between the markers and the head tags change, so a
 // product added in the admin panel appears immediately without a rebuild.
+// The homepage grid is whatever the chief put in it. Kept deliberately thin:
+// the page is otherwise static, and this swaps one block rather than taking
+// over the rendering of the whole homepage.
+async function renderHome(req,env){
+ const asset=await env.ASSETS.fetch(new Request(new URL('/',req.url),req));
+ if(!asset.ok)return asset;
+ const html=await asset.text();
+ // Every path below returns the text we just read rather than `asset` itself:
+ // reading the body consumes it, so handing the original Response back would
+ // serve an empty page. The fallbacks are the safety net, so they must work.
+ const send=body=>html2(body,200,{'Cache-Control':'public, max-age=300, stale-while-revalidate=600'});
+ const start=html.indexOf(HOME_START),end=html.indexOf(HOME_END);
+ if(start===-1||end===-1)return send(html);
+ const products=(await all(env.DB,"SELECT * FROM products WHERE status='active' AND home_slot>0 ORDER BY home_slot LIMIT 12")).map(decodeProduct);
+ // No featured pieces means the hand-written cards stay. A homepage with an
+ // empty hole in it is worse than one showing last week's three colours.
+ if(!products.length)return send(html);
+ return send(html.slice(0,start)+homeGrid(products)+html.slice(end+HOME_END.length));
+}
 async function renderCollection(req,env){
  const asset=await env.ASSETS.fetch(new Request(new URL('/collection/',req.url),req));
  if(!asset.ok)return asset;
@@ -401,6 +420,7 @@ export default {async fetch(req,originalEnv,ctx){
    const products=env.DB?(await all(env.DB,"SELECT slug,image,name,color,updated_at FROM products WHERE status='active' ORDER BY created_at DESC")):[];
    return new Response(sitemap(siteOrigin(env),products),{headers:{'Content-Type':'application/xml; charset=utf-8','Cache-Control':'public, max-age=900',...SECURITY_HEADERS}});
   }
+  if((url.pathname==='/'||url.pathname==='/index.html')&&env.DB&&env.ASSETS)return await renderHome(req,env);
   if(url.pathname==='/collection/'&&env.DB&&env.ASSETS)return await renderCollection(req,env);
   const productPath=/^\/collection\/([a-z0-9][a-z0-9-]{0,79})\/$/.exec(url.pathname);
   if(productPath&&env.DB)return await renderProduct(productPath[1],env);

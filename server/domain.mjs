@@ -7,13 +7,19 @@ export function productInput(b){
  const price=b.price===''||b.price===null?null:Number(b.price),stock=Number(b.stock),sizes=Array.isArray(b.sizes)?[...new Set(b.sizes.filter(s=>['S','M','L','XL','XXL'].includes(s)))]:[];
  const image=str(b.image,200),back=str(b.back,200),status=['draft','active','archived'].includes(b.status)?b.status:'draft';
  const seoTitle=str(b.seo_title,70),seoDescription=str(b.seo_description,160);
+ // 0 keeps the piece off the homepage; 1-12 is its position in that grid.
+ const homeSlot=b.home_slot===''||b.home_slot===null||b.home_slot===undefined?0:Number(b.home_slot);
  if(!name||!color||!description||!sizes.length)throw new Problem('Add a name, color, description and at least one size.');
  if(price!==null&&(!Number.isInteger(price)||price<1||price>1000000))throw new Problem('Enter a whole-number price between ৳1 and ৳1,000,000.');
  if(!Number.isInteger(stock)||stock<0||stock>100000)throw new Problem('Stock must be a whole number from 0 to 100,000.');
  if(!/^\/(assets\/[a-z0-9-]+\.(png|webp)|media\/[a-z0-9-]+\.(png|jpeg|webp))$/i.test(image))throw new Problem('Choose or upload a product image.');
  if(back&&!/^\/(assets\/[a-z0-9-]+\.(png|webp)|media\/[a-z0-9-]+\.(png|jpeg|webp))$/i.test(back))throw new Problem('Choose a valid back image.');
  if(status==='active'&&price===null)throw new Problem('Set a price before publishing a product.');
- return {name,color,description,category,price,stock,sizes,image,back,status,seo_title:seoTitle,seo_description:seoDescription};
+ if(!Number.isInteger(homeSlot)||homeSlot<0||homeSlot>12)throw new Problem('Homepage position must be a whole number from 0 to 12.');
+ // Only a published piece may sit on the homepage: a draft would render a card
+ // linking to a product page that refuses to load.
+ if(homeSlot>0&&status!=='active')throw new Problem('Publish the piece before putting it on the homepage.');
+ return {name,color,description,category,price,stock,sizes,image,back,status,seo_title:seoTitle,seo_description:seoDescription,home_slot:homeSlot};
 }
 // URL-safe slug for the per-product pages. Accents are folded rather than
 // dropped so "Café" becomes "cafe", not "caf".
