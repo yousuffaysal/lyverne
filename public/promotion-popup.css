@@ -55,3 +55,33 @@
  .promotion-art{--art-h:clamp(110px,16svh,140px)}
  .promotion-copy h2{font-size:26px}
 }
+
+/* ------------------------------------------- mobile: centred, compact, square
+   On a real iPhone the popup rendered about 700px tall with a wide blank band
+   between the picture and the copy, which headless Chrome never reproduced at
+   the same viewport. The mechanism that allows it, whatever makes the dialog
+   taller than its content on that browser, is this: the grid's rows are auto
+   and align-content is normal, so a taller dialog stretches the copy's row,
+   and .promotion-copy is a flex column with justify-content:center, which then
+   pushes its content into the middle and leaves the space above and below.
+
+   Rows that never stretch and copy that starts at the top make the band
+   impossible regardless of how the dialog is sized. */
+@media(max-width:600px){
+ /* fit-content, not auto: measured on this dialog, the used height came out
+    at exactly max-height while its two rows totalled 396px, leaving a third of
+    the card empty. fit-content makes it shrink-wrap its rows and still honour
+    max-height when a longer campaign needs to scroll. */
+ .opening-promotion{width:min(90vw,382px);max-height:86svh;height:fit-content;margin:auto}
+ .opening-promotion[open]{grid-template-columns:1fr;grid-template-rows:auto auto;align-content:start}
+ .promotion-copy{justify-content:flex-start;padding:20px 20px 22px}
+ /* A little squarer: roughly the card's own width across the picture. */
+ .promotion-art{--art-h:clamp(132px,19svh,178px)}
+ .promotion-copy h2{font-size:clamp(26px,7.2vw,33px);margin-bottom:8px}
+ .promotion-copy>p:not(.promotion-eyebrow){margin-bottom:10px}
+ .promotion-cta{margin-top:6px}
+ .promotion-dismiss{margin-top:8px}
+}
+@media(max-width:600px) and (max-height:680px){
+ .promotion-art{--art-h:clamp(104px,14svh,132px)}
+}
