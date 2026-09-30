@@ -108,21 +108,6 @@ async function createOrder(db,user,b){
 }
 async function api(req,env){
  const url=new URL(req.url),path=url.pathname,method=req.method;
- // One address, one set of pages. www and plain http both answered 200, so
- // Google saw up to three copies of every page and had to guess which was
- // real. The canonical tag said apex, but a redirect states it outright.
- // Scoped to the production host so local http://127.0.0.1 development is
- // untouched.
- if(/^(www\.)?lyverne\.com$/i.test(url.hostname)&&(url.hostname.toLowerCase().startsWith('www.')||url.protocol==='http:')){
-  const target=new URL(url);target.protocol='https:';target.hostname='lyverne.com';
-  return Response.redirect(target.toString(),301);
- }
- // Browsers and several crawlers ask for /favicon.ico directly rather than
- // reading <link rel=icon>. It was a 404, so they fell back to nothing.
- if(path==='/favicon.ico'){
-  const icon=await env.ASSETS.fetch(new Request(new URL('/assets/lyverne-monogram.png',url),req));
-  return new Response(icon.body,{status:icon.status,headers:{'Content-Type':'image/png','Cache-Control':'public, max-age=604800'}});
- }
  if(!['GET','HEAD'].includes(method))sameOrigin(req);
  // The publishable key is public by design: it identifies the project to the
  // browser SDK and grants nothing on its own, because RLS denies it everything
@@ -395,6 +380,20 @@ export default {async fetch(req,originalEnv,ctx){
  const env=opened?{...originalEnv,DB:opened}:originalEnv;
  try{
   const url=new URL(req.url);
+  // One address, one set of pages. www and plain http both answered 200, so
+  // Google saw up to three copies of every page and had to guess which was
+  // real. The canonical tag said apex; a redirect states it outright. Scoped
+  // to the production host so local http://127.0.0.1 development is untouched.
+  if(/^(www\.)?lyverne\.com$/i.test(url.hostname)&&(url.hostname.toLowerCase().startsWith('www.')||url.protocol==='http:')){
+   const target=new URL(url);target.protocol='https:';target.hostname='lyverne.com';
+   return Response.redirect(target.toString(),301);
+  }
+  // Browsers and several crawlers ask for /favicon.ico directly rather than
+  // reading <link rel=icon>. It was a 404, so they fell back to nothing.
+  if(url.pathname==='/favicon.ico'&&env.ASSETS){
+   const icon=await env.ASSETS.fetch(new Request(new URL('/assets/lyverne-monogram.png',url),req));
+   return new Response(icon.body,{status:icon.status,headers:{'Content-Type':'image/png','Cache-Control':'public, max-age=604800'}});
+  }
   if(url.pathname.startsWith('/api/'))return await api(req,env);
   if(url.pathname==='/robots.txt')return new Response(robots(siteOrigin(env)),{headers:{'Content-Type':'text/plain; charset=utf-8','Cache-Control':'public, max-age=3600',...SECURITY_HEADERS}});
   if(url.pathname==='/sitemap.xml'){
