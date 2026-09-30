@@ -74,7 +74,7 @@ function header() {
 }
 
 function footer() {
-  return `<footer class="catalog-footer"><a href="/" aria-label="Lyverne home"><img src="/assets/lyverne-navbar.png" alt="LYVERNE" width="3715" height="925"></a><span>ALL RIGHTS RESERVED © 2026</span><a href="/studio/">Style studio</a><a href="#main">Back to top ↑</a></footer>`;
+  return `<footer class="catalog-footer"><a href="/" aria-label="Lyverne home"><img src="/assets/lyverne-navbar.png" alt="LYVERNE" width="3715" height="925"></a><span>ALL RIGHTS RESERVED © 2026</span><a href="/studio/">Style studio</a><a class="site-credit" href="https://foxmen.studio" target="_blank" rel="noopener noreferrer"><svg class="credit-mark" viewBox="0 0 114.86 114.86" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><polygon points="86.85 27.97 86.89 43.89 71.15 43.84 56.73 27.97 27.95 27.97 27.76 1.03 58.44 1 86.89 27.97 86.85 27.97"/><polygon points="113.86 58.46 86.94 86.79 86.94 87.06 71.84 87.17 71.82 71.42 86.85 56.91 86.85 28.01 113.83 27.83 113.86 58.46"/><polygon points="86.76 86.88 57.23 86.88 43.09 71.99 27.75 72 27.86 86.88 27.86 86.93 27.9 86.97 56.27 113.86 86.95 113.83 86.76 86.88"/><polygon points="28.02 57.23 28.13 86.84 1.15 87.13 1 56.49 27.77 28.12 27.87 28.01 27.91 28.01 42.49 27.91 42.5 43.25 28.02 57.23"/></g></svg><span>Site by <strong>Foxmen Studio</strong></span></a><a href="#main">Back to top ↑</a></footer>`;
 }
 
 // The gallery shows front and back when a back image exists. Both are real
