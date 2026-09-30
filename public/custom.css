@@ -71,13 +71,21 @@
 .team-step>*{animation:field-rise .5s var(--ease) both;animation-delay:calc(var(--i,0) * 60ms)}
 @keyframes field-rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
-.team-field{display:grid;gap:9px;font-size:14px;font-weight:600}
+.team-field{display:grid;gap:9px;font-size:14px;font-weight:600;min-width:0}
+/* A grid item's min-width is auto, so it refuses to shrink below its content's
+   intrinsic width. iOS gives input[type=date] a wide intrinsic size of its own,
+   which pushed the field straight out through the card's right edge on a real
+   iPhone while Chrome sized it to the column. min-width:0 lets it shrink. */
+.team-pair,.team-pair>*{min-width:0}
 .team-field>span{letter-spacing:.01em}
 .team-field small{font-size:13px;font-weight:400;color:var(--muted);line-height:1.5}
-.team-field input,.team-field select,.team-field textarea{background:var(--cream);border:1px solid #aaa69b;border-radius:0;padding:14px 16px;width:100%;font-size:16px;color:var(--ink);font-weight:400;font-family:Manrope,Arial,sans-serif;transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}
+.team-field input,.team-field select,.team-field textarea{background:var(--cream);border:1px solid #aaa69b;border-radius:0;padding:14px 16px;width:100%;min-width:0;max-width:100%;box-sizing:border-box;font-size:16px;color:var(--ink);font-weight:400;font-family:Manrope,Arial,sans-serif;transition:border-color .25s var(--ease),box-shadow .25s var(--ease)}
 .team-field input:hover,.team-field select:hover,.team-field textarea:hover{border-color:var(--ink)}
 .team-field input:focus,.team-field select:focus,.team-field textarea:focus{outline:0;border-color:var(--ink);box-shadow:4px 4px 0 var(--orange)}
 .team-field textarea{resize:vertical;line-height:1.6}
+/* iOS also centres the date value and applies its own control chrome; this
+   makes it sit like every other field. */
+.team-field input[type=date]{-webkit-appearance:none;appearance:none;text-align:left;min-height:51px}
 .team-pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 
 .size-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
@@ -180,8 +188,12 @@
  .team-review dl>div{grid-template-columns:1fr;gap:5px}
  .step-dot i{width:28px;height:28px;font-size:13px}
  .step-rail li:not(:last-child):after{top:13px}
- /* The actions follow the thumb rather than sitting below a long step. */
- .step-actions{position:sticky;bottom:0;background:var(--cream);padding:14px 0 4px;margin-top:24px;flex-direction:column-reverse;align-items:stretch;box-shadow:0 -10px 14px -8px #20201c1f;z-index:2}
+ /* The actions follow the thumb rather than sitting below a long step. A
+    descendant's background paints over its ancestor's border, so a bar inset
+    from the card's edges left the bottom border showing only at the margins
+    and reading as broken. Pulled out to the card's full width with a hairline
+    of its own, it covers that edge deliberately instead. */
+ .step-actions{position:sticky;bottom:0;background:var(--cream);padding:14px 16px calc(14px + env(safe-area-inset-bottom));margin:24px -16px 0;flex-direction:column-reverse;align-items:stretch;border-top:1px solid var(--line);box-shadow:0 -10px 14px -8px #20201c1f;z-index:2}
  .step-actions .btn{width:100%}
  /* 16px keeps iOS from zooming the page when a field takes focus. */
  .team-field input,.team-field select,.team-field textarea{font-size:16px}
