@@ -173,3 +173,42 @@
 @media(max-width:650px){.studio-invitation{grid-template-columns:1fr;padding:0 7vw 100px;gap:45px}.studio-invitation h2{font-size:12vw}.studio-invitation figure{width:85%;margin:auto}.studio-invitation figcaption{font-size:8px}.home-page .menu-dialog nav{margin:12vh 0}.home-page .menu-dialog nav a{font-size:13vw}}
 .graphic-intro{display:grid;grid-template-columns:1fr 1fr 1fr;gap:25px;padding:0 3.15vw 110px;align-items:center}.graphic-intro-copy{padding:0 20px}.graphic-intro h2{font-size:clamp(60px,7vw,120px);line-height:.93;margin:22px 0}.graphic-intro-copy p:not(.eyebrow){font-size:14px;line-height:1.6}.graphic-intro .oval-link{font-size:12px;margin-top:20px}.graphic-home-card{padding:10px;background:#e5dfd4;width:100%;text-align:left}.graphic-home-card>img{width:100%;height:auto;display:block;aspect-ratio:3/4;object-fit:contain;transition:transform .7s var(--ease)}.graphic-home-card:hover>img{transform:scale(1.03) rotate(-4deg)}.graphic-home-card>span{display:flex;justify-content:space-between;padding:18px 10px;font-size:12px}.home-film{padding:0 3.15vw 120px}.film-heading{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:15px;margin-bottom:27px}.film-heading .eyebrow{flex-basis:100%}.film-heading h2{font-size:clamp(48px,5.8vw,105px);line-height:1}.film-heading>span{font-size:10px}.home-film .film-player{max-height:680px}.home-film video{object-position:50% 45%}
 @media(max-width:700px){.graphic-intro{grid-template-columns:1fr 1fr;gap:15px;padding:0 5vw 70px}.graphic-intro-copy{grid-column:1/-1;padding:0 0 20px}.graphic-intro h2{font-size:16vw}.graphic-intro h2 br{display:none}.graphic-intro-copy p:not(.eyebrow){font-size:14px}.graphic-home-card{padding:5px}.graphic-home-card>span{font-size:10px;padding:15px 5px}.home-film{padding:0 5vw 80px}.film-heading h2{font-size:11vw}.film-heading>span{font-size:9px}.film-play{font-size:11px}.film-play>span{width:46px;height:46px;font-size:27px}}
+
+/* ---------------------------------------------- orbit: keep the zones apart
+   The heading, badges and note are all absolutely positioned as percentages of
+   a stage whose height is floored at 700px, while their own sizes come from vw
+   with px floors. Those two scale independently, so on most monitor-and-zoom
+   combinations they drifted into each other -- the "YOU" badge sat on top of
+   LESS, BUT BETTER., and badge three sat on the hand-written note.
+
+   --heading-band is what the heading actually occupies: its offset, the
+   eyebrow, the headline's own font-size, and breathing room. Floors built from
+   it give each element a zone the others cannot enter at any viewport. */
+.orbit-stage{--heading-band:calc(5% + 26px + clamp(45px,4.7vw,80px) + 30px)}
+.badge-one{top:max(22%,var(--heading-band))}
+.badge-four{top:max(12%,var(--heading-band))}
+.orbit-note{bottom:max(14%,210px)}
+@media(max-width:1000px){
+ .badge-four{top:max(18%,var(--heading-band))}
+ /* Narrow viewports bring badge three down onto the note; lift the note clear. */
+ .orbit-note{bottom:max(16%,250px)}
+}
+@media(max-width:650px){
+ /* The small layout sets its own heading offset and a 12vw headline, which
+    wraps to two lines at every phone width -- so the band must allow for two. */
+ .orbit-stage{--heading-band:calc(10% + 22px + 24vw + 24px)}
+ .badge-one{top:max(26%,var(--heading-band))}
+ .badge-four{top:max(22%,var(--heading-band))}
+}
+/* Narrow AND short at once -- a laptop window zoomed to 200%, not a phone
+   (a 390x844 handset never matches this). Here the two-line headline plus four
+   badges genuinely do not fit 720px of stage, so the headline drops to one
+   line and the badges give up a little size rather than sitting on each other. */
+@media(max-width:650px) and (max-height:560px){
+ .orbit-heading h2{font-size:9vw}
+ .orbit-stage{--heading-band:calc(10% + 22px + 9vw + 34px)}
+ .orbit-badge{width:22vw;min-width:88px}
+ .badge-four{width:21vw}
+ /* Above badge three, which reaches ~235px up from the floor at this size. */
+ .orbit-note{bottom:250px}
+}
