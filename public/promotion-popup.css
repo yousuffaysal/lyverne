@@ -20,3 +20,34 @@
 @media(prefers-reduced-motion:reduce){.opening-promotion[open]{animation:none}}
 
 @media(max-width:600px) and (max-height:700px){.promotion-art{height:168px}.promotion-art>img:first-child{max-height:140px}.promotion-copy h2{font-size:30px}}
+
+/* ------------------------------------------------- mobile: make it fit
+   Measured on four phones with a fuller campaign -- a longer headline, a full
+   paragraph, a promo code and terms, all of which the admin can write. The
+   popup overflowed on three of them (71-95px hidden below the fold) and took
+   88% of the screen on all four.
+
+   The art panel was a fixed 210px of mostly empty orange, which is the easiest
+   height to give back, so it is now tied to the viewport rather than fixed.
+   Everything else is a small trim. Desktop is untouched. */
+@media(max-width:600px){
+ .opening-promotion{max-height:92svh}
+ .promotion-art{height:clamp(104px,17svh,168px);padding:10px}
+ /* Let the tee fill the orange instead of floating in it. */
+ .promotion-art>img:first-child{max-height:100%;max-width:74%}
+ .promotion-seal{width:54px;height:54px;left:10px;top:10px;font-size:12px;padding:6px}
+ .promotion-copy{padding:18px 18px 20px}
+ .promotion-eyebrow{margin-bottom:7px}
+ .promotion-copy h2{font-size:clamp(27px,7.6vw,34px);margin-bottom:9px}
+ .promotion-copy>p:not(.promotion-eyebrow){font-size:14px;line-height:1.45;margin-bottom:11px}
+ .promotion-code{padding:9px 12px;margin-bottom:2px}
+ .promotion-code strong{font-size:16px}
+ .promotion-cta{padding:12px 15px;margin-top:8px}
+ .promotion-dismiss{margin-top:9px;padding:4px}
+ .promotion-copy .promotion-terms{margin-top:8px!important;line-height:1.4!important}
+}
+/* Short phones give up the picture rather than the button. */
+@media(max-width:600px) and (max-height:680px){
+ .promotion-art{height:clamp(92px,13svh,120px)}
+ .promotion-copy h2{font-size:26px}
+}
