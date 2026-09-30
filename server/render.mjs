@@ -108,7 +108,7 @@ export function productPage({product, origin, others = [], campaignEnabled = tru
     jsonLd(organisation(origin)),
   ].join('');
 
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#F3EEE4"><title>${esc(title)}</title>${head}<link rel="icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/transitions.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"><link rel="stylesheet" href="/account-menu.css">${campaignEnabled ? '<link rel="stylesheet" href="/promotion-popup.css">' : ''}<script type="module" src="/transitions.js"></script><script type="module" src="/app.js"></script><script type="module" src="/account-menu.js"></script>${campaignEnabled ? '<script type="module" src="/promotion-popup.js"></script>' : ''}<script type="module" src="/product-page.js"></script></head>
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#F3EEE4"><title>${esc(title)}</title>${head}<link rel="icon" href="/assets/lyverne-monogram.png"><link rel="apple-touch-icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/transitions.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"><link rel="stylesheet" href="/account-menu.css">${campaignEnabled ? '<link rel="stylesheet" href="/promotion-popup.css">' : ''}<script type="module" src="/transitions.js"></script><script type="module" src="/app.js"></script><script type="module" src="/account-menu.js"></script>${campaignEnabled ? '<script type="module" src="/promotion-popup.js"></script>' : ''}<script type="module" src="/product-page.js"></script></head>
 <body class="collection-page product-page">
 ${filters}
 <a class="skip-link" href="#main">Skip to product</a>
@@ -127,7 +127,7 @@ ${dialogs}
 // archived product is never indexed, and so a mistyped URL does not quietly
 // return a 200 page that Google would add to the index.
 export function productNotFound(origin) {
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Piece not found — LYVERNE</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"></head>
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Piece not found — LYVERNE</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/lyverne-monogram.png"><link rel="apple-touch-icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"></head>
 <body class="collection-page product-page">
 ${header()}
 <main id="main" class="product-page-missing">
