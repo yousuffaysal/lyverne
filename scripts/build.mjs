@@ -1,6 +1,7 @@
 import {renderAccounts} from './render-accounts.mjs';
 import {renderStudio} from './render-studio.mjs';
 import {renderCollection} from './render-collection.mjs';
+import {renderCustom} from './render-custom.mjs';
 import {products} from '../public/catalog.js';
 import {readFile,access,mkdir,copyFile,cp,rm,readdir,writeFile} from 'node:fs/promises';
 // Load .env so `npm run build` stamps the real SITE_ORIGIN into canonicals and
@@ -11,6 +12,7 @@ for(const name of ['three.module.js','three.core.js'])await copyFile('node_modul
 await renderCollection();
 await renderStudio();
 await renderAccounts();
+await renderCustom();
 await copyFile('server/domain.mjs','public/commerce.js');
 await copyFile('public/catalog.js','server/catalog.js');
 // The product pages are rendered in the Worker, which cannot read public/ at

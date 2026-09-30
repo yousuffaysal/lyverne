@@ -198,6 +198,7 @@ export function sitemap(origin, products = [], updated = new Date().toISOString(
     {loc: origin + '/', priority: '1.0', changefreq: 'weekly', lastmod: day()},
     {loc: origin + '/collection/', priority: '0.9', changefreq: 'weekly', lastmod: day()},
     {loc: origin + '/studio/', priority: '0.7', changefreq: 'monthly', lastmod: day()},
+    {loc: origin + '/custom/', priority: '0.8', changefreq: 'monthly', lastmod: day()},
     ...products.map(p => ({
       loc: productUrl(origin, p),
       priority: '0.8',

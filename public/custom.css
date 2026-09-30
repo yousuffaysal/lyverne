@@ -1,0 +1,131 @@
+/* The team orders page.
+   Same vocabulary as the homepage: cream field, ink type, orange only where
+   something is live, hairline rules, Khand for display and Manrope for text.
+   No new colours are introduced here. */
+
+/* ------------------------------------------------------------------ hero */
+.team-hero{display:grid;grid-template-columns:1.05fr .95fr;gap:5vw;align-items:center;padding:calc(95px + 4vw) 3.15vw 5vw}
+.team-hero-copy h1{font-size:clamp(52px,7vw,116px);line-height:.92;letter-spacing:-.03em;margin:14px 0 22px}
+.team-lede{font-size:clamp(15px,1.25vw,19px);line-height:1.6;color:var(--muted);max-width:46ch;margin-bottom:30px}
+.team-hero-facts{display:flex;gap:34px;flex-wrap:wrap;margin-bottom:34px}
+.team-hero-facts div{display:grid;gap:3px}
+.team-hero-facts strong{font-family:Khand,'Arial Narrow',sans-serif;font-size:34px;line-height:1}
+.team-hero-facts span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.team-hero-art{position:relative}
+.team-hero-art .editorial-frame{margin:0;background:#ddd6c8;padding:8%;transform:rotate(-2.5deg)}
+.team-hero-art img{width:100%;height:auto;display:block}
+.team-seal{position:absolute;top:-16px;right:-6px;width:124px;height:124px;border-radius:50%;background:var(--orange);border:2px solid var(--ink);display:grid;place-items:center;text-align:center;font-family:Khand,'Arial Narrow',sans-serif;font-size:19px;line-height:1.05;transform:rotate(11deg)}
+
+/* ------------------------------------------------------------ how it works */
+.team-section-head{display:grid;grid-template-columns:1fr 1fr;gap:4vw;align-items:end;margin-bottom:46px}
+.team-section-head h2{font-size:clamp(34px,4.2vw,68px);line-height:1;letter-spacing:-.025em;margin-top:12px}
+.team-section-head p{color:var(--muted);line-height:1.6;max-width:44ch}
+.team-how{padding:6vw 3.15vw}
+.team-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:26px;counter-reset:none}
+.team-steps li{border:1px solid var(--line);padding:30px 26px 34px;display:grid;gap:10px;align-content:start;background:var(--cream)}
+.team-step-index{font-family:Khand,'Arial Narrow',sans-serif;font-size:42px;line-height:1;color:var(--orange)}
+.team-steps h3{font-size:22px;letter-spacing:-.01em}
+.team-steps p{font-size:15px;line-height:1.6;color:var(--muted)}
+
+/* ----------------------------------------------------------------- form */
+.team-order{padding:2vw 3.15vw 6vw}
+.team-form-shell{display:grid;grid-template-columns:230px 1fr;gap:4vw;align-items:start;border:1px solid var(--line);padding:40px;background:var(--cream)}
+
+.step-rail ol{list-style:none;margin:0;padding:0;display:grid;gap:4px;position:sticky;top:110px}
+.step-dot{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;padding:11px 12px;font-size:14px;color:var(--muted);border-left:2px solid var(--line)}
+.step-dot span{font-family:Khand,'Arial Narrow',sans-serif;font-size:15px;min-width:22px}
+.step-dot[aria-current]{color:var(--ink);font-weight:600;border-left-color:var(--orange)}
+.step-dot.is-done{color:var(--ink)}
+.step-dot.is-done span:before{content:'✓ ';color:var(--orange)}
+.step-dot:disabled{opacity:.45;cursor:default}
+
+.step-progress{margin-bottom:26px}
+.step-progress-bar{height:3px;background:var(--line);overflow:hidden}
+.step-progress-bar i{display:block;height:100%;width:var(--progress,20%);background:var(--orange);transition:width .45s var(--ease)}
+.step-progress p{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:10px}
+
+.step-window{min-height:330px}
+.step-loading{color:var(--muted);font-size:15px;padding:40px 0}
+.team-step{border:0;margin:0;padding:0;display:grid;gap:22px}
+/* The step slides in from the direction of travel. --from is set per move. */
+.team-step.is-entering{opacity:0;transform:translateX(var(--from,26px))}
+.team-step{opacity:1;transform:translateX(0);transition:opacity .38s var(--ease),transform .38s var(--ease)}
+
+.team-field{display:grid;gap:8px;font-size:14px;font-weight:600}
+.team-field>span{letter-spacing:.01em}
+.team-field small{font-size:13px;font-weight:400;color:var(--muted);line-height:1.5}
+.team-field input,.team-field select,.team-field textarea{background:transparent;border:1px solid #aaa69b;border-radius:0;padding:13px 15px;width:100%;font-size:16px;color:var(--ink);font-weight:400}
+.team-field textarea{resize:vertical;line-height:1.6}
+.team-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+
+.size-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.size-cell{display:grid;gap:5px;font-size:12px;letter-spacing:.06em;text-align:center;font-weight:600}
+.size-cell input{text-align:center;padding:11px 6px}
+[data-size-total].is-off{color:#8c3a27}
+
+.route-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.route-card{border:1px solid var(--line);padding:18px;display:grid;gap:7px;cursor:pointer;font-weight:400;transition:border-color .2s var(--ease),background .2s var(--ease)}
+.route-card strong{font-size:15px;line-height:1.35}
+.route-card small{font-size:13px;color:var(--muted);line-height:1.5}
+.route-card input{position:absolute;opacity:0;pointer-events:none}
+.route-card.is-on{border-color:var(--orange);background:#f26b2412}
+.route-card:has(input:focus-visible){outline:3px solid var(--orange);outline-offset:3px}
+
+/* A notepad, because people write more when it looks like somewhere to write. */
+.notepad textarea{background:repeating-linear-gradient(var(--cream),var(--cream) 30px,#d5cfc3 30px,#d5cfc3 31px);line-height:31px;padding-top:6px;border-color:var(--ink)}
+
+.team-review dl{display:grid;gap:0;margin:18px 0 22px}
+.team-review dl>div{display:grid;grid-template-columns:150px 1fr;gap:18px;padding:12px 0;border-bottom:1px solid var(--line);font-size:15px}
+.team-review dt{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.team-review dd{margin:0;line-height:1.55;overflow-wrap:anywhere}
+
+.step-actions{display:flex;gap:14px;align-items:center;margin-top:30px;flex-wrap:wrap}
+.step-actions .btn{min-width:150px}
+#team-form .error{margin-top:18px;color:#8c3a27;font-size:14px;min-height:1.2em}
+
+.team-done{grid-column:1/-1;text-align:center;display:grid;gap:12px;justify-items:center;padding:30px 0}
+.team-done-seal{width:78px;height:78px;border-radius:50%;background:var(--orange);border:2px solid var(--ink);display:grid;place-items:center;font-size:36px;line-height:1}
+.team-done h2{font-size:clamp(38px,5vw,64px);line-height:1}
+.team-done p{max-width:48ch;line-height:1.6}
+.team-done .actions{display:flex;gap:16px;align-items:center;margin-top:12px;flex-wrap:wrap;justify-content:center}
+
+/* --------------------------------------------------------------- closing */
+.team-assure{position:relative;background:var(--ink);color:var(--cream);padding:calc(8vw + 60px) 3.15vw 7vw;margin-top:4vw}
+.team-assure .scallop-edge{position:absolute;top:0;left:0;right:0;line-height:0}
+.team-assure .scallop-edge svg{width:100%;height:clamp(40px,6vw,90px);display:block;fill:var(--cream);transform:rotate(180deg)}
+.team-assure-inner{max-width:900px;margin:auto}
+.team-assure h2{font-size:clamp(34px,4.6vw,72px);line-height:1;margin:12px 0 36px}
+.team-faq{display:grid;gap:0;margin:0}
+.team-faq>div{padding:22px 0;border-top:1px solid #ffffff26}
+.team-faq dt{font-family:Khand,'Arial Narrow',sans-serif;font-size:23px;margin-bottom:6px}
+.team-faq dd{margin:0;color:#cfc8b8;line-height:1.6;max-width:62ch}
+
+/* ---------------------------------------------------------------- mobile */
+@media(max-width:1000px){
+ .team-hero{grid-template-columns:1fr;gap:8vw;padding-top:calc(90px + 7vw)}
+ .team-section-head{grid-template-columns:1fr;gap:18px;align-items:start}
+ .team-steps{grid-template-columns:1fr}
+ .team-form-shell{grid-template-columns:1fr;gap:28px;padding:26px}
+ .step-rail ol{position:static;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;overflow-x:auto}
+ .step-dot{flex-direction:column;gap:5px;text-align:center;font-size:11px;padding:10px 6px;border-left:0;border-bottom:2px solid var(--line)}
+ .step-dot[aria-current]{border-left:0;border-bottom-color:var(--orange)}
+ .route-grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+ .team-order,.team-how{padding-left:16px;padding-right:16px}
+ .team-hero{padding-left:16px;padding-right:16px}
+ .team-form-shell{padding:18px 16px;margin:0 -2px}
+ .team-seal{width:88px;height:88px;font-size:14px;top:-10px;right:-2px}
+ .size-grid{grid-template-columns:repeat(3,1fr)}
+ .team-pair{grid-template-columns:1fr}
+ .team-review dl>div{grid-template-columns:1fr;gap:4px}
+ .step-actions{flex-direction:column-reverse;align-items:stretch}
+ .step-actions .btn{width:100%}
+ .team-hero-facts{gap:22px}
+ /* 16px keeps iOS from zooming the page when a field takes focus. */
+ .team-field input,.team-field select,.team-field textarea{font-size:16px}
+}
+@media(prefers-reduced-motion:reduce){
+ .team-step,.team-step.is-entering{transition:none;transform:none;opacity:1}
+ .step-progress-bar i{transition:none}
+}

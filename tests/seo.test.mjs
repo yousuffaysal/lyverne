@@ -85,7 +85,8 @@ test('sitemap lists every product with absolute URLs and valid XML', () => {
   assert.match(xml, /^<\?xml version="1\.0" encoding="UTF-8"\?>/);
   assert.match(xml, new RegExp(`<loc>${ORIGIN}/collection/${product.slug}/</loc>`));
   assert.match(xml, /<lastmod>2026-09-26<\/lastmod>/);
-  assert.equal((xml.match(/<loc>/g) || []).length, 4, 'home, collection, studio and the product');
+  assert.match(xml, new RegExp(`<loc>${ORIGIN}/custom/</loc>`), 'team orders is a landing page in its own right');
+  assert.equal((xml.match(/<loc>/g) || []).length, 5, 'home, collection, studio, team orders and the product');
   assert.ok(!xml.includes('undefined'));
 });
 
