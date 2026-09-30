@@ -91,3 +91,14 @@ tr.is-blocked td:first-child strong{text-decoration:line-through;text-decoration
  .chat-composer button{width:100%}
  .task-top{flex-direction:column;gap:8px}
 }
+
+/* ------------------------------------------------- order delivery details
+   Phone and full address, side by side at the top of an order. The phone was
+   stored from the first order but never rendered anywhere, so the person
+   packing a parcel had no way to call the customer. */
+.order-delivery{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:start;border:1px solid var(--line);padding:16px 18px;margin:14px 0 20px}
+.order-delivery .eyebrow{font-size:11px;letter-spacing:.11em;color:var(--muted);display:block;margin-bottom:6px}
+.order-delivery p{font-size:14px;line-height:1.55}
+.order-delivery a{text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+.order-delivery .text-btn{padding:4px 0;font-size:13px}
+@media(max-width:600px){.order-delivery{grid-template-columns:1fr;gap:14px}}

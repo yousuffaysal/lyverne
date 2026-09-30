@@ -1,5 +1,6 @@
 import {couponInput,campaignInput,readCampaign,publicCampaign,quoteOrder} from './promotions.mjs';
 import {products as originalProducts} from './catalog.js';
+import {DIVISIONS,isRegion,normalisePhone,isPostcode,formatAddress} from './bangladesh.mjs';
 import {Problem,str,productInput,productSlug,decodeProduct,decodeOrder,analytics,insights,allowedStatus,statusLabels} from './domain.mjs';
 import {verifyRequest,isChief,isStaff} from './auth.mjs';
 import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc} from './seo.mjs';
@@ -82,7 +83,19 @@ async function createOrder(db,user,b){
  if(!Array.isArray(b.items)||!b.items.length||b.items.length>20)throw new Problem('Choose at least one product.');
  if(!/^[a-z0-9-]{20,80}$/i.test(b.requestKey||''))throw new Problem('Refresh the order form and try again.');
  const existing=await row(db,'SELECT * FROM orders WHERE customer_id=? AND request_key=?',user.id,b.requestKey);if(existing)return decodeOrder(existing);
- const address=str(b.address,1000),phone=str(b.phone,40);if(address.length<10||phone.length<6)throw new Problem('Add a delivery address and phone number.');
+ // A courier needs a street line, a thana, a district and a working mobile.
+ // All four are checked here rather than trusted from the form, so an order
+ // can never reach the admin without somewhere to send it.
+ const address=str(b.address,1000);
+ if(address.length<10)throw new Problem('Add the house, road and area for delivery.');
+ const phone=normalisePhone(b.phone);
+ if(!phone)throw new Problem('Enter a Bangladeshi mobile number, like 01712 345678.');
+ const division=str(b.division,40),district=str(b.district,40),thana=str(b.thana,60),postcode=str(b.postcode,10);
+ // The pair is validated together: a district only counts inside the division
+ // it actually belongs to.
+ if(!isRegion(division,district))throw new Problem('Choose your division and district from the list.');
+ if(!thana)throw new Problem('Add your upazila or thana.');
+ if(!isPostcode(postcode))throw new Problem('A postcode is four digits, or leave it empty.');
  const quote=await quoteOrder(db,b.items,b.promoCode);
  const {items,quantities,subtotal,discount,total,promo_code,coupon}=quote,oid='LY-'+id().slice(0,8).toUpperCase(),date=now();
  // Every guard lives in the WHERE clause of the statement that performs the
@@ -101,7 +114,7 @@ async function createOrder(db,user,b){
    const claimed=await tx.run("UPDATE promotions SET used=used+1 WHERE id=? AND version=? AND active=1 AND (usage_limit IS NULL OR used<usage_limit) AND (starts='' OR starts<=?) AND (ends='' OR ends>?)",coupon.id,coupon.version,date,date);
    if(!claimed.meta.changes)throw conflict();
   }
-  await tx.run('INSERT INTO orders(id,customer_id,items,subtotal,discount,promo_code,total,status,payment,address,phone,request_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)',oid,user.id,JSON.stringify(items),subtotal,discount,promo_code,total,'confirmed','pending',address,phone,b.requestKey,date,date);
+  await tx.run('INSERT INTO orders(id,customer_id,items,subtotal,discount,promo_code,total,status,payment,address,phone,division,district,thana,postcode,request_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',oid,user.id,JSON.stringify(items),subtotal,discount,promo_code,total,'confirmed','pending',address,phone,division,district,thana,postcode,b.requestKey,date,date);
   await tx.run('INSERT INTO order_events(id,order_id,status,message,created_at) VALUES(?,?,?,?,?)',id(),oid,'confirmed','Order request received. Payment and delivery will be confirmed by Lyverne.',date);
  });
  return decodeOrder(await row(db,'SELECT * FROM orders WHERE id=?',oid));
@@ -115,6 +128,7 @@ async function api(req,env){
  if(path==='/api/config')return json({auth:'supabase',supabaseUrl:env.SUPABASE_URL||'',supabaseKey:env.SUPABASE_PUBLISHABLE_KEY||'',ai:!!env.AI_API_KEY,uploads:!!bucketOf(env)});
  if(!env.DB)throw new Problem('The store database is temporarily unavailable. Please try again shortly.',503);
  if(path==='/api/products'&&method==='GET')return json({products:(await all(env.DB,"SELECT * FROM products WHERE status='active' ORDER BY created_at DESC")).map(decodeProduct),managedIds:(await all(env.DB,'SELECT id FROM products')).map(p=>p.id)});
+ if(path==='/api/regions'&&method==='GET')return json({divisions:DIVISIONS},200,{'Cache-Control':'public, max-age=86400'});
  if(path==='/api/storefront/promotion'&&method==='GET')return json({campaign:await publicCampaign(env.DB)});
  if(path==='/api/stylist'&&method==='POST'){
   // Public and deliberately unconnected to the catalogue: this answers "what
