@@ -44,7 +44,7 @@ if (form) {
 
   function stepMarkup(index) {
     if (index === 0) return `
-      <fieldset class="team-step"><legend class="sr-only">Your team</legend>
+      <fieldset class="team-step" aria-label="Your team">
        ${field('What kind of group is this?', select('org_type', options.orgTypes, data.org_type, 'Choose one'))}
        ${field('Organisation name', `<input name="org_name" maxlength="160" value="${e(data.org_name || '')}" placeholder="Dhaka University Football Club" autocomplete="organization">`)}
        ${field('Your name', `<input name="contact_name" maxlength="100" value="${e(data.contact_name || '')}" placeholder="Nadia Rahman" autocomplete="name">`)}
@@ -55,7 +55,7 @@ if (form) {
       const sizes = options.sizes.map(s =>
         `<label class="size-cell"><span>${e(s)}</span><input type="number" min="0" max="${options.maxQuantity}" inputmode="numeric" data-size="${e(s)}" value="${data.sizes[s] || ''}" placeholder="0"></label>`).join('');
       return `
-      <fieldset class="team-step"><legend class="sr-only">What you need</legend>
+      <fieldset class="team-step" aria-label="What you need">
        ${field('What would you like made?', select('product', options.products, data.product, 'Choose a piece'))}
        <div data-product-other ${data.product === 'other' ? '' : 'hidden'}>${field('Tell us what it is', `<input name="product_other" maxlength="100" value="${e(data.product_other || '')}" placeholder="Track pants, caps…">`)}</div>
        ${field('How many pieces?', `<input name="quantity" type="number" inputmode="numeric" min="${options.minQuantity}" max="${options.maxQuantity}" value="${e(data.quantity || '')}" placeholder="40">`, `From ${options.minQuantity} pieces.`)}
@@ -67,7 +67,7 @@ if (form) {
     }
 
     if (index === 2) return `
-      <fieldset class="team-step"><legend class="sr-only">The design</legend>
+      <fieldset class="team-step" aria-label="The design">
        <div class="team-field"><span>Where is the design coming from?</span>
         <div class="route-grid">${Object.entries(options.designRoutes).map(([k, v]) => `
          <label class="route-card ${data.design_route === k ? 'is-on' : ''}">
@@ -87,7 +87,7 @@ if (form) {
     if (index === 3) {
       const divisions = Object.keys(options.divisions || {});
       return `
-      <fieldset class="team-step"><legend class="sr-only">Getting it to you</legend>
+      <fieldset class="team-step" aria-label="Getting it to you">
        ${field('Email', `<input name="email" type="email" maxlength="160" value="${e(data.email || '')}" placeholder="you@university.edu" autocomplete="email">`)}
        ${field('Mobile number', `<input name="phone" maxlength="20" inputmode="tel" value="${e(data.phone || '')}" placeholder="01712 345678" autocomplete="tel">`, 'We call this number to talk the order through.')}
        <div class="team-pair">

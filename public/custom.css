@@ -54,7 +54,10 @@
 .team-field{display:grid;gap:8px;font-size:14px;font-weight:600}
 .team-field>span{letter-spacing:.01em}
 .team-field small{font-size:13px;font-weight:400;color:var(--muted);line-height:1.5}
-.team-field input,.team-field select,.team-field textarea{background:transparent;border:1px solid #aaa69b;border-radius:0;padding:13px 15px;width:100%;font-size:16px;color:var(--ink);font-weight:400}
+.team-field input,.team-field select,.team-field textarea{background:transparent;border:1px solid #aaa69b;border-radius:0;padding:13px 15px;width:100%;font-size:16px;color:var(--ink);font-weight:400;
+/* style.css sets font:inherit for button and input only, so a textarea or
+   select would otherwise fall back to the browser's own font. */
+font-family:Manrope,Arial,sans-serif}
 .team-field textarea{resize:vertical;line-height:1.6}
 .team-pair{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 
