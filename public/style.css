@@ -21,3 +21,18 @@
 
 @media(max-width:900px){.header .nav-account,.studio-nav .nav-account{display:none}}
 .menu-dialog nav{gap:0}.menu-dialog nav a{font-size:clamp(34px,5.7vh,66px)}
+
+/* ------------------------------------------------------- build credit
+   Foxmen Studio, who built the site. The mark's stroke is currentColor by
+   its author's design, so it takes each footer's own text colour. */
+.site-credit{display:inline-flex;align-items:center;gap:9px;font-size:12px;letter-spacing:.04em;white-space:nowrap;opacity:.78;transition:opacity .25s var(--ease)}
+.site-credit:hover,.site-credit:focus-visible{opacity:1}
+.site-credit strong{font-weight:600}
+.credit-mark{width:16px;height:16px;flex:none;display:block}
+.credit-mark polygon{fill:#b86cf9}
+/* The collection footer is Lyverne orange, where the brand purple clashes
+   badly. A monochrome mark there reads cleanly and is the usual treatment
+   for a partner logo on a coloured field. */
+.catalog-footer .credit-mark polygon{fill:currentColor}
+.catalog-footer .site-credit{opacity:.9}
+@media(max-width:600px){.site-credit{font-size:11px}.credit-mark{width:14px;height:14px}}
