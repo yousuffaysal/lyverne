@@ -172,7 +172,7 @@ async function api(req,env){
   if(env.ADMIN_EMAIL&&target.email===env.ADMIN_EMAIL.trim().toLowerCase())throw new Problem('The chief account is set by configuration, not here.');
   const role=['customer','admin'].includes(b.role)?b.role:null;
   if(!role)throw new Problem('Choose either admin or customer.');
-  const blocked=b.blocked===true||b.blocked==='on'?1:0;
+  const blocked=b.blocked===true||b.blocked==='on';
   await env.DB.batch([
    env.DB.prepare('UPDATE customers SET role=?,blocked=? WHERE id=?').bind(role,blocked,id),
    activity(env.DB,user,blocked?'Blocked account':(role==='admin'?'Made admin':'Removed admin'),target.email),
@@ -187,7 +187,7 @@ async function api(req,env){
   const rows=user.chief
    ? await all(env.DB,'SELECT t.*,a.name AS assignee_name,a.email AS assignee_email,c.name AS creator_name FROM admin_tasks t LEFT JOIN customers a ON a.id=t.assignee_id LEFT JOIN customers c ON c.id=t.created_by ORDER BY CASE t.status WHEN \'open\' THEN 0 WHEN \'doing\' THEN 1 ELSE 2 END, t.created_at DESC')
    : await all(env.DB,'SELECT t.*,a.name AS assignee_name,a.email AS assignee_email,c.name AS creator_name FROM admin_tasks t LEFT JOIN customers a ON a.id=t.assignee_id LEFT JOIN customers c ON c.id=t.created_by WHERE t.assignee_id=? ORDER BY CASE t.status WHEN \'open\' THEN 0 WHEN \'doing\' THEN 1 ELSE 2 END, t.created_at DESC',user.id);
-  const team=await all(env.DB,"SELECT id,name,email FROM customers WHERE role IN ('admin','chief','owner') AND blocked=false ORDER BY name");
+  const team=await all(env.DB,"SELECT id,name,email FROM customers WHERE role IN ('admin','chief','owner') AND NOT blocked ORDER BY name");
   return json({tasks:rows,team});
  }
  if(path==='/api/admin/tasks'&&method==='POST'){
@@ -230,8 +230,16 @@ async function api(req,env){
 
  // -------------------------------------------------------------- team chat
  if(path==='/api/admin/messages'&&method==='GET'){
-  const rows=await all(env.DB,'SELECT m.id,m.body,m.created_at,m.author_id,c.name AS author_name,c.role AS author_role FROM admin_messages m JOIN customers c ON c.id=m.author_id ORDER BY m.created_at DESC LIMIT 100');
-  return json({messages:rows.reverse(),you:{id:user.id}});
+  // The newest 100 are selected descending, then shown oldest-first. created_at
+  // is not unique -- two admins can post inside the same millisecond -- so id
+  // breaks the tie in both directions. Without it the sort is undefined and the
+  // thread can reorder itself between refreshes.
+  const rows=await all(env.DB,`SELECT * FROM (
+    SELECT m.id,m.body,m.created_at,m.author_id,c.name AS author_name,c.role AS author_role
+    FROM admin_messages m JOIN customers c ON c.id=m.author_id
+    ORDER BY m.created_at DESC, m.id DESC LIMIT 100) recent
+   ORDER BY created_at ASC, id ASC`);
+  return json({messages:rows,you:{id:user.id}});
  }
  if(path==='/api/admin/messages'&&method==='POST'){
   const b=await body(req),text=str(b.body,1000);
