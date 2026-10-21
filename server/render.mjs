@@ -11,7 +11,7 @@
 // second visual language. Only layout glue is new, in public/product.css.
 
 import {money} from './catalog.js';
-import {filters, accountMenu, dialogs, siteNav} from './shell.js';
+import {filters, accountMenu, dialogs, siteNav, siteFooter} from './shell.js';
 import {
   esc, jsonLd, metaTags, productMeta, productSchema,
   breadcrumbs, organisation, productUrl, assetUrl,
@@ -74,7 +74,7 @@ function header() {
 }
 
 function footer() {
-  return `<footer class="catalog-footer"><a href="/" aria-label="Lyverne home"><img src="/assets/lyverne-navbar.png" alt="LYVERNE" width="3715" height="925"></a><span>ALL RIGHTS RESERVED © 2026</span><a href="/studio/">Style studio</a><a class="site-credit" href="https://foxmen.studio" target="_blank" rel="noopener noreferrer"><svg class="credit-mark" viewBox="0 0 114.86 114.86" fill="none" aria-hidden="true"><g stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><polygon points="86.85 27.97 86.89 43.89 71.15 43.84 56.73 27.97 27.95 27.97 27.76 1.03 58.44 1 86.89 27.97 86.85 27.97"/><polygon points="113.86 58.46 86.94 86.79 86.94 87.06 71.84 87.17 71.82 71.42 86.85 56.91 86.85 28.01 113.83 27.83 113.86 58.46"/><polygon points="86.76 86.88 57.23 86.88 43.09 71.99 27.75 72 27.86 86.88 27.86 86.93 27.9 86.97 56.27 113.86 86.95 113.83 86.76 86.88"/><polygon points="28.02 57.23 28.13 86.84 1.15 87.13 1 56.49 27.77 28.12 27.87 28.01 27.91 28.01 42.49 27.91 42.5 43.25 28.02 57.23"/></g></svg><span>Site by <strong>Foxmen Studio</strong></span></a><a href="#main">Back to top ↑</a></footer>`;
+  return `${siteFooter}`;
 }
 
 // The gallery shows front and back when a back image exists. Both are real
@@ -127,7 +127,7 @@ export function productPage({product, origin, others = [], campaignEnabled = tru
     jsonLd(organisation(origin)),
   ].join('');
 
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#F3EEE4"><title>${esc(title)}</title>${head}<link rel="icon" href="/assets/lyverne-monogram.png"><link rel="apple-touch-icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/transitions.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"><link rel="stylesheet" href="/account-menu.css">${campaignEnabled ? '<link rel="stylesheet" href="/promotion-popup.css">' : ''}<script type="module" src="/transitions.js"></script><script type="module" src="/app.js"></script><script type="module" src="/account-menu.js"></script>${campaignEnabled ? '<script type="module" src="/promotion-popup.js"></script>' : ''}<script type="module" src="/product-page.js"></script></head>
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#F3EEE4"><title>${esc(title)}</title>${head}<link rel="icon" href="/assets/lyverne-monogram.png"><link rel="apple-touch-icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/footer.css"><link rel="stylesheet" href="/transitions.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"><link rel="stylesheet" href="/account-menu.css">${campaignEnabled ? '<link rel="stylesheet" href="/promotion-popup.css">' : ''}<script type="module" src="/transitions.js"></script><script type="module" src="/app.js"></script><script type="module" src="/account-menu.js"></script>${campaignEnabled ? '<script type="module" src="/promotion-popup.js"></script>' : ''}<script type="module" src="/product-page.js"></script></head>
 <body class="collection-page product-page">
 ${filters}
 <a class="skip-link" href="#main">Skip to product</a>
@@ -146,7 +146,7 @@ ${dialogs}
 // archived product is never indexed, and so a mistyped URL does not quietly
 // return a 200 page that Google would add to the index.
 export function productNotFound(origin) {
-  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Piece not found — LYVERNE</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/lyverne-monogram.png"><link rel="apple-touch-icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"></head>
+  return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Piece not found — LYVERNE</title><meta name="robots" content="noindex"><link rel="icon" href="/assets/lyverne-monogram.png"><link rel="apple-touch-icon" href="/assets/lyverne-monogram.png"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/footer.css"><link rel="stylesheet" href="/site-nav.css"><link rel="stylesheet" href="/collection.css"><link rel="stylesheet" href="/product.css"></head>
 <body class="collection-page product-page">
 ${header()}
 <main id="main" class="product-page-missing">
