@@ -84,16 +84,19 @@ await optimizeReferences('dist/client');await optimizeReferences('dist/server');
  const {siteOrigin,metaTags,jsonLd,organisation,website}=await import('../server/seo.mjs');
  const origin=siteOrigin(process.env);
  const pages={
-  'dist/client/index.html':{path:'/',title:'LYVERNE — Everyday, elevated.',image:'/assets/tee-front.png',
-   description:'Lyverne. Everyday, elevated. A Bangladeshi clothing label making relaxed, considered pieces — the signature tee and four original graphic designs.',
+  'dist/client/index.html':{path:'/',title:'Lyverne — Bangladeshi Streetwear Brand | Oversized Tees, Dhaka',image:'/assets/tee-front.png',
+   description:'Lyverne is a Bangladeshi streetwear brand from Dhaka. Oversized drop-shoulder tees and original graphic designs in premium cotton, delivered across Bangladesh.',
    schema:o=>[organisation(o),website(o)]},
-  'dist/client/studio/index.html':{path:'/studio/',title:'Style Studio — LYVERNE',image:'/assets/studio-hero.png',
+  'dist/client/studio/index.html':{path:'/studio/',title:'Style Studio — Lyverne, Bangladeshi Streetwear',image:'/assets/studio-hero.png',
    description:'The Lyverne Style Studio. Find your colours, build a look, and discover the small things that make it yours.',schema:()=>[]},
  };
  const noindex=['login','signup','dashboard','admin'];
  for(const [file,page] of Object.entries(pages)){
   let html;try{html=await readFile(file,'utf8');}catch{continue;}
-  html=html.replace(/<link rel="canonical"[^>]*>/g,'').replace(/<meta name="description"[^>]*>/g,'');
+  // The title is the strongest on-page signal for a query like "Bangladeshi
+  // streetwear brand", so it is set here alongside the description.
+  html=html.replace(/<link rel="canonical"[^>]*>/g,'').replace(/<meta name="description"[^>]*>/g,'')
+   .replace(/<title>[^<]*<\/title>/,`<title>${page.title}</title>`);
   const head=metaTags({origin,path:page.path,title:page.title,description:page.description,image:page.image})
    +page.schema(origin).map(jsonLd).join('');
   await writeFile(file,html.replace('</head>',head+'</head>'));

@@ -423,12 +423,12 @@ async function renderCollection(req,env){
  // Strip every build-time tag we are about to replace. Leaving the static
  // description in place would win, because Google reads the first one, and the
  // static canonical points at whichever host the build ran on.
- const title='Shop All T-Shirts — Oversized Tees in Bangladesh | LYVERNE';
+ const title='Shop Streetwear — Oversized Tees in Bangladesh | Lyverne';
  html=html.replace(/<link rel="canonical"[^>]*>/g,'')
   .replace(/<meta name="description"[^>]*>/g,'')
   .replace(/<title>[^<]*<\/title>/,`<title>${esc(title)}</title>`)
   .replace('</head>',metaTags({origin,path:'/collection/',title,
-   description:'Shop the Lyverne collection: oversized drop-shoulder t-shirts and original graphic tees in premium cotton, from ৳1,800. Delivered across Bangladesh.',
+   description:'Shop Lyverne, Bangladeshi streetwear: oversized drop-shoulder t-shirts and original graphic tees in premium cotton, from ৳1,800. Delivered across Bangladesh.',
    image:products[0]?.image||'/assets/tee-front.png'})
    +jsonLd(collectionSchema(origin,products))+jsonLd(organisation(origin))+jsonLd(website(origin))+'</head>');
  return html2(html,200,{'Cache-Control':'public, max-age=300, stale-while-revalidate=600'});

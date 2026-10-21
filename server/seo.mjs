@@ -75,16 +75,24 @@ export function metaTags({origin, path = '/', title, description, image, type = 
 
 // ---------------------------------------------------------- structured data
 
+// Lyverne's official social profiles. Google uses sameAs to tie these to the
+// site as one brand entity, which is what earns the knowledge panel on a
+// search for "Lyverne". Add each profile's full URL as it goes live.
+export const SOCIAL_PROFILES = [];
+
 export function organisation(origin) {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
     '@id': `${origin}/#organization`,
     name: 'Lyverne',
+    alternateName: ['LYVERNE', 'Lyverne Bangladesh', 'Lyverne Streetwear'],
     url: origin + '/',
     logo: absolute(origin, '/assets/lyverne-monogram.png'),
     slogan: 'A little less noise. A little more you.',
-    description: 'Lyverne is a Bangladeshi clothing label making relaxed, considered everyday pieces.',
+    description: 'Lyverne is a Bangladeshi streetwear brand from Dhaka, making oversized tees and original graphic designs.',
+    knowsAbout: ['Streetwear', 'Oversized t-shirts', 'Graphic tees', 'Custom team jerseys'],
+    ...(SOCIAL_PROFILES.length ? {sameAs: SOCIAL_PROFILES} : {}),
     address: {'@type': 'PostalAddress', addressCountry: 'BD', addressLocality: 'Dhaka'},
     areaServed: {'@type': 'Country', name: 'Bangladesh'},
   };
@@ -96,7 +104,8 @@ export function website(origin) {
     '@type': 'WebSite',
     '@id': `${origin}/#website`,
     url: origin + '/',
-    name: 'LYVERNE',
+    name: 'Lyverne',
+    alternateName: 'LYVERNE',
     inLanguage: 'en-BD',
     publisher: {'@id': `${origin}/#organization`},
   };
@@ -243,6 +252,6 @@ export function productMeta(product) {
   return {
     title: clip(product.seo_title || `${name} | LYVERNE`, 70),
     description: clip(product.seo_description
-      || `${product.description}${priced} Everyday wear from Lyverne, delivered across Bangladesh.`, 158),
+      || `${product.description}${priced} Bangladeshi streetwear from Lyverne, delivered across Bangladesh.`, 158),
   };
 }
