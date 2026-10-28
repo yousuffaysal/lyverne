@@ -75,14 +75,17 @@
 .product-page-shot.detail-crop { object-fit: cover; transform: scale(1.8); }
 
 /* The same tab row as the dialog, under the frame rather than floating over
-   it -- on the page there is no dialog chrome to tuck them into. */
+   it -- on the page there is no dialog chrome to tuck them into.
+
+   Each button carries a thumbnail as well as a word. Here the word is the
+   control and the thumbnail is hidden; on a phone they swap over. */
 .product-page-gallery .gallery-tabs {
   position: static;
   display: flex;
   justify-content: center;
   gap: 10px;
 }
-.product-page-gallery .gallery-tabs button {
+.product-page-gallery .pd-view {
   background: transparent;
   border: 1px solid #20201c40;
   padding: 10px 18px;
@@ -90,7 +93,41 @@
   font-weight: 600;
   letter-spacing: .06em;
 }
-.product-page-gallery .gallery-tabs button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+.product-page-gallery .pd-view > img { display: none; }
+.product-page-gallery .pd-view[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+
+/* The page's own header. Only a phone uses it -- see the mobile block. */
+.pd-top { display: none; }
+.pd-headline > div { min-width: 0; }
+.pd-quantity, .pd-section { display: none; }
+.pd-price-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.pd-price-row .price-line { flex: 1 1 auto; }
+
+/* The colourways, as swatches that are links to their own pages. */
+.pd-colours { display: flex; align-items: center; gap: 10px; }
+.pd-colour { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; }
+.pd-colour > i {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--swatch); border: 1px solid #20201c33; display: block;
+}
+.pd-colour > em { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+.pd-colour[aria-current] { box-shadow: 0 0 0 1.5px var(--ink); }
+.pd-colour:hover > i, .pd-colour:focus-visible > i { transform: scale(1.12); }
+.pd-colour > i { transition: transform .2s var(--ease); }
+
+/* Add to Cart / Buy Now. On a desktop the page keeps one primary button, so
+   Buy Now sits beside it as the quieter of the two. */
+.pd-actions { display: flex; gap: 12px; margin-top: 8px; }
+.btn-add, .btn-buy {
+  flex: 1 1 0; min-width: 0; height: 54px; padding: 0 18px; border-radius: 40px;
+  font-size: 13px; font-weight: 600; letter-spacing: .04em;
+  display: grid; place-items: center; transition: background .2s, color .2s;
+}
+.btn-add { background: #e3ddd1; color: var(--ink); }
+.btn-add:hover:not(:disabled) { background: var(--ink); color: var(--cream); }
+.btn-add:disabled { background: #d6d0c4; color: #6b6960; cursor: default; }
+.btn-buy { background: var(--orange); color: var(--ink); }
+.btn-buy:hover { background: var(--ink); color: var(--cream); }
 
 /* .product-info is shared with the dialog, where it carries dialog padding.
    Reset that here and let the page grid own the spacing. */
@@ -142,27 +179,60 @@
   .product-page-related-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* Phone composition follows the product-focused reference. */
 @media (max-width: 650px) {
-  /* The same pinned buy bar the quick-look sheet uses, for the same reason:
-     with the frame and the tabs above it, the size row and ADD TO BAG started
-     178px below the fold. Identical offsets so the two read as one control. */
-  .product-page-info { padding-bottom: 130px; }
-  .product-page-info .size-selector,
-  .product-page-info .size-error,
-  .product-page-info .add-to-bag { position: sticky; z-index: 5; }
-  .product-page-info .size-selector,
-  .product-page-info .size-error { background: var(--cream); }
-  .product-page-info .size-selector {
-    bottom: 76px;
-    margin-top: 18px;
-    padding: 14px 0 2px;
-    box-shadow: 0 -16px 16px -6px var(--cream);
-  }
-  .product-page-info .size-error { bottom: 54px; min-height: 22px; padding: 0 0 4px; }
-  .product-page-info .add-to-bag { bottom: 0; height: 54px; padding: 0 20px; }
+  .product-page:has(.pd-top) > .site-nav { display: none; }
+  .product-page:has(.pd-top) main { position: relative; padding: 8px 8px 110px; }
+  .product-page-breadcrumb { display: none; }
+  .pd-top { position: absolute; top: 22px; left: 24px; right: 24px; z-index: 6; display: flex; align-items: center; justify-content: space-between; color: var(--ink); }
+  .pd-top-title { font-size: 14px; font-weight: 600; }
+  .pd-icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--cream); }
+  .pd-icon svg { width: 22px; height: 22px; }
+  .pd-save[aria-pressed="true"] { color: var(--orange); }
+  .pd-save[aria-pressed="true"] svg { fill: currentColor; }
+  .product-page-layout { display: block; }
+  .product-page-gallery { position: relative; display: block; }
+  .product-page-frame { aspect-ratio: auto; height: clamp(350px, 52svh, 470px); max-height: none; border-radius: 28px; background: var(--hero, #e8e2d7); }
+  .product-page-shot { inset: 72px 62px 12px 4px; width: calc(100% - 66px); height: calc(100% - 84px); mix-blend-mode: multiply; }
+  .product-page-shot.detail-crop { object-fit: contain; transform: none; }
+  .product-page-gallery .gallery-tabs { position: absolute; top: 84px; left: auto; right: 12px; bottom: 18px; transform: none; display: flex; flex-direction: column; justify-content: center; gap: 9px; }
+  .product-page-gallery .pd-view { flex: 0 1 66px; width: 58px; min-height: 44px; padding: 0; border: 2px solid transparent; border-radius: 17px; overflow: hidden; background: var(--cream); }
+  .product-page-gallery .pd-view > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .product-page-gallery .pd-view > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .product-page-gallery .pd-view[aria-pressed="true"] { border-color: var(--orange); background: var(--cream); }
+  .product-page-info { margin-top: 10px; padding: 20px 16px 26px; border-radius: 28px; background: color-mix(in srgb, var(--cream) 65%, white); }
+  .pd-headline { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .pd-headline .eyebrow { display: none; }
+  .product-page-info h1 { font-size: clamp(28px, 7.5vw, 36px); line-height: 1.02; margin: 0; }
+  .pd-quantity { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+  .pd-quantity button { width: 36px; height: 44px; border-radius: 50%; background: var(--cream); font-size: 21px; }
+  .pd-quantity button:last-child { background: var(--orange); }
+  .pd-quantity button:disabled { opacity: .4; cursor: default; }
+  .pd-quantity output { min-width: 25px; text-align: center; font-size: 12px; }
+  .pd-price-row { gap: 8px; margin: 14px 0 18px; }
+  .product-page-info .price-line { margin: 0; gap: 10px; justify-content: flex-start; }
+  .product-page-info .price-line strong { font-size: 18px; }
+  .product-page-info .price-line > span { font-size: 9px; }
+  .pd-colours { gap: 3px; flex-wrap: wrap; }
+  .pd-colour { width: 32px; height: 32px; }
+  .pd-colour > i { width: 23px; height: 23px; }
+  .product-page-info .size-selector { margin: 0; }
+  .product-page-info .size-selector legend { margin-bottom: 10px; font-size: 11px; }
+  .product-page-info .size-selector > div { flex-wrap: wrap; gap: 7px; }
+  .product-page-info .size-selector button { min-width: 40px; height: 44px; padding: 0 9px; border-radius: 50%; border-color: var(--line); font-size: 12px; }
+  .product-page-info .size-selector button[aria-pressed="true"] { background: var(--orange); border-color: var(--orange); color: var(--ink); }
+  .product-page-info .size-error { min-height: 18px; font-size: 11px; }
+  .product-page-info .pd-section { display: block; font: 600 13px Manrope, sans-serif; margin: 4px 0 7px; }
+  .product-page-info .product-description { font-size: 12px; line-height: 1.65; }
+  .product-page-info details { font-size: 12px; }
+  .pd-actions { position: fixed; bottom: 0; left: 8px; right: 8px; z-index: 35; margin: 0; padding: 9px 9px max(12px, env(safe-area-inset-bottom)); gap: 8px; border-radius: 32px 32px 0 0; background: var(--cream); box-shadow: 0 -5px 24px #20201c12; }
+  .pd-actions .btn-add, .pd-actions .btn-buy { height: 48px; font-size: 12px; display: flex; align-items: center; justify-content: center; padding: 0 12px; }
+  .pd-actions .btn-add { background: #e3ddd1; }
+  .product-page-related { margin: 45px 16px 0; }
+  .product-page-related-grid { grid-template-columns: 1fr; }
+  .product-page .toast { bottom: 90px; white-space: normal; }
 }
 
-@media (max-width: 620px) {
-  .product-page-breadcrumb { padding: 18px 0 24px; }
-  .product-page-related-grid { grid-template-columns: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  .product-page-shot, .pd-colour > i { transition: none; }
 }

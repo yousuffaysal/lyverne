@@ -77,15 +77,20 @@ function footer() {
   return `${siteFooter}`;
 }
 
-// One framed shot with FRONT / BACK / DETAIL tabs, the same viewer the
+// One framed shot with the other views beside it. The same viewer the
 // collection's quick-look dialog uses -- the page and the dialog were showing
-// the same product two different ways, and stacking the views meant the buy
+// the same garment two different ways, and stacking the views meant the buy
 // controls started a full screen down.
 //
-// Every view is a real <img> in the markup, as before, so Google Images still
-// has them all; the inactive ones are hidden with visibility rather than
-// display, which keeps their boxes in layout. DETAIL is a close crop of the
-// front unless the product carries its own detail photograph.
+// Every view is a real <img> in the markup, so Google Images still has them
+// all; the inactive ones are hidden with visibility rather than display, which
+// keeps their boxes in layout. DETAIL is a close crop of the front unless the
+// product carries its own detail photograph.
+//
+// Each view button holds BOTH a thumbnail and a word. A phone shows the
+// thumbnails, stacked down the right of the hero; a desktop shows the words as
+// the tab row it has always had. One set of buttons either way, so there is
+// only ever one control per view for a screen reader to find.
 function gallery(product) {
   const views = [
     {view: 'front', src: assetUrl(product.image), label: 'FRONT', alt: `${product.name} in ${product.color}, front view`},
@@ -95,27 +100,60 @@ function gallery(product) {
   ];
   const origin = product.detailFocus || '65% 30%';
   const shots = views.map((v, i) => `<img class="product-page-shot${v.crop ? ' detail-crop' : ''}" data-view="${esc(v.view)}"${i === 0 ? ' data-active' : ''} src="${esc(v.src)}" alt="${esc(v.alt)}" width="1254" height="1254" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}${v.crop ? ` style="transform-origin:${esc(origin)}"` : ''}>`).join('');
-  const tabs = views.map((v, i) => `<button type="button" data-page-view="${esc(v.view)}" aria-pressed="${i === 0}">${v.label}</button>`).join('');
+  const tabs = views.map((v, i) => `<button type="button" class="pd-view" data-page-view="${esc(v.view)}" aria-pressed="${i === 0}"><img src="${esc(v.src)}" alt="" aria-hidden="true" loading="lazy"><span>${v.label}</span></button>`).join('');
   return `<div class="product-page-gallery">
 <figure class="product-page-frame">${shots}</figure>
 <div class="gallery-tabs" role="group" aria-label="Product view">${tabs}</div>
 </div>`;
 }
 
-function info(product) {
+// The swatch row: this piece's other colourways, each its own page. The one
+// you are on is marked current rather than linked to itself.
+function colourRow(product, colourways) {
+  const all = colourways.length ? colourways : [product];
+  if (all.length < 2) return '';
+  return `<div class="pd-colours" role="group" aria-label="Colour">${all.map(c =>
+    c.id === product.id
+      ? `<span class="pd-colour" aria-current="true" title="${esc(c.color)}" style="--swatch:${swatch(c)}"><i aria-hidden="true"></i><em>${esc(c.color)}</em></span>`
+      : `<a class="pd-colour" href="/collection/${esc(c.slug)}/" title="${esc(c.color)}" style="--swatch:${swatch(c)}"><i aria-hidden="true"></i><em>${esc(c.color)}</em></a>`
+  ).join('')}</div>`;
+}
+
+// Straight from the database into a style attribute, so it is checked rather
+// than trusted: anything that is not a plain hex colour becomes the default.
+const HEX = /^#[0-9a-f]{3,8}$/i;
+const swatch = p => (HEX.test(String(p.swatch || '')) ? p.swatch : '#20201c');
+
+function info(product, colourways) {
   const sizes = Array.isArray(product.sizes) ? product.sizes : [];
   const inStock = product.stock > 0;
   const priced = product.price !== null && product.price !== undefined;
+  const buyable = inStock && priced;
   return `<div class="product-info product-page-info">
+<div class="pd-headline">
+<div>
 <p class="eyebrow">LYVERNE / ${esc(CATEGORY_LABEL[product.category] || product.category)}</p>
 <h1>${esc(product.name)}</h1>
-<p class="color-line"><i class="color-swatch" style="background:${esc(product.swatch || '#20201c')}" aria-hidden="true"></i>${esc(product.color)}</p>
-<p class="product-description">${esc(product.description)}</p>
-<div class="price-line"><strong>${priced ? esc(money(product.price)) : 'PRICE TBA'}</strong><span>${inStock ? 'IN STOCK' : 'SOLD OUT'}</span></div>
+</div>
+${buyable ? `<div class="pd-quantity" role="group" aria-label="Quantity">
+<button type="button" data-step="-1" aria-label="One fewer">&minus;</button>
+<output data-quantity aria-live="polite">01</output>
+<button type="button" data-step="1" aria-label="One more">+</button>
+</div>` : ''}
+</div>
+<div class="pd-price-row">
+<p class="price-line"><strong>${priced ? esc(money(product.price)) : 'PRICE TBA'}</strong><span>${inStock ? 'IN STOCK' : 'SOLD OUT'}</span></p>
+${colourRow(product, colourways)}
+</div>
 ${sizes.length ? `<fieldset class="size-selector"><legend>SELECT SIZE</legend><div>${sizes.map(s => `<button type="button" data-size="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join('')}</div></fieldset><p class="size-error" role="alert"></p>` : ''}
-<button class="add-to-bag" data-add-product="${esc(product.id)}"${inStock && priced ? '' : ' disabled'}>${inStock && priced ? 'ADD TO BAG' : 'NOT AVAILABLE YET'} <span aria-hidden="true">↗︎</span></button>
+<h2 class="pd-section">Description</h2>
+<p class="product-description">${esc(product.description)}</p>
 <details><summary>Fit and fabric <span aria-hidden="true">+</span></summary><p>A relaxed, dropped-shoulder silhouette with room to move. Cut for everyday wear, not for trying too hard.</p></details>
 <details><summary>Delivery and returns <span aria-hidden="true">+</span></summary><p>Delivered across Bangladesh. Orders are confirmed by Lyverne before dispatch; payment and delivery details are arranged directly with you.</p></details>
+<div class="pd-actions">
+<button class="btn-add add-to-bag" data-add-product="${esc(product.id)}"${buyable ? '' : ' disabled'}>${buyable ? 'Add to Cart' : (inStock ? 'Not available yet' : 'Sold out')}</button>
+${buyable ? '<button class="btn-buy" data-buy-now>Buy Now</button>' : ''}
+</div>
 </div>`;
 }
 
@@ -127,7 +165,7 @@ function related(origin, others) {
 </section>`;
 }
 
-export function productPage({product, origin, others = [], campaignEnabled = true}) {
+export function productPage({product, origin, others = [], colourways = [], campaignEnabled = true}) {
   const {title, description} = productMeta(product);
   const path = `/collection/${product.slug}/`;
   const head = [
@@ -147,8 +185,13 @@ ${filters}
 <a class="skip-link" href="#main">Skip to product</a>
 ${header()}
 <main id="main">
+<div class="pd-top">
+<a class="pd-icon" href="/collection/" aria-label="Back to the collection"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></a>
+<span class="pd-top-title">Details</span>
+<button type="button" class="pd-icon pd-save" data-save-product="${esc(product.id)}" aria-pressed="false" aria-label="Save this piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.3A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></button>
+</div>
 <nav class="product-page-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/collection/">Collection</a> <span aria-hidden="true">/</span> <span aria-current="page">${esc(product.name)} — ${esc(product.color)}</span></nav>
-<div class="product-page-layout">${gallery(product)}${info(product)}</div>
+<div class="product-page-layout" style="--hero:color-mix(in srgb, ${swatch(product)} 20%, var(--cream))">${gallery(product)}${info(product, colourways)}</div>
 ${related(origin, others)}
 </main>
 ${footer()}

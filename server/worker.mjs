@@ -443,7 +443,11 @@ async function renderProduct(slug,env){
  if(!record)return html2(productNotFound(origin),404,{'Cache-Control':'public, max-age=60'});
  const product=decodeProduct(record);
  const others=(await all(env.DB,"SELECT * FROM products WHERE status='active' AND id!=? ORDER BY created_at DESC LIMIT 4",product.id)).map(decodeProduct);
- return html2(productPage({product,origin,others}),200,{'Cache-Control':'public, max-age=300, stale-while-revalidate=600'});
+ // The same piece in its other colours. Lyverne sells a colourway as its own
+ // product, so the swatch row on the page is a set of sibling rows sharing a
+ // name -- not a variant field on this one.
+ const colourways=(await all(env.DB,"SELECT * FROM products WHERE status='active' AND name=? ORDER BY created_at",product.name)).map(decodeProduct);
+ return html2(productPage({product,origin,others,colourways}),200,{'Cache-Control':'public, max-age=300, stale-while-revalidate=600'});
 }
 export default {async fetch(req,originalEnv,ctx){
  // Give every handler an env whose DB is a real connection, built from
