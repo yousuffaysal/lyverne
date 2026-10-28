@@ -8,6 +8,21 @@
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
+// ------------------------------------------------------------- the view tabs
+// Every view is already in the page; switching one on is just moving the
+// data-active flag, so there is nothing to load and nothing to lay out again.
+{
+  const shots = $$('.product-page-shot');
+  const tabs = $$('.product-page-gallery [data-page-view]');
+  for (const tab of tabs) {
+    tab.addEventListener('click', () => {
+      const view = tab.dataset.pageView;
+      for (const shot of shots) shot.toggleAttribute('data-active', shot.dataset.view === view);
+      for (const other of tabs) other.setAttribute('aria-pressed', String(other === tab));
+    });
+  }
+}
+
 const addButton = $('.product-page-info .add-to-bag');
 if (addButton) {
   const productId = addButton.dataset.addProduct;

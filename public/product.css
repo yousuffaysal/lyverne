@@ -39,33 +39,58 @@
   align-items: start;
 }
 
-.product-page-gallery { display: grid; gap: 16px; }
+.product-page-gallery { display: grid; gap: 14px; }
 
-.product-page-view {
+/* One frame, every view stacked inside it. Square, like the dialog's, so the
+   tee is the same size whichever view you are on and the tabs never jump. */
+.product-page-frame {
   position: relative;
   margin: 0;
   background: #e8e2d7;
   border-radius: 2px;
   overflow: hidden;
-}
-
-.product-page-view img {
-  display: block;
-  width: 100%;
-  height: auto;
   aspect-ratio: 1 / 1;
-  object-fit: contain;
+  /* Square from the column width, but never so tall that the FRONT/BACK/DETAIL
+     row falls off the first screen -- at 1440x900 the square came to 691px and
+     pushed the tabs 17px under the fold, so nobody would know the other views
+     were there. 238px is the nav, the breadcrumb, the tab row and its gap.
+     The image is object-fit:contain, so a shorter frame letterboxes it rather
+     than cropping anything. */
+  max-height: max(420px, calc(100svh - 238px));
 }
 
-.product-page-view figcaption {
+/* visibility, not display: the inactive views keep their layout boxes, which
+   is what keeps all of them indexable as product images. */
+.product-page-shot {
   position: absolute;
-  top: 18px;
-  left: 18px;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .35s var(--ease);
+}
+.product-page-shot[data-active] { opacity: 1; visibility: visible; }
+.product-page-shot.detail-crop { object-fit: cover; transform: scale(1.8); }
+
+/* The same tab row as the dialog, under the frame rather than floating over
+   it -- on the page there is no dialog chrome to tuck them into. */
+.product-page-gallery .gallery-tabs {
+  position: static;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.product-page-gallery .gallery-tabs button {
+  background: transparent;
+  border: 1px solid #20201c40;
+  padding: 10px 18px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: .06em;
-  color: var(--muted);
 }
+.product-page-gallery .gallery-tabs button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
 
 /* .product-info is shared with the dialog, where it carries dialog padding.
    Reset that here and let the page grid own the spacing. */
@@ -115,6 +140,26 @@
   .product-page-layout { grid-template-columns: 1fr; }
   .product-page-info { position: static; }
   .product-page-related-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 650px) {
+  /* The same pinned buy bar the quick-look sheet uses, for the same reason:
+     with the frame and the tabs above it, the size row and ADD TO BAG started
+     178px below the fold. Identical offsets so the two read as one control. */
+  .product-page-info { padding-bottom: 130px; }
+  .product-page-info .size-selector,
+  .product-page-info .size-error,
+  .product-page-info .add-to-bag { position: sticky; z-index: 5; }
+  .product-page-info .size-selector,
+  .product-page-info .size-error { background: var(--cream); }
+  .product-page-info .size-selector {
+    bottom: 76px;
+    margin-top: 18px;
+    padding: 14px 0 2px;
+    box-shadow: 0 -16px 16px -6px var(--cream);
+  }
+  .product-page-info .size-error { bottom: 54px; min-height: 22px; padding: 0 0 4px; }
+  .product-page-info .add-to-bag { bottom: 0; height: 54px; padding: 0 20px; }
 }
 
 @media (max-width: 620px) {

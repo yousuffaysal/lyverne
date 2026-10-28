@@ -260,3 +260,40 @@
  .essence-bottom{margin-top:auto}
  .essence .split-title{position:absolute;left:5vw;right:5vw;top:50%;transform:translateY(-50%)}
 }
+
+/* ------------------------------------ the orange word box: ink centred in it
+   The box is 1.03em tall and the word inside is laid out by line-height, so
+   where the glyphs land depends on Khand's own metrics, not on the box. Khand
+   bold measures (per em): cap ink 0.703 above the baseline, 0.010 below, with
+   an ascender of 1.050 and a descender of 0.479. Those put the baseline at
+   0.8155em, which leaves 0.113em of box above the caps and 0.205em below --
+   nearly twice as much underneath, which is the lopsided gap.
+
+   Centring the ink wants the baseline at (1.03 + 0.703 - 0.010) / 2 = 0.862em,
+   so the word moves down by about half the difference. Measured rather than
+   trusted: 11.3px of error at a 108.7px headline and 4.5px at 33.9px, which is
+   0.052em and 0.066em -- so 0.055em lands both inside a pixel.
+
+   A transform, not padding: the roll animates by percentage of its own height,
+   and changing the spans' height would shift every stop. */
+.word-roll>span{transform:translateY(.055em)}
+
+/* ------------------------------- the spec row has to be readable over the tee
+   On a phone the shirt is centred in the window by the sticky stage, and the
+   spec row sits at the bottom of a 940px section -- so the two land on top of
+   each other. The row already paints above the shirt (z-index 5 against the
+   stage's 4), but ink-on-black is unreadable and the hairline divider vanishes
+   into the garment entirely.
+
+   So the row becomes a solid cream panel the shirt passes behind, pulled out
+   to the section's gutter. Desktop never has the collision: the copy is 45%
+   wide, the shirt sits in the right half, and the row clears it. */
+@media(max-width:650px){
+ body.home-page .specs{
+  background:var(--cream);
+  margin:0 -5vw;
+  padding:23px 5vw 20px;
+  border-top:1px solid var(--line);
+  border-radius:0;
+ }
+}

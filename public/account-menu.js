@@ -8,7 +8,6 @@
 import * as auth from './auth-client.js';
 
 const menus = [...document.querySelectorAll('.account-menu')];
-const PHONE = matchMedia('(max-width: 650px)');
 
 // --------------------------------------------------------- disclosure basics
 
@@ -56,10 +55,16 @@ function render(user) {
     panel.innerHTML =
       `<p>${escapeHtml(heading).toUpperCase()}</p>` +
       items.map(([href, label, icon]) => `<a href="${href}">${label} ${icon}</a>`).join('') +
-      // Menu is offered only on phones, where the header has no Menu button.
-      (PHONE.matches ? '<button type="button" class="account-action" data-open-menu>Menu <span aria-hidden="true">☰</span></button>' : '') +
       (signedIn ? '<button type="button" class="account-action" data-sign-out>Sign out</button>' : '');
   }
+
+  // The phone header has no profile icon -- it is the bag and the menu -- so
+  // the menu carries the one account row instead. It is a link, not a sign
+  // in / sign out pair: signed out, the dashboard does the asking.
+  const row = document.querySelector('[data-menu-account]');
+  if (row) row.textContent = signedIn ? (user.name || 'My account') : 'My account';
+  const admin = document.querySelector('[data-menu-admin]');
+  if (admin) admin.hidden = !(signedIn && user.admin);
 }
 
 // The session is held in localStorage, not a cookie, so the token has to be
@@ -79,23 +84,10 @@ async function whoAmI() {
 // it once the server says who this is.
 render(null);
 whoAmI().then(render);
-// The breakpoint decides whether Menu belongs in the panel, so redraw on change.
-PHONE.addEventListener('change', () => { whoAmI().then(render); });
 
 // ------------------------------------------------------------------- actions
 
 document.addEventListener('click', async event => {
-  const openMenu = event.target.closest('[data-open-menu]');
-  if (openMenu) {
-    event.preventDefault();
-    for (const menu of menus) menu.open = false;
-    const dialog = document.querySelector('#menu-dialog');
-    if (dialog) {
-      for (const open of document.querySelectorAll('dialog[open]')) open.close();
-      dialog.showModal();
-    }
-    return;
-  }
   const out = event.target.closest('[data-sign-out]');
   if (out) {
     event.preventDefault();

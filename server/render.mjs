@@ -77,15 +77,29 @@ function footer() {
   return `${siteFooter}`;
 }
 
-// The gallery shows front and back when a back image exists. Both are real
-// <img> tags rather than CSS backgrounds so Google Images can index them and
-// the page still shows the product with JavaScript disabled.
+// One framed shot with FRONT / BACK / DETAIL tabs, the same viewer the
+// collection's quick-look dialog uses -- the page and the dialog were showing
+// the same product two different ways, and stacking the views meant the buy
+// controls started a full screen down.
+//
+// Every view is a real <img> in the markup, as before, so Google Images still
+// has them all; the inactive ones are hidden with visibility rather than
+// display, which keeps their boxes in layout. DETAIL is a close crop of the
+// front unless the product carries its own detail photograph.
 function gallery(product) {
   const views = [
-    {src: assetUrl(product.image), label: 'FRONT', alt: `${product.name} in ${product.color}, front view`},
-    ...(product.back ? [{src: assetUrl(product.back), label: 'BACK', alt: `${product.name} in ${product.color}, back view`}] : []),
+    {view: 'front', src: assetUrl(product.image), label: 'FRONT', alt: `${product.name} in ${product.color}, front view`},
+    ...(product.back ? [{view: 'back', src: assetUrl(product.back), label: 'BACK', alt: `${product.name} in ${product.color}, back view`}] : []),
+    {view: 'detail', src: assetUrl(product.detail || product.image), label: 'DETAIL',
+     crop: !product.detail, alt: `${product.name} in ${product.color}, fabric and signature detail`},
   ];
-  return `<div class="product-page-gallery">${views.map((v, i) => `<figure class="product-page-view"><img src="${esc(v.src)}" alt="${esc(v.alt)}" width="1254" height="1254" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}><figcaption class="view-label">${v.label}</figcaption></figure>`).join('')}</div>`;
+  const origin = product.detailFocus || '65% 30%';
+  const shots = views.map((v, i) => `<img class="product-page-shot${v.crop ? ' detail-crop' : ''}" data-view="${esc(v.view)}"${i === 0 ? ' data-active' : ''} src="${esc(v.src)}" alt="${esc(v.alt)}" width="1254" height="1254" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}${v.crop ? ` style="transform-origin:${esc(origin)}"` : ''}>`).join('');
+  const tabs = views.map((v, i) => `<button type="button" data-page-view="${esc(v.view)}" aria-pressed="${i === 0}">${v.label}</button>`).join('');
+  return `<div class="product-page-gallery">
+<figure class="product-page-frame">${shots}</figure>
+<div class="gallery-tabs" role="group" aria-label="Product view">${tabs}</div>
+</div>`;
 }
 
 function info(product) {
