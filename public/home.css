@@ -186,3 +186,77 @@
  /* Above badge three, which reaches ~235px up from the floor at this size. */
  .orbit-note{bottom:250px}
 }
+
+/* ------------------------------------------------------- scroll stops
+   Each full-height panel is a stop: the page settles on one, and the next
+   scroll carries you to the next.
+
+   center, not start: the fixed nav sets scroll-padding-top:95px, and aligning
+   a panel's top against that pushed every one of them 95px down the screen --
+   with .essence running 185px off the bottom. Centring sits each panel in the
+   middle of the window, which is where the eye expects it.
+
+   proximity, not mandatory. Three blocks on this page are taller than the
+   window -- .home-dark is 2067px and .everyday-collage 1188px against a 900px
+   viewport -- and under mandatory the browser pulls you off their middles,
+   so you can never sit and read them. proximity settles on a stop when you are
+   near one and otherwise leaves scrolling alone.
+
+   scroll-snap-stop:always is what makes it feel deliberate: a fast flick still
+   comes to rest on the next panel instead of flying past several.
+
+   Only the panels that actually fill the screen are stops. The tall sections
+   deliberately carry none, so they scroll freely. */
+@media (min-width:701px) and (prefers-reduced-motion:no-preference){
+ /* scroll-padding-top is 95px site-wide so an anchor jump clears the nav.
+    But this page's nav is position:absolute -- it scrolls away and never
+    covers anything -- so that padding only pushed every panel 95px down the
+    screen, which is what left the dead band above the headline. Zero here. */
+ html:has(body.home-page){scroll-snap-type:y mandatory;scroll-padding-top:0}
+ body.home-page .hero,
+ body.home-page .essence,
+ body.home-page .details,
+ body.home-page .signature-orbit,
+ body.home-page .brand-manifesto,
+ body.home-page .home-collection,
+ body.home-page .everyday-collage,
+ body.home-page .everyday-box,
+ body.home-page .graphic-intro,
+ body.home-page .home-film,
+ .studio-invitation{scroll-snap-align:center;scroll-snap-stop:always}
+ /* The sticky stage inside the orbit is its own scroll sequence; letting it
+    take a snap point as well would fight the animation it drives. */
+ body.home-page .orbit-stage{scroll-snap-align:none}
+ /* The footer needs one too. Without it mandatory refused to rest anywhere in
+    the last 1039px, so the copyright line and the studio credit could not be
+    scrolled to at all. Aligned to the end so the final stop shows its bottom. */
+ /* The footer keeps start: centring a 1076px block in a 900px window would
+    cut its top and bottom, and the reader needs to arrive at its top and read
+    down. It is taller than the scrollport, so scrolling inside it stays free
+    and the copyright and credit remain reachable. */
+ body.home-page .lyverne-footer{scroll-snap-align:start}
+}
+
+/* ------------------------------------- essence: the headline level with the tee
+   This section used to hold three rows -- the index line, the headline, the
+   closing copy -- and justify-content:space-between spread them top / middle /
+   bottom. With the index line removed there are only two rows, so space-between
+   pinned the headline to the very top while the tee stayed where it always is:
+   centred in the window by the sticky floating stage. That is the gap -- the
+   shirt did not drop, the text rose ~200px above it.
+
+   auto margins on the headline take the free space before justify-content gets
+   a say, so it sits mid-section again, alongside the shirt.
+
+   The height comes down from 110svh to the window as well. The content needs
+   roughly 560px; at 110svh the section ran 90px past the fold on a 900px screen
+   and cut the closing lines off, which is the clipping the snap stops exposed. */
+@media (min-width:651px){
+ .essence{height:100svh;min-height:640px}
+ /* Dead centre of the section, which is now exactly the window, so the headline
+    lands on the same line as the shirt whatever the closing copy wraps to.
+    left/right keep the two halves pushed apart the way the flex row did. */
+ /* the headline left the flow, so the closing copy has to be told to stay down. */
+ .essence-bottom{margin-top:auto}
+ .essence .split-title{position:absolute;left:5vw;right:5vw;top:50%;transform:translateY(-50%)}
+}

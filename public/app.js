@@ -40,6 +40,6 @@ window.addEventListener('storage',e=>{if(e.key==='lyverne-bag')try{bag=normalize
 renderBag();
 const reduce=matchMedia('(prefers-reduced-motion: reduce)');
 let paused=reduce.matches;
-function setPaused(value){paused=value;document.body.classList.toggle('motion-paused',paused);const b=$('.motion-toggle');if(b){b.setAttribute('aria-pressed',String(paused));b.setAttribute('aria-label',paused?'Play product motion':'Pause product motion');b.innerHTML=paused?'<span>▷</span> PLAY MOTION':'<span>Ⅱ</span> PAUSE MOTION'}window.dispatchEvent(new CustomEvent('lyverne-motion',{detail:{paused}}))}
+function setPaused(value){paused=value;document.body.classList.toggle('motion-paused',paused);const b=$('.motion-toggle');if(b){b.setAttribute('aria-pressed',String(paused));b.setAttribute('aria-label',paused?'Play product motion':'Pause product motion');b.innerHTML=paused?'<span>▷</span>':'<span>Ⅱ</span>'}window.dispatchEvent(new CustomEvent('lyverne-motion',{detail:{paused}}))}
 setPaused(paused);$('.motion-toggle')?.addEventListener('click',()=>setPaused(!paused));reduce.addEventListener('change',e=>setPaused(e.matches));
 if($('#product-canvas'))import('./product-scene.js').then(({initProductScene})=>initProductScene({paused})).catch(()=>document.body.classList.add('scene-fallback'));
