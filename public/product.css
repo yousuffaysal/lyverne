@@ -126,7 +126,7 @@
 .btn-add { background: #e3ddd1; color: var(--ink); }
 .btn-add:hover:not(:disabled) { background: var(--ink); color: var(--cream); }
 .btn-add:disabled { background: #d6d0c4; color: #6b6960; cursor: default; }
-.btn-buy { background: var(--orange); color: var(--ink); }
+.btn-buy { background: var(--orange); color: var(--cream); }
 .btn-buy:hover { background: var(--ink); color: var(--cream); }
 
 /* .product-info is shared with the dialog, where it carries dialog padding.
@@ -206,7 +206,7 @@
   .product-page-info h1 { font-size: clamp(28px, 7.5vw, 36px); line-height: 1.02; margin: 0; }
   .pd-quantity { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
   .pd-quantity button { width: 36px; height: 44px; border-radius: 50%; background: var(--cream); font-size: 21px; }
-  .pd-quantity button:last-child { background: var(--orange); }
+  .pd-quantity button:last-child { background: var(--orange); color: var(--cream); }
   .pd-quantity button:disabled { opacity: .4; cursor: default; }
   .pd-quantity output { min-width: 25px; text-align: center; font-size: 12px; }
   .pd-price-row { gap: 8px; margin: 14px 0 18px; }
@@ -220,7 +220,7 @@
   .product-page-info .size-selector legend { margin-bottom: 10px; font-size: 11px; }
   .product-page-info .size-selector > div { flex-wrap: wrap; gap: 7px; }
   .product-page-info .size-selector button { min-width: 40px; height: 44px; padding: 0 9px; border-radius: 50%; border-color: var(--line); font-size: 12px; }
-  .product-page-info .size-selector button[aria-pressed="true"] { background: var(--orange); border-color: var(--orange); color: var(--ink); }
+  .product-page-info .size-selector button[aria-pressed="true"] { background: var(--orange); border-color: var(--orange); color: var(--cream); }
   .product-page-info .size-error { min-height: 18px; font-size: 11px; }
   .product-page-info .pd-section { display: block; font: 600 13px Manrope, sans-serif; margin: 4px 0 7px; }
   .product-page-info .product-description { font-size: 12px; line-height: 1.65; }
