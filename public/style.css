@@ -111,3 +111,21 @@
     clear of the bar rather than merely fading behind it. */
  .product-dialog .color-line{margin-top:2px}
 }
+
+/* ------------------------------------------- the piece on its way to the bag
+   The layer clips: a lone fixed element can widen the document and flash a
+   scrollbar for the length of the flight. */
+.bag-flight-layer{position:fixed;inset:0;z-index:95;overflow:hidden;pointer-events:none}
+/* The track carries the horizontal, the image the vertical -- one easing each,
+   which is what bends the path. */
+.bag-flight-track{position:fixed;will-change:transform}
+.bag-flight{display:block;width:100%;height:100%;margin:0;object-fit:contain;
+ transform-origin:50% 50%;will-change:transform,opacity;
+ filter:drop-shadow(0 20px 26px #20201c38)}
+/* The stand-in bag, for when the real one has scrolled away. Cloned from the
+   nav button, so it needs the nav button's look restated at the top level. */
+.bag-flight-dock{position:fixed;top:14px;right:16px;z-index:96;width:40px;height:40px;
+ padding:0;gap:0;display:grid;place-items:center;border-radius:3px;
+ background:var(--ink);color:var(--cream);border:1px solid var(--ink);
+ pointer-events:none;box-shadow:0 10px 24px #20201c2e}
+.bag-flight-dock svg{width:21px;height:21px}

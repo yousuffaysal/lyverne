@@ -5,6 +5,8 @@
 // listens for, so the header count, the bag dialog and the checkout flow all
 // update without a second copy of the bag logic.
 
+import {planFlight, flyToBag} from './fly-to-bag.js';
+
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
 
@@ -46,6 +48,8 @@ if (addButton) {
       sizeButtons[0]?.focus();
       return;
     }
+    // Measured before the bag changes, so the count has not popped yet.
+    const flight = planFlight($('.product-page-shot[data-active]'));
     let bag = [];
     try { bag = JSON.parse(localStorage.getItem('lyverne-bag') || '[]'); } catch { bag = []; }
     if (!Array.isArray(bag)) bag = [];
@@ -55,7 +59,16 @@ if (addButton) {
     const value = JSON.stringify(bag);
     try { localStorage.setItem('lyverne-bag', value); } catch { /* private mode: bag lasts this visit */ }
     // app.js owns rendering; this is the event it already reacts to.
+    const badge = $('.site-nav .bag-count');
+    const before = badge?.textContent;
     window.dispatchEvent(new StorageEvent('storage', {key: 'lyverne-bag', newValue: value}));
-    $('.bag-toggle')?.click();
+    const after = badge?.textContent;
+    // On a phone the piece flies to the bag rather than the full-screen bag
+    // panel taking over the product you are still reading about. The count is
+    // held at its old value until the piece lands.
+    if (flight) {
+      if (badge) badge.textContent = before;
+      flyToBag(flight, {onArrive: () => { if (badge) badge.textContent = after; }});
+    } else $('.bag-toggle')?.click();
   });
 }

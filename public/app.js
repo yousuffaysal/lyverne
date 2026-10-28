@@ -1,5 +1,6 @@
 import {sizes,findProduct,money,products,refreshCatalog} from './catalog.js';
 import {renderLiveCollection} from './live-collection.js';
+import {planFlight,flyToBag} from './fly-to-bag.js';
 const liveCatalog=await refreshCatalog();
 renderLiveCollection(liveCatalog);
 const $=(selector,root=document)=>root.querySelector(selector);
@@ -33,7 +34,29 @@ let toastTimer;
 function toast(message){clearTimeout(toastTimer);$('.toast').textContent=message;$('.toast').classList.add('visible');toastTimer=setTimeout(()=>$('.toast').classList.remove('visible'),3500)}
 function persist(){try{localStorage.setItem('lyverne-bag',JSON.stringify(bag))}catch{toast('Your bag is available for this visit.')}renderBag()}
 function renderBag(){const count=bag.reduce((sum,item)=>sum+item.quantity,0);$$('.bag-count').forEach(e=>e.textContent=count);$('#subtotal').textContent=money(bag.reduce((sum,item)=>sum+findProduct(item.id).price*item.quantity,0));$('.bag-summary').hidden=!count;const target=$('#bag-items');target.replaceChildren();if(!count){target.innerHTML='<div class="empty-bag"><h3>ROOM FOR YOUR EVERYDAY.</h3><p>Your bag is waiting for its first piece.</p><a class="oval-link" href="/collection/">Discover the collection <span>↗︎</span></a></div>';return}bag.forEach(item=>{const product=findProduct(item.id);const el=document.createElement('article');el.className='bag-item';el.innerHTML=`<img src="${product.image}" alt="${esc(product.color)} Signature Tee"><div><h3></h3><p>${esc(product.color.toUpperCase())} / SIZE ${item.size}</p><span class="bag-item-price">${money(product.price*item.quantity)}</span><div class="bag-item-controls"><div class="quantity-control"><button aria-label="Decrease ${esc(product.color)} size ${item.size} quantity" data-change="-1">−</button><span aria-label="Quantity">${item.quantity}</span><button aria-label="Increase ${esc(product.color)} size ${item.size} quantity" data-change="1">+</button></div><button class="remove-item" aria-label="Remove ${esc(product.color)} size ${item.size} tee">Remove</button></div></div>`;$('h3',el).textContent=product.name.toUpperCase();$$('[data-change]',el).forEach(b=>b.addEventListener('click',()=>{const change=b.dataset.change;item.quantity=Math.min(99,item.quantity+Number(change));bag=bag.filter(i=>i.quantity>0);persist();const label=`${Number(change)>0?'Increase':'Decrease'} ${esc(product.color)} size ${item.size} quantity`;$$('.quantity-control button').find(b=>b.getAttribute('aria-label')===label)?.focus()}));$('.remove-item',el).addEventListener('click',()=>{bag=bag.filter(i=>i!==item);persist();$('.bag-heading .close-icon').focus()});target.append(el)})}
-pd('.add-to-bag').addEventListener('click',()=>{if(!Number.isFinite(selectedProduct.price))return;if(!selectedSize){pd('.size-error').textContent='Choose a size to add your tee.';pd('[data-size]').focus();return}const item=bag.find(i=>i.id===selectedProduct.id&&i.size===selectedSize);if(item)item.quantity=Math.min(99,item.quantity+1);else bag.push({id:selectedProduct.id,size:selectedSize,quantity:1});persist();closeDialog($('#product-dialog'));openDialog($('#bag-dialog'),$('.bag-toggle'));toast('Signature Tee added to your bag.')});
+pd('.add-to-bag').addEventListener('click',()=>{
+ if(!Number.isFinite(selectedProduct.price))return;
+ if(!selectedSize){pd('.size-error').textContent='Choose a size to add your tee.';pd('[data-size]').focus();return}
+ // Measured before the sheet closes: once it is gone the image has no box.
+ const flight=planFlight(pd('#product-main-image'));
+ const item=bag.find(i=>i.id===selectedProduct.id&&i.size===selectedSize);
+ if(item)item.quantity=Math.min(99,item.quantity+1);else bag.push({id:selectedProduct.id,size:selectedSize,quantity:1});
+ // The header count is held at its old value for the length of the flight, so
+ // the number turns over as the piece lands rather than before it sets off.
+ const badge=$('.site-nav .bag-count');
+ const before=badge?.textContent;
+ persist();
+ const after=badge?.textContent;
+ if(flight&&badge)badge.textContent=before;
+ closeDialog($('#product-dialog'));
+ // On a phone the piece flies to the bag and you stay on the page you were
+ // on. Everywhere else -- and for anyone who asked for less motion -- the bag
+ // opens as it always did, because there the panel is a side sheet, not the
+ // whole screen.
+ if(flight)flyToBag(flight,{onArrive:()=>{if(badge)badge.textContent=after}});
+ else openDialog($('#bag-dialog'),$('.bag-toggle'));
+ toast(`${selectedProduct.name} added to your bag.`);
+});
 $$('.bag-toggle').forEach(b=>b.addEventListener('click',e=>openDialog($('#bag-dialog'),e.currentTarget)));
 $('#checkout-button')?.addEventListener('click',()=>location.assign('/dashboard/?checkout=1'));
 window.addEventListener('storage',e=>{if(e.key==='lyverne-bag')try{bag=normalize(JSON.parse(e.newValue||'[]'));renderBag()}catch{}});
