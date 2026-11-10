@@ -132,3 +132,39 @@ tr.is-blocked td:first-child strong{text-decoration:line-through;text-decoration
  .enquiry-top{flex-direction:column;gap:8px}
  .enquiry-detail>div{grid-template-columns:1fr;gap:3px}
 }
+
+/* ------------------------------------------- signing in on a phone: one screen
+   The page was built for a desktop column and then let through to a phone as
+   it was: an eyebrow, a two-line 56px headline and a line of sub-copy filled
+   the screen before the first field, and CONTINUE WITH GOOGLE sat 857px down
+   a viewport that is 852px before the browser's own bars take ~225 of it. So
+   the one tap that signs most people in was two screens away.
+
+   Nothing here shrinks a target you touch -- the inputs and both buttons keep
+   their full height. What goes is the talking: the eyebrow and the sub-copy
+   say nothing the tab and the headline have not already said, and the
+   headline comes down to one line at a size a phone can hold. */
+@media(max-width:650px){
+ .auth-layout{padding:10px 20px 28px}
+ .auth-form-wrap{padding:0;max-width:none}
+
+ .auth-form-wrap>.eyebrow,
+ .auth-form-wrap>.auth-copy{display:none}
+
+ .auth-tabs{margin-bottom:13px}
+ .auth-tabs a,.auth-tabs button{padding:11px 8px;font-size:13px}
+
+ .auth-form-wrap h1{font-size:31px;line-height:1.05;margin:4px 0 13px}
+ /* The headline is written with a break for the desktop column; at this size
+    it runs on one line instead. The space before the break in the markup is
+    collapsed away on a desktop and carries the word gap here. */
+ .auth-form-wrap h1 br{display:none}
+
+ #auth-password{display:grid;gap:11px}
+ #auth-password label{gap:5px;font-size:13px}
+ #auth-password .error:empty{display:none}
+
+ [data-action=forgot]{padding:4px 0;font-size:13px;justify-self:start}
+ .auth-divider{margin:14px 0;font-size:11px}
+ .google-btn{font-size:13px}
+}

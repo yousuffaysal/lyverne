@@ -127,14 +127,6 @@ export async function signIn({email, password}) {
   return next;
 }
 
-export async function sendMagicLink({email, redirectTo}) {
-  const {supabaseUrl} = await loadConfig();
-  await gotrue(`/otp?redirect_to=${encodeURIComponent(redirectTo || location.origin + '/dashboard/')}`, {
-    body: {email, create_user: true},
-  });
-  return {sent: true, supabaseUrl};
-}
-
 export async function signInWithGoogle(redirectTo) {
   const {supabaseUrl, supabaseKey} = await loadConfig();
   const target = encodeURIComponent(redirectTo || location.origin + '/dashboard/');
