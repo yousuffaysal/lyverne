@@ -302,3 +302,19 @@
  .product-page-info{margin-top:8px;padding:18px 16px 22px}
 }
 @media(prefers-reduced-motion:reduce){.gallery-rail,.gallery-rail-toggle{transition:none!important}}
+
+/* Desktop and tablet: the photograph stays in view while the details scroll,
+   and Add to Cart / Buy Now stay pinned to the bottom of the screen until the
+   end of the product details, so buying never needs a scroll back. */
+@media (min-width: 1001px) {
+  .product-page-gallery { position: sticky; top: 24px; align-self: start; }
+  .product-page-info { position: static; }
+}
+@media (min-width: 651px) {
+  .pd-actions {
+    position: sticky; bottom: 0; z-index: 5;
+    margin-top: 20px; padding: 14px 0 max(18px, env(safe-area-inset-bottom));
+    background: var(--cream);
+    box-shadow: 0 -22px 22px -12px var(--cream);
+  }
+}
