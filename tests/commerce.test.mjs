@@ -76,3 +76,80 @@ test('a reservation against stale stock or a stale version is refused',async()=>
  const stock=(await app.request('/api/products','GET',null,null)).data.products[0].stock;
  assert.equal(stock,0,'stock must never go negative');
 }finally{app.DB.close();}});
+
+
+test('complete delivery snapshot persists for customer and admin, independently of profile edits',async()=>{
+ const app=await setup();try{
+  const p=(await app.request('/api/admin/products','POST',product,'owner')).data.product;
+  const delivery={...order(p.id),phone:'+8801712345678',alternate_phone:'০১৮১২৩৪৫৬৭৮',division:'Dhaka',district:'Gazipur',thana:'Kaliganj',local_area:'Ward 4, Jamalpur Union',address:'House 12, village road, beside the school',delivery_note:'Please call the alternative number if I am unavailable.\nUse the east gate.'};
+  const response=await app.request('/api/orders','POST',delivery);assert.equal(response.status,201);
+  const oid=response.data.order.id;
+  const expected={...delivery,phone:'01712345678',alternate_phone:'01812345678'};
+  for(const path of ['/api/orders/'+oid,'/api/admin/orders/'+oid]){
+   const read=await app.request(path,'GET',null,path.includes('/admin/')?'owner':'customer');
+   for(const field of ['phone','alternate_phone','division','district','thana','local_area','address','postcode','delivery_note'])assert.equal(read.data.order[field],expected[field],field);
+  }
+  const profile=await app.request('/api/me','PUT',{name:'Updated shopper',...expected,address:'Another house, different road'});
+  assert.equal(profile.status,200);
+  assert.equal(profile.data.user.alternate_phone,'01812345678');assert.equal(profile.data.user.local_area,expected.local_area);
+  assert.equal((await app.request('/api/orders/'+oid)).data.order.address,delivery.address,'order keeps original address');
+  const saved=await app.DB.prepare('SELECT * FROM orders WHERE id=?').bind(oid).first();
+  assert.equal(saved.delivery_note,delivery.delivery_note);
+ }finally{app.DB.close();}
+});
+
+test('invalid delivery contact and location data cannot reserve stock or create an order',async()=>{
+ const app=await setup();try{
+  const p=(await app.request('/api/admin/products','POST',product,'owner')).data.product;
+  for(const patch of [{alternate_phone:'12345'},{alternate_phone:'01700000000'},{division:'Dhaka',district:'Sylhet'},{thana:''},{local_area:'x'.repeat(161)},{delivery_note:'x'.repeat(1001)},{phone:'not a number'}]){
+   const response=await app.request('/api/orders','POST',{...order(p.id),...patch});assert.equal(response.status,400,JSON.stringify(patch).slice(0,80));
+  }
+  assert.equal((await app.request('/api/products','GET',null,null)).data.products[0].stock,2);
+  assert.equal((await app.request('/api/orders')).data.orders.length,0);
+ }finally{app.DB.close();}
+});
+
+test('all five fulfilment stages saved by admin appear on customer list and detail with history',async()=>{
+ const app=await setup();try{
+  const p=(await app.request('/api/admin/products','POST',product,'owner')).data.product;
+  const created=(await app.request('/api/orders','POST',order(p.id))).data.order;
+  assert.equal(created.status,'confirmed');let version=1;
+  for(const status of ['packing','shipped','out-for-delivery','delivered']){
+   const update=await app.request('/api/admin/orders/'+created.id,'PUT',{status,payment:'paid',version,note:'INTERNAL ONLY'},'owner');assert.equal(update.status,200);version++;
+   const detail=(await app.request('/api/orders/'+created.id)).data;
+   assert.equal(detail.order.status,status);assert.equal(detail.events.length,version);assert.equal(detail.order.note,undefined);
+   assert.ok(detail.events.some(event=>event.status===status));
+   assert.equal((await app.request('/api/orders')).data.orders[0].status,status);
+   assert.equal((await app.request('/api/admin/overview','GET',null,'owner')).data.orders[0].status,status);
+   assert.equal(detail.order.tracking_number,'','no invented courier number');assert.equal(detail.order.delivery_date,'','no invented delivery promise');
+  }
+  assert.equal((await app.request('/api/admin/orders/'+created.id,'PUT',{status:'packing',payment:'paid',version},'owner')).status,400);
+ }finally{app.DB.close();}
+});
+
+test('a failed cancellation rolls back stock, status and event history together',async()=>{
+ const app=await setup();try{
+  const p=(await app.request('/api/admin/products','POST',product,'owner')).data.product;
+  const orderId=(await app.request('/api/orders','POST',order(p.id))).data.order.id;
+  const original=app.DB.transaction;
+  app.DB.transaction=fn=>original(tx=>fn({...tx,run:async(sql,...args)=>{
+   if(sql.startsWith('INSERT INTO order_events'))throw Error('simulated history write failure');
+   return tx.run(sql,...args);
+  }}));
+  assert.equal((await app.request('/api/admin/orders/'+orderId,'PUT',{status:'cancelled',payment:'pending',version:1},'owner')).status,500);
+  app.DB.transaction=original;
+  const detail=(await app.request('/api/orders/'+orderId)).data;
+  assert.equal(detail.order.status,'confirmed');assert.equal(detail.order.version,1);assert.equal(detail.events.length,1);
+  assert.equal((await app.request('/api/products','GET',null,null)).data.products[0].stock,1);
+ }finally{app.DB.close();}
+});
+
+test('invalid form objects and impossible delivery dates are refused without writing',async()=>{
+ const app=await setup();try{
+  const p=(await app.request('/api/admin/products','POST',product,'owner')).data.product;
+  for(const invalid of [null,[],42,'text'])assert.equal((await app.request('/api/orders','POST',invalid)).status,400);
+  const placed=(await app.request('/api/orders','POST',order(p.id))).data.order;
+  const response=await app.request('/api/admin/orders/'+placed.id,'PUT',{status:'shipped',payment:'pending',version:1,delivery_date:'2026-02-30'},'owner');
+  assert.equal(response.status,400);assert.equal((await app.request('/api/orders/'+placed.id)).data.order.version,1);
+ }finally{app.DB.close();}
+});

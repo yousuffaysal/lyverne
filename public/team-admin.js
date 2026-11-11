@@ -2,7 +2,7 @@
 //
 // Two roles, and the difference is deliberate and visible in the UI. The chief
 // (the address in ADMIN_EMAIL) appoints admins, blocks accounts and assigns
-// work. An admin runs the store and joins the chat but sees no controls for
+// work. An admin runs the store and manages orders but sees no controls for
 // managing people -- and the server enforces that independently, so hiding a
 // button here is a courtesy, never the protection.
 
@@ -74,7 +74,7 @@ export function personForm(person) {
   <p class="small muted">${e(person.email)} · joined ${day(person.created_at)}</p>
   <form id="person-form" data-id="${e(person.id)}">
    <fieldset class="role-choice"><legend>What can they do?</legend>
-    <label><input type="radio" name="role" value="admin" ${person.role === 'admin' ? 'checked' : ''}><span><strong>Admin</strong>Runs the store with you: orders, pieces, stock, promo codes and the team chat. Cannot add or block people.</span></label>
+    <label><input type="radio" name="role" value="admin" ${person.role === 'admin' ? 'checked' : ''}><span><strong>Admin</strong>Runs the store with you: orders, pieces, stock, promo codes and the work board. Cannot add or block people.</span></label>
     <label><input type="radio" name="role" value="customer" ${person.role !== 'admin' ? 'checked' : ''}><span><strong>Customer</strong>Their own orders and saved pieces only. No access to the store admin.</span></label>
    </fieldset>
    <label class="switch-row"><input type="checkbox" name="blocked" ${blocked ? 'checked' : ''}><span><strong>Block this account</strong>They will not be able to sign in or order until you lift this. Their orders and details are kept.</span></label>

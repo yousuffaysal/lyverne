@@ -1,3 +1,4 @@
+import {deliveryInput} from './delivery.mjs';
 import {couponInput,campaignInput,readCampaign,publicCampaign,quoteOrder} from './promotions.mjs';
 import {products as originalProducts} from './catalog.js';
 import {DIVISIONS,isRegion,normalisePhone,isPostcode,formatAddress} from './bangladesh.mjs';
@@ -50,7 +51,7 @@ async function uniqueSlug(db,base){
  for(let n=2;n<=50;n++){const candidate=`${base}-${n}`;if(!await row(db,'SELECT id FROM products WHERE slug=?',candidate))return candidate;}
  return `${base}-${id().slice(0,8)}`;
 }
-async function body(req){if(Number(req.headers.get('content-length'))>30000)throw new Problem('This request is too large.',413);const text=await req.text();if(text.length>30000)throw new Problem('This request is too large.',413);try{return JSON.parse(text);}catch{throw new Problem('Send a valid form.');}}
+async function body(req){if(Number(req.headers.get('content-length'))>30000)throw new Problem('This request is too large.',413);const text=await req.text();if(text.length>30000)throw new Problem('This request is too large.',413);try{const value=JSON.parse(text);if(!value||typeof value!=='object'||Array.isArray(value))throw Error();return value;}catch{throw new Problem('Send a valid form.');}}
 function sameOrigin(req){const origin=req.headers.get('origin');if(origin!==new URL(req.url).origin||req.headers.get('sec-fetch-site')==='cross-site')throw new Problem('Refresh this page and try again.',403);}
 // Identity comes from a Supabase JWT verified against the project's public key.
 // The previous implementation trusted oai-authenticated-user-* headers, which
@@ -84,19 +85,7 @@ async function createOrder(db,user,b){
  if(!Array.isArray(b.items)||!b.items.length||b.items.length>20)throw new Problem('Choose at least one product.');
  if(!/^[a-z0-9-]{20,80}$/i.test(b.requestKey||''))throw new Problem('Refresh the order form and try again.');
  const existing=await row(db,'SELECT * FROM orders WHERE customer_id=? AND request_key=?',user.id,b.requestKey);if(existing)return decodeOrder(existing);
- // A courier needs a street line, a thana, a district and a working mobile.
- // All four are checked here rather than trusted from the form, so an order
- // can never reach the admin without somewhere to send it.
- const address=str(b.address,1000);
- if(address.length<10)throw new Problem('Add the house, road and area for delivery.');
- const phone=normalisePhone(b.phone);
- if(!phone)throw new Problem('Enter a Bangladeshi mobile number, like 01712 345678.');
- const division=str(b.division,40),district=str(b.district,40),thana=str(b.thana,60),postcode=str(b.postcode,10);
- // The pair is validated together: a district only counts inside the division
- // it actually belongs to.
- if(!isRegion(division,district))throw new Problem('Choose your division and district from the list.');
- if(!thana)throw new Problem('Add your upazila or thana.');
- if(!isPostcode(postcode))throw new Problem('A postcode is four digits, or leave it empty.');
+ const {address,phone,alternate_phone,division,district,thana,postcode,local_area,delivery_note}=deliveryInput(b);
  const quote=await quoteOrder(db,b.items,b.promoCode);
  const {items,quantities,subtotal,discount,total,promo_code,coupon}=quote,oid='LY-'+id().slice(0,8).toUpperCase(),date=now();
  // Every guard lives in the WHERE clause of the statement that performs the
@@ -115,7 +104,7 @@ async function createOrder(db,user,b){
    const claimed=await tx.run("UPDATE promotions SET used=used+1 WHERE id=? AND version=? AND active=1 AND (usage_limit IS NULL OR used<usage_limit) AND (starts='' OR starts<=?) AND (ends='' OR ends>?)",coupon.id,coupon.version,date,date);
    if(!claimed.meta.changes)throw conflict();
   }
-  await tx.run('INSERT INTO orders(id,customer_id,items,subtotal,discount,promo_code,total,status,payment,address,phone,division,district,thana,postcode,request_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',oid,user.id,JSON.stringify(items),subtotal,discount,promo_code,total,'confirmed','pending',address,phone,division,district,thana,postcode,b.requestKey,date,date);
+  await tx.run('INSERT INTO orders(id,customer_id,items,subtotal,discount,promo_code,total,status,payment,address,phone,division,district,thana,postcode,alternate_phone,local_area,delivery_note,request_key,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',oid,user.id,JSON.stringify(items),subtotal,discount,promo_code,total,'confirmed','pending',address,phone,division,district,thana,postcode,alternate_phone,local_area,delivery_note,b.requestKey,date,date);
   await tx.run('INSERT INTO order_events(id,order_id,status,message,created_at) VALUES(?,?,?,?,?)',id(),oid,'confirmed','Order request received. Payment and delivery will be confirmed by Lyverne.',date);
  });
  return decodeOrder(await row(db,'SELECT * FROM orders WHERE id=?',oid));
@@ -168,7 +157,8 @@ async function api(req,env){
  if(!user)throw new Problem('Please sign in to continue.',401);
  if(path==='/api/me'&&method==='PUT'){
   const b=await body(req),name=str(b.name,100);if(!name)throw new Problem('Enter your name.');
-  await env.DB.prepare('UPDATE customers SET name=?,phone=?,address=?,city=?,postcode=? WHERE id=?').bind(name,str(b.phone,40),str(b.address,700),str(b.city,100),str(b.postcode,20),user.id).run();return json({user:{...await row(env.DB,'SELECT * FROM customers WHERE id=?',user.id),admin:user.admin,chief:user.chief}});
+  const d=deliveryInput({...user,...b},{required:false});
+  await env.DB.prepare('UPDATE customers SET name=?,phone=?,alternate_phone=?,address=?,city=?,postcode=?,division=?,district=?,thana=?,local_area=? WHERE id=?').bind(name,d.phone,d.alternate_phone,d.address,str(b.city??d.thana,100),d.postcode,d.division,d.district,d.thana,d.local_area,user.id).run();return json({user:{...await row(env.DB,'SELECT * FROM customers WHERE id=?',user.id),admin:user.admin,chief:user.chief}});
  }
  if(path==='/api/wishlist'&&method==='PUT'){
   const b=await body(req);if(!Array.isArray(b.items)||b.items.length>30)throw new Problem('Save up to 30 pieces.');const items=[...new Set(b.items.filter(x=>typeof x==='string'&&/^[a-z0-9-]{1,60}$/i.test(x)))];await env.DB.prepare('UPDATE customers SET wishlist=? WHERE id=?').bind(JSON.stringify(items),user.id).run();return json({items});
@@ -183,6 +173,8 @@ async function api(req,env){
   const order=await row(env.DB,'SELECT * FROM orders WHERE id=? AND customer_id=?',path.split('/').pop(),user.id);if(!order)throw new Problem('Order not found.',404);return json({order:customerOrder(order),events:await all(env.DB,'SELECT * FROM order_events WHERE order_id=? ORDER BY created_at DESC',order.id)});
  }
  if(path.startsWith('/api/admin/')&&!user.admin)throw new Problem('This area is for the Lyverne owner.',403);
+
+ if(path==='/api/admin/messages')throw new Problem('Team messaging is currently disabled.',503);
 
  // ----------------------------------------------------------- custom orders
  if(path==='/api/admin/custom-orders'&&method==='GET'){
@@ -347,26 +339,24 @@ async function api(req,env){
   const order=await row(env.DB,'SELECT * FROM orders WHERE id=?',path.split('/').pop());if(!order)throw new Problem('Order not found.',404);return json({order:decodeOrder(order),events:await all(env.DB,'SELECT * FROM order_events WHERE order_id=? ORDER BY created_at DESC',order.id)});
  }
  if(/^\/api\/admin\/orders\/[^/]+$/.test(path)&&method==='PUT'){
-  const oid=path.split('/').pop(),b=await body(req),current=await row(env.DB,'SELECT * FROM orders WHERE id=?',oid);if(!current)throw new Problem('Order not found.',404);if(Number(b.version)!==current.version)throw new Problem('This order changed. Reopen it before saving.',409);if(!allowedStatus(current.status,b.status))throw new Problem('Move an order one step forward, or cancel an unfinished order.');if(!['pending','paid','refunded'].includes(b.payment))throw new Problem('Choose a payment record.');
-  const date=str(b.delivery_date,10);if(date&&!/^\d{4}-\d{2}-\d{2}$/.test(date))throw new Problem('Choose a valid delivery date.');
-  // Dispatch details fill themselves in once an order ships, so the owner is
-  // not typing a tracking number and a date on every order. Anything already
-  // set -- by the owner now, or on a previous save -- always wins.
-  const dispatched=['shipped','out-for-delivery','delivered'].includes(b.status);
-  const carrier=str(b.carrier,80)||current.carrier;
-  let tracking=str(b.tracking_number,100)||current.tracking_number;
-  let delivery=date||current.delivery_date;
-  if(dispatched){
-   if(!tracking)tracking='LY-'+id().replace(/-/g,'').slice(0,10).toUpperCase();
-   // Three days is the usual door-to-door window inside Bangladesh; the owner
-   // can overwrite it, and doing so sticks.
-   if(!delivery)delivery=new Date(Date.now()+3*86400000).toISOString().slice(0,10);
-  }
-  const message=str(b.message,500)||`${statusLabels[b.status]}. ${b.status===current.status?'Delivery details updated.':''}`;const statements=[];
-  if(b.status==='cancelled'&&current.status!=='cancelled')for(const item of JSON.parse(current.items))statements.push(env.DB.prepare("UPDATE products SET stock=stock+?,version=version+1 WHERE id=? AND EXISTS(SELECT 1 FROM orders WHERE id=? AND version=? AND status!='cancelled')").bind(item.quantity,item.id,oid,current.version));
-  statements.push(env.DB.prepare('INSERT INTO order_events(id,order_id,status,message,created_at) SELECT ?,?,?,?,? WHERE EXISTS(SELECT 1 FROM orders WHERE id=? AND version=?)').bind(id(),oid,b.status,message,now(),oid,current.version));
-  statements.push(env.DB.prepare('UPDATE orders SET status=?,payment=?,carrier=?,tracking_number=?,delivery_date=?,note=?,version=version+1,updated_at=? WHERE id=? AND version=?').bind(b.status,b.payment,carrier,tracking,delivery,str(b.note,500),now(),oid,current.version));
-  const result=await env.DB.batch(statements);if(!result.at(-1).meta.changes)throw new Problem('The order changed. Refresh and try again.',409);await activity(env.DB,user,'Updated order',oid+' / '+statusLabels[b.status]).run();return json({ok:true});
+  const oid=path.split('/').pop(),b=await body(req),current=await row(env.DB,'SELECT * FROM orders WHERE id=?',oid);if(!current)throw new Problem('Order not found.',404);if(Number(b.version)!==current.version)throw new Problem('This order changed. Reopen it before saving.',409);if(!allowedStatus(current.status,b.status))throw new Problem('Choose a valid order stage. Delivered and cancelled orders cannot be reopened.');if(!['pending','paid','refunded'].includes(b.payment))throw new Problem('Choose a payment record.');
+  const date=str(b.delivery_date,10);if(date&&(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!Number.isFinite(Date.parse(date+'T00:00:00Z'))||new Date(date+'T00:00:00Z').toISOString().slice(0,10)!==date))throw new Problem('Choose a valid delivery date.');
+  // Carrier details are entered by staff; never invent a courier tracking
+  // number or an arrival date that has not been confirmed.
+  const carrier=str(b.carrier??current.carrier,80);
+  const tracking=str(b.tracking_number??current.tracking_number,100);
+  const delivery=b.delivery_date===undefined?current.delivery_date:date;
+  const message=str(b.message,500)||`${statusLabels[b.status]}. ${b.status===current.status?'Delivery details updated.':''}`;
+  await env.DB.transaction(async tx=>{
+   // Claim the order version before changing stock or history. A competing
+   // cancellation must lose this write and roll back without restoring twice.
+   const result=await tx.run('UPDATE orders SET status=?,payment=?,carrier=?,tracking_number=?,delivery_date=?,note=?,version=version+1,updated_at=? WHERE id=? AND version=?',b.status,b.payment,carrier,tracking,delivery,str(b.note??current.note,500),now(),oid,current.version);
+   if(!result.meta.changes)throw new Problem('The order changed. Reopen it and try again.',409);
+   if(b.status==='cancelled'&&current.status!=='cancelled')for(const item of JSON.parse(current.items))await tx.run('UPDATE products SET stock=stock+?,version=version+1,updated_at=? WHERE id=?',item.quantity,now(),item.id);
+   await tx.run('INSERT INTO order_events(id,order_id,status,message,created_at) VALUES(?,?,?,?,?)',id(),oid,b.status,message,now());
+   await tx.run('INSERT INTO activity(id,actor,action,target,created_at) VALUES(?,?,?,?,?)',id(),user.id,'Updated order',oid+' / '+statusLabels[b.status],now());
+  });
+  return json({ok:true});
  }
  if(path==='/api/admin/upload'&&method==='POST'){
   const bucket=bucketOf(env);if(!bucket)throw new Problem('Image uploads are not connected.',503);if(Number(req.headers.get('content-length'))>5*1024*1024)throw new Problem('Choose an image under 5 MB.',413);const type=req.headers.get('content-type'),extension={'image/png':'png','image/jpeg':'jpeg','image/webp':'webp'}[type];if(!extension)throw new Problem('Choose a PNG, JPEG or WebP image.');const buffer=await req.arrayBuffer();if(buffer.byteLength>5*1024*1024)throw new Problem('Choose an image under 5 MB.',413);const bytes=new Uint8Array(buffer),ascii=(from,to)=>new TextDecoder().decode(bytes.slice(from,to)),PNG=[137,80,78,71,13,10,26,10],valid=extension==='png'?PNG.every((b,i)=>bytes[i]===b):extension==='jpeg'?bytes[0]===255&&bytes[1]===216&&bytes[2]===255:ascii(0,4)==='RIFF'&&ascii(8,12)==='WEBP';if(!valid)throw new Problem('That file does not match its image type.');const key=id()+'.'+extension;await bucket.put(key,buffer,{httpMetadata:{contentType:type}});await activity(env.DB,user,'Uploaded product image',key).run();return json({url:'/media/'+key},201);

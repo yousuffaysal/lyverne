@@ -45,7 +45,7 @@ export function isRegion(division, district) {
 const MOBILE = /^(?:\+?88)?0?1[3-9]\d{8}$/;
 
 export function normalisePhone(value) {
-  const digits = String(value ?? '').replace(/[\s-()]/g, '');
+  const digits = String(value ?? '').replace(/[০-৯]/g,c=>String(c.charCodeAt(0)-0x09e6)).replace(/[\s-()]/g, '');
   if (!MOBILE.test(digits)) return '';
   // Store one shape, so the admin can always dial it and search finds it.
   return '0' + digits.replace(/^\+?88/, '').replace(/^0/, '');
@@ -58,7 +58,7 @@ export function isPostcode(value) {
 
 // One line a courier can read, for the admin list and the order confirmation.
 export function formatAddress(order) {
-  return [order.address, order.thana, order.district, order.division, order.postcode]
+  return [order.address, order.local_area, order.thana, order.district, order.division, order.postcode]
     .map(part => String(part ?? '').trim())
     .filter(Boolean)
     .join(', ');

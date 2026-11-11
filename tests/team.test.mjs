@@ -179,37 +179,13 @@ test('a task must be assigned to staff, and rubbish input is refused', async () 
   } finally { app.DB.close(); }
 });
 
-test('the staff chat is staff-only and reads back in order', async () => {
-  const app = await setup();
-  try {
-    await app.appoint('nadia');
-    assert.equal((await app.as('chief', '/api/admin/messages', {method: 'POST', body: {body: 'Morning. Stock count today.'}})).status, 201);
-    assert.equal((await app.as('nadia', '/api/admin/messages', {method: 'POST', body: {body: 'On it.'}})).status, 201);
-    assert.equal((await app.as('shopper', '/api/admin/messages', {method: 'POST', body: {body: 'hello?'}})).status, 403);
-    assert.equal((await app.as('shopper', '/api/admin/messages')).status, 403);
-
-    const thread = await app.as('nadia', '/api/admin/messages');
-    assert.equal(thread.status, 200);
-    assert.equal(thread.data.messages.length, 2);
-    // Both posts can land in the same millisecond, so what matters is that the
-    // order is stable across reads rather than which of the two comes first.
-    const again = await app.as('nadia', '/api/admin/messages');
-    assert.deepEqual(again.data.messages.map(m => m.id), thread.data.messages.map(m => m.id), 'stable order');
-    assert.deepEqual([...thread.data.messages.map(m => m.body)].sort(), ['Morning. Stock count today.', 'On it.']);
-    assert.equal((await app.as('chief', '/api/admin/messages', {method: 'POST', body: {body: '   '}})).status, 400);
-  } finally { app.DB.close(); }
-});
-
-test('the chat reads oldest-first once timestamps differ', async () => {
-  const app = await setup();
-  try {
-    const chief = app.uuid('chief');
-    for (const [id, at, body] of [
-      ['msg-c', '2026-03-02T09:00:00.000Z', 'third'],
-      ['msg-a', '2026-03-01T09:00:00.000Z', 'first'],
-      ['msg-b', '2026-03-01T17:30:00.000Z', 'second'],
-    ]) await app.env.DB.prepare('INSERT INTO admin_messages(id,author_id,body,created_at) VALUES(?,?,?,?)').bind(id, chief, body, at).run();
-    const thread = await app.as('chief', '/api/admin/messages');
-    assert.deepEqual(thread.data.messages.map(m => m.body), ['first', 'second', 'third']);
-  } finally { app.DB.close(); }
+// Messaging is deliberately unavailable while store operations are the focus.
+test('team messaging is disabled for staff and remains inaccessible to customers',async()=>{
+ const app=await setup();
+ try{
+  assert.equal((await app.as('chief','/api/admin/messages')).status,503);
+  assert.equal((await app.as('chief','/api/admin/messages',{method:'POST',body:{body:'disabled'}})).status,503);
+  assert.equal((await app.as('shopper','/api/admin/messages')).status,403);
+  assert.equal((await app.env.DB.prepare('SELECT COUNT(*) AS count FROM admin_messages').first()).count,0);
+ }finally{app.DB.close();}
 });
