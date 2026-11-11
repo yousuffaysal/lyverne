@@ -26,6 +26,26 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   }
 }
 
+// Unit conversion always starts from the supplied inch measurements.
+const sizeGuide=$('#size-guide');
+function highlightGuideSize(size){
+ if(!sizeGuide)return;
+ for(const row of $$('[data-guide-size]',sizeGuide))row.toggleAttribute('data-selected',row.dataset.guideSize===size);
+}
+if(sizeGuide){
+ for(const button of $$('[data-size-unit]',sizeGuide))button.addEventListener('click',()=>{
+  const cm=button.dataset.sizeUnit==='cm';
+  for(const cell of $$('[data-measure-inches]',sizeGuide)){
+   const inches=Number(cell.dataset.measureInches);
+   cell.textContent=String(cm?Number((inches*2.54).toFixed(1)):inches);
+  }
+  for(const other of $$('[data-size-unit]',sizeGuide))other.setAttribute('aria-pressed',String(other===button));
+  const unit=cm?'centimetres':'inches';
+  $('[data-guide-caption]',sizeGuide).textContent='Garment measurements in '+unit;
+  $('[data-guide-table-caption]',sizeGuide).textContent='Size chart: garment measurements in '+unit;
+ });
+}
+
 const addButton = $('.product-page-info .add-to-bag');
 if (addButton) {
   const productId = addButton.dataset.addProduct;
@@ -33,10 +53,12 @@ if (addButton) {
   const error = $('.product-page-info .size-error');
   let selectedSize = sizeButtons.length === 1 ? sizeButtons[0].dataset.size : '';
   if (sizeButtons.length === 1) sizeButtons[0].setAttribute('aria-pressed', 'true');
+  highlightGuideSize(selectedSize);
 
   for (const button of sizeButtons) {
     button.addEventListener('click', () => {
       selectedSize = button.dataset.size;
+      highlightGuideSize(selectedSize);
       for (const other of sizeButtons) other.setAttribute('aria-pressed', String(other === button));
       if (error) error.textContent = '';
     });

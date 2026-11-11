@@ -244,3 +244,33 @@
 .product-page-gallery .pd-view>span{position:static;width:auto;height:auto;overflow:visible;clip-path:none;font-size:11px;line-height:1.3;overflow-wrap:anywhere;max-width:100%}
 .product-page-gallery .pd-view[aria-pressed=true]{background:var(--soft);border-color:var(--ink);color:var(--ink)}
 @media(max-width:650px){.product-page-gallery .gallery-tabs{margin-top:12px}.product-page-gallery .pd-view{flex-basis:76px;width:76px;min-height:90px;padding:7px}.product-page-gallery .pd-view>img{width:52px;height:52px}}
+
+/* Garment measurements, placed beside the product decision. */
+.pd-size-block{position:relative}.size-guide-link{position:absolute;right:0;top:-12px;display:inline-flex;align-items:center;gap:7px;min-height:44px;font-size:12px;color:var(--ink);text-decoration:underline;text-underline-offset:4px}
+.size-guide-link svg{width:18px;height:18px;stroke:currentColor;stroke-width:1.3;stroke-linecap:round;stroke-linejoin:round}
+.size-guide{scroll-margin-top:110px;border:1px solid #d7cfc1;background:#eae4d92e;padding:24px;margin:26px 0 22px;color:var(--ink)}
+.size-guide-header{display:flex;justify-content:space-between;align-items:center;gap:14px}
+.size-guide-eyebrow{font:600 9px/1.5 Manrope,Arial,sans-serif;letter-spacing:.13em;color:#827869;margin:0 0 7px}
+.product-page-info .size-guide h2{font:600 21px/1.3 Manrope,Arial,sans-serif;letter-spacing:-.04em;text-transform:none;margin:0}
+.size-guide-units{display:flex;align-items:center;border:1px solid #ccc3b3;padding:3px;flex:none}
+.size-guide-units button{min-height:38px;min-width:42px;padding:8px 10px;font:600 10px/1.2 Manrope,Arial,sans-serif;letter-spacing:.06em;background:transparent;color:#786e5f;border:0}
+.size-guide-units button[aria-pressed=true]{background:var(--ink);color:var(--cream)}
+.size-guide-caption{font:400 11px/1.5 Manrope,Arial,sans-serif;color:#827869;margin:16px 0 18px}
+.size-guide table{width:100%;border-collapse:collapse;table-layout:fixed;text-align:center;font:400 13px/1.5 Manrope,Arial,sans-serif}
+.size-guide thead{border-top:1px solid #cfc5b5;border-bottom:1px solid #cfc5b5}
+.size-guide th,.size-guide td{padding:14px 4px;border:0;text-align:center;vertical-align:middle}
+.size-guide thead th{font-size:10px;font-weight:600;line-height:1.5}
+.size-guide thead th small{display:block;font-size:9px;font-weight:400;color:#827869}
+.size-guide th:first-child{width:16%;text-align:left;padding-left:10px}
+.size-guide tbody th{font-size:13px;font-weight:600}
+.size-guide tbody tr{border-bottom:1px solid #ded6c9;transition:background .2s}
+.size-guide tbody tr[data-selected]{background:#f26b2410;box-shadow:inset 2px 0 var(--orange)}
+.size-guide tbody tr[data-selected] th{color:#b84e16}
+.size-guide-help{display:flex;align-items:flex-start;gap:13px;margin-top:20px}
+.size-guide-help>svg{width:46px;height:46px;stroke:#867a67;stroke-width:1.1;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.size-guide-help p{font:400 10px/1.8 Manrope,Arial,sans-serif;color:#827869;margin:0}
+.size-guide-help strong{display:block;color:#5d5548;font-weight:600;margin-bottom:3px}
+@media(max-width:650px){.size-guide{padding:20px 14px;margin:25px 0 18px;scroll-margin-top:85px}.size-guide-eyebrow{font-size:8px;letter-spacing:.08em}.product-page-info .size-guide h2{font-size:20px}.size-guide th,.size-guide td{padding:13px 3px}.size-guide-units button{min-height:40px;min-width:38px;padding:8px}.size-guide-help{gap:10px}.size-guide-help>svg{width:37px;height:40px}.size-guide-link{top:-11px;font-size:11px}}
+
+.product-page-info .product-detail-price{margin:8px 0 18px;align-items:flex-start;gap:14px}.product-page-info .product-price{gap:8px 12px}.product-page-info .product-price .current-price{font-size:34px;font-weight:700}.product-page-info .product-price .regular-price{font-size:17px}.product-page-info .product-price .price-discount{font-size:11px}.product-page-info .product-price .price-savings{font-size:12px}.product-page-info .price-stock{align-self:center;margin-left:auto}
+@media(max-width:650px){.product-page-info .product-price .current-price{font-size:29px}.product-page-info .product-price .regular-price{font-size:15px}.product-page-info .product-detail-price{gap:10px;margin:6px 0 15px}}

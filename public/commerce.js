@@ -27,10 +27,30 @@ function galleryInput(body,existing){
   seen.add(image.url);return {url:image.url,label};
  });
 }
+// Regular price stays editable; every purchase surface uses the same final price.
+export function productPricing(product){
+ const regular=typeof product.price==='number'&&Number.isInteger(product.price)&&product.price>0?product.price:null;
+ const type=product.discount_type||'none',value=Number(product.discount_value||0);
+ if(regular===null)return {regular:null,price:null,savings:0,percent:0,discounted:false,type:'none'};
+ let savings=type==='percent'?Math.floor(regular*value/100):type==='fixed'?value:0;
+ if(!Number.isInteger(savings)||savings<0||savings>=regular)savings=0;
+ return {regular,price:regular-savings,savings,percent:type==='percent'?value:Math.floor(savings*1000/regular)/10,discounted:savings>0,type};
+}
+export function priceMarkup(product,{compact=false}={}){
+ const pricing=productPricing(product),money=value=>'৳'+value.toLocaleString('en-BD');
+ if(pricing.price===null)return '<span class="product-price price-tba">PRICE TBA</span>';
+ const saving=pricing.type==='percent'?pricing.percent+'% off':money(pricing.savings)+' off';
+ return `<span class="product-price"><strong class="current-price">${money(pricing.price)}</strong>${pricing.discounted?`<del class="regular-price" aria-label="Regular price ${money(pricing.regular)}">${money(pricing.regular)}</del><span class="price-discount">${saving}</span>${compact?'':`<span class="price-savings">You save ${money(pricing.savings)}</span>`}`:''}</span>`;
+}
 export function productInput(b,existing){
  const name=str(b.name,100),color=str(b.color,60),description=str(b.description,2000),category=str(b.category,60)||'ESSENTIALS';
  const price=b.price===''||b.price===null?null:Number(b.price),stock=Number(b.stock),sizes=Array.isArray(b.sizes)?[...new Set(b.sizes.filter(s=>['S','M','L','XL','XXL'].includes(s)))]:[];
  const images=galleryInput(b,existing),image=images[0].url,back=images.find(image=>image.label.toLowerCase()==='back')?.url||'',status=['draft','active','archived'].includes(b.status)?b.status:'draft';
+ const discount_type=b.discount_type===undefined?(existing?.discount_type||'none'):b.discount_type;
+ const discount_value=discount_type==='none'?0:Number(b.discount_value===undefined?(existing?.discount_value||0):b.discount_value);
+ if(!['none','percent','fixed'].includes(discount_type))throw new Problem('Choose no discount, percentage or a fixed amount.');
+ if(discount_type!=='none'&&(price===null||!Number.isInteger(discount_value)||discount_value<1||(discount_type==='percent'?discount_value>99:discount_value>=price)))throw new Problem('Set a regular price and a valid discount: 1–99% or a whole-number amount below the regular price.');
+ if(discount_type!=='none'&&productPricing({price,discount_type,discount_value}).savings<1)throw new Problem('The discount must save at least ৳1.');
  const seoTitle=str(b.seo_title,70),seoDescription=str(b.seo_description,160);
  // 0 keeps the piece off the homepage; 1-12 is its position in that grid.
  const homeSlot=b.home_slot===''||b.home_slot===null||b.home_slot===undefined?0:Number(b.home_slot);
@@ -44,7 +64,7 @@ export function productInput(b,existing){
  // Only a published piece may sit on the homepage: a draft would render a card
  // linking to a product page that refuses to load.
  if(homeSlot>0&&status!=='active')throw new Problem('Publish the piece before putting it on the homepage.');
- return {name,color,description,category,price,stock,sizes,image,back,images,status,seo_title:seoTitle,seo_description:seoDescription,home_slot:homeSlot};
+ return {name,color,description,category,price,discount_type,discount_value,stock,sizes,image,back,images,status,seo_title:seoTitle,seo_description:seoDescription,home_slot:homeSlot};
 }
 // URL-safe slug for the per-product pages. Accents are folded rather than
 // dropped so "Café" becomes "cafe", not "caf".

@@ -1,3 +1,4 @@
+import {readCollectionLayout,collectionLayoutInput,arrangeCollection} from './collection-layout.mjs';
 import {deliveryInput} from './delivery.mjs';
 import {couponInput,campaignInput,readCampaign,publicCampaign,quoteOrder} from './promotions.mjs';
 import {products as originalProducts} from './catalog.js';
@@ -117,7 +118,11 @@ async function api(req,env){
  // but active products. Serving it here avoids baking it into the build.
  if(path==='/api/config')return json({auth:'supabase',supabaseUrl:env.SUPABASE_URL||'',supabaseKey:env.SUPABASE_PUBLISHABLE_KEY||'',ai:!!env.AI_API_KEY,uploads:!!bucketOf(env)});
  if(!env.DB)throw new Problem('The store database is temporarily unavailable. Please try again shortly.',503);
- if(path==='/api/products'&&method==='GET')return json({products:(await all(env.DB,"SELECT * FROM products WHERE status='active' ORDER BY created_at DESC")).map(decodeProduct),managedIds:(await all(env.DB,'SELECT id FROM products')).map(p=>p.id)});
+ if(path==='/api/products'&&method==='GET'){
+  const products=(await all(env.DB,"SELECT * FROM products WHERE status='active' ORDER BY created_at DESC")).map(decodeProduct);
+  const groups=arrangeCollection(products,await readCollectionLayout(env.DB));
+  return json({products,managedIds:(await all(env.DB,'SELECT id FROM products')).map(p=>p.id),collectionLayout:{sections:groups.map(group=>group.key),products:Object.fromEntries(groups.map(group=>[group.key,group.products.map(product=>product.id)]))}});
+ }
  // The form builds its steps from these, so a choice can never appear that
  // the server would refuse.
  if(path==='/api/custom-orders/options'&&method==='GET')
@@ -174,6 +179,20 @@ async function api(req,env){
  }
  if(path.startsWith('/api/admin/')&&!user.admin)throw new Problem('This area is for the Lyverne owner.',403);
 
+ if(path==='/api/admin/collection-layout'&&method==='GET')return json({layout:await readCollectionLayout(env.DB),products:(await all(env.DB,'SELECT * FROM products ORDER BY created_at DESC')).map(decodeProduct)});
+ if(path==='/api/admin/collection-layout'&&method==='PUT'){
+  const bodyData=await body(req),version=Number(bodyData.version);let layout;
+  if(!Number.isInteger(version)||version<0)throw new Problem('Reopen the collection layout before saving.');
+  try{layout=collectionLayoutInput(bodyData,await all(env.DB,'SELECT id,category FROM products'));}catch(error){throw new Problem(error.message);}
+  await env.DB.transaction(async tx=>{
+   const result=version===0
+    ? await tx.run("INSERT INTO shop_settings(id,value,version,updated_at) VALUES('collection-layout',?,1,?) ON CONFLICT(id) DO NOTHING",JSON.stringify(layout),now())
+    : await tx.run("UPDATE shop_settings SET value=?,version=version+1,updated_at=? WHERE id='collection-layout' AND version=?",JSON.stringify(layout),now(),version);
+   if(!result.meta.changes)throw new Problem('The collection layout changed. Reopen it before saving.',409);
+   await tx.run('INSERT INTO activity(id,actor,action,target,created_at) VALUES(?,?,?,?,?)',id(),user.id,'Updated collection layout',layout.sections.join(' / '),now());
+  });
+  return json({ok:true});
+ }
  if(path==='/api/admin/messages')throw new Problem('Team messaging is currently disabled.',503);
 
  // ----------------------------------------------------------- custom orders
@@ -325,7 +344,7 @@ async function api(req,env){
   await env.DB.batch(statements);return json({ok:true});
  }
  if(path==='/api/admin/products'&&method==='POST'){
-  const p=productInput(await body(req)),pid='product-'+id(),date=now(),slug=await uniqueSlug(env.DB,productSlug(p));await env.DB.batch([env.DB.prepare('INSERT INTO products(id,slug,name,color,description,category,price,stock,sizes,image,back,images,status,seo_title,seo_description,home_slot,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(pid,slug,p.name,p.color,p.description,p.category,p.price,p.stock,JSON.stringify(p.sizes),p.image,p.back,JSON.stringify(p.images),p.status,p.seo_title,p.seo_description,p.home_slot,date,date),activity(env.DB,user,'Created product',p.name)]);return json({product:decodeProduct(await row(env.DB,'SELECT * FROM products WHERE id=?',pid))},201);
+  const p=productInput(await body(req)),pid='product-'+id(),date=now(),slug=await uniqueSlug(env.DB,productSlug(p));await env.DB.batch([env.DB.prepare('INSERT INTO products(id,slug,name,color,description,category,price,discount_type,discount_value,stock,sizes,image,back,images,status,seo_title,seo_description,home_slot,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(pid,slug,p.name,p.color,p.description,p.category,p.price,p.discount_type,p.discount_value,p.stock,JSON.stringify(p.sizes),p.image,p.back,JSON.stringify(p.images),p.status,p.seo_title,p.seo_description,p.home_slot,date,date),activity(env.DB,user,'Created product',p.name)]);return json({product:decodeProduct(await row(env.DB,'SELECT * FROM products WHERE id=?',pid))},201);
  }
  if(/^\/api\/admin\/products\/[^/]+$/.test(path)&&['PUT','DELETE'].includes(method)){
   const pid=path.split('/').pop(),current=await row(env.DB,'SELECT * FROM products WHERE id=?',pid);if(!current)throw new Problem('Product not found.',404);
@@ -333,7 +352,7 @@ async function api(req,env){
   if(method==='DELETE'){
    const result=await env.DB.prepare("UPDATE products SET status='archived',version=version+1,updated_at=? WHERE id=? AND version=?").bind(now(),pid,current.version).run();if(!result.meta.changes)throw new Problem('This product changed. Refresh first.',409);await activity(env.DB,user,'Archived product',current.name).run();return json({ok:true});
   }
-  const p=productInput(b,current);const result=await env.DB.prepare('UPDATE products SET name=?,color=?,description=?,category=?,price=?,stock=?,sizes=?,image=?,back=?,images=?,status=?,seo_title=?,seo_description=?,home_slot=?,version=version+1,updated_at=? WHERE id=? AND version=?').bind(p.name,p.color,p.description,p.category,p.price,p.stock,JSON.stringify(p.sizes),p.image,p.back,JSON.stringify(p.images),p.status,p.seo_title,p.seo_description,p.home_slot,now(),pid,current.version).run();if(!result.meta.changes)throw new Problem('This product changed. Refresh first.',409);await activity(env.DB,user,'Updated product',p.name).run();return json({ok:true});
+  const p=productInput(b,current);const result=await env.DB.prepare('UPDATE products SET name=?,color=?,description=?,category=?,price=?,discount_type=?,discount_value=?,stock=?,sizes=?,image=?,back=?,images=?,status=?,seo_title=?,seo_description=?,home_slot=?,version=version+1,updated_at=? WHERE id=? AND version=?').bind(p.name,p.color,p.description,p.category,p.price,p.discount_type,p.discount_value,p.stock,JSON.stringify(p.sizes),p.image,p.back,JSON.stringify(p.images),p.status,p.seo_title,p.seo_description,p.home_slot,now(),pid,current.version).run();if(!result.meta.changes)throw new Problem('This product changed. Refresh first.',409);await activity(env.DB,user,'Updated product',p.name).run();return json({ok:true});
  }
  if(/^\/api\/admin\/orders\/[^/]+$/.test(path)&&method==='GET'){
   const order=await row(env.DB,'SELECT * FROM orders WHERE id=?',path.split('/').pop());if(!order)throw new Problem('Order not found.',404);return json({order:decodeOrder(order),events:await all(env.DB,'SELECT * FROM order_events WHERE order_id=? ORDER BY created_at DESC',order.id)});
@@ -407,7 +426,7 @@ async function renderCollection(req,env){
  const origin=siteOrigin(env);
  const products=(await all(env.DB,"SELECT * FROM products WHERE status='active' ORDER BY created_at DESC")).map(decodeProduct);
  const start=html.indexOf(GRID_START),end=html.indexOf(GRID_END);
- if(start!==-1&&end!==-1&&products.length)html=html.slice(0,start)+catalogGrid(products)+html.slice(end+GRID_END.length);
+ if(start!==-1&&end!==-1&&products.length)html=html.slice(0,start)+catalogGrid(products,await readCollectionLayout(env.DB))+html.slice(end+GRID_END.length);
  // Replace the build-time canonical with the configured origin and add the
  // social and structured-data tags the static generator cannot know.
  // Strip every build-time tag we are about to replace. Leaving the static
@@ -421,7 +440,7 @@ async function renderCollection(req,env){
    description:'Shop Lyverne, Bangladeshi streetwear: oversized drop-shoulder t-shirts and original graphic tees in premium cotton, from ৳1,800. Delivered across Bangladesh.',
    image:products[0]?.image||'/assets/tee-front.png'})
    +jsonLd(collectionSchema(origin,products))+jsonLd(organisation(origin))+jsonLd(website(origin))+'</head>');
- return html2(html,200,{'Cache-Control':'public, max-age=300, stale-while-revalidate=600'});
+ return html2(html,200,{'Cache-Control':'public, max-age=0, must-revalidate'});
 }
 // Renders /collection/<slug>/ from the database at request time, so a product
 // added in the admin panel is live and indexable immediately rather than at the

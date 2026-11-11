@@ -1,4 +1,4 @@
-import {productImages} from './domain.mjs';
+import {productImages,productPricing} from './domain.mjs';
 // Search-engine surface: canonical URLs, social cards, structured data,
 // robots.txt and sitemap.xml.
 //
@@ -155,7 +155,7 @@ export function productSchema(origin, product) {
       '@type': 'Offer',
       url,
       priceCurrency: 'BDT',
-      price: String(product.price),
+      price: String(productPricing(product).price),
       availability: product.stock > 0
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
@@ -249,7 +249,7 @@ export function clip(text, max) {
 // the admin can tune a listing without touching code.
 export function productMeta(product) {
   const name = `${product.name} — ${product.color}`;
-  const priced = product.price !== null && product.price !== undefined ? ` ${money(product.price)}.` : '';
+  const priced = product.price !== null && product.price !== undefined ? ` ${money(productPricing(product).price)}.` : '';
   return {
     title: clip(product.seo_title || `${name} | LYVERNE`, 70),
     description: clip(product.seo_description

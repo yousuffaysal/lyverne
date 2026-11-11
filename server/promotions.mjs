@@ -1,4 +1,4 @@
-import {Problem,str} from './domain.mjs';
+import {Problem,str,productPricing} from './domain.mjs';
 export const defaultCampaign={enabled:true,title:'YOUR NEXT EVERYDAY.',text:'Meet the first edition. Quiet signatures. Original graphics. A little more you.',button:'Explore the collection',destination:'/collection/',code:'',image:'/assets/tee-front.png',version:0};
 export function couponInput(b){
  const code=str(b.code,24).toUpperCase();
@@ -55,7 +55,8 @@ export async function quoteOrder(db,rawItems,rawCode=''){
   const p=await db.prepare('SELECT * FROM products WHERE id=?').bind(str(item.id)).first(),qty=Number(item.quantity);
   if(!p||p.status!=='active'||p.price===null)throw new Problem('A piece in your bag is not available to order yet.',409);
   if(!JSON.parse(p.sizes).includes(item.size)||!Number.isInteger(qty)||qty<1||qty>20)throw new Problem('Check the product size and quantity.');
-  items.push({id:p.id,name:p.name,color:p.color,image:p.image,price:p.price,size:item.size,quantity:qty,version:p.version});
+  const pricing=productPricing(p);if(!Number.isInteger(pricing.price)||pricing.price<1)throw new Problem('A piece in your bag has an invalid price. Please contact the store.',409);
+  items.push({id:p.id,name:p.name,color:p.color,image:p.image,price:pricing.price,regular_price:p.price,product_discount:pricing.savings,size:item.size,quantity:qty,version:p.version});
   quantities.set(p.id,(quantities.get(p.id)||0)+qty);
   if(quantities.get(p.id)>p.stock)throw new Problem('A piece in your bag no longer has enough stock.',409);
  }

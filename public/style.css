@@ -133,3 +133,14 @@
 /* Every uploaded product view is reachable inside the quick-view dialog. */
 .product-dialog .gallery-tabs{max-width:calc(100% - 32px);overflow-x:auto;justify-content:flex-start;overscroll-behavior-x:contain}
 .product-dialog .gallery-tabs button{flex:none;min-height:44px;max-width:140px;white-space:normal;overflow-wrap:anywhere}
+
+/* One price treatment across product cards, quick view and shopping bag. */
+.product-price{display:inline-flex;align-items:baseline;flex-wrap:wrap;gap:7px 10px;font-family:Manrope,Arial,sans-serif;letter-spacing:0;line-height:1.4}
+.product-price .current-price{font-family:Manrope,Arial,sans-serif;font-weight:700;color:var(--ink)}
+.product-price .regular-price{color:#8b8171;font-size:12px;font-weight:400;text-decoration-thickness:1px}
+.product-price .price-discount{display:inline-block;padding:3px 7px;background:#f26b2415;border:1px solid #d8855538;color:#9a4214;font-size:10px;font-weight:600;white-space:nowrap;letter-spacing:0}
+.product-price .price-savings{flex-basis:100%;color:#6b6458;font-size:12px;font-weight:400;letter-spacing:0}
+.price-line{flex-wrap:wrap;gap:10px}.product-info .price-line .product-price{font-size:14px;color:var(--ink);font-weight:400;letter-spacing:0}
+.product-info .product-price .current-price{font-size:30px;font-weight:700;line-height:1.2}.product-info .product-price .regular-price{font-size:16px}
+.price-line .price-stock{font-size:10px;font-weight:400;color:#817667;white-space:nowrap}
+.bag-item-price{font-weight:700}.bag-item-price del{font-size:11px;color:#8b8171;font-weight:400;margin-left:8px}

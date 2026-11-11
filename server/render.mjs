@@ -1,4 +1,6 @@
-import {productImages} from './domain.mjs';
+import {arrangeCollection} from './collection-layout.mjs';
+import {sizeGuide} from './size-guide.mjs';
+import {productImages,priceMarkup} from './domain.mjs';
 // Request-time rendering of the per-product pages.
 //
 // These pages did not exist before: the collection was a single URL holding
@@ -29,9 +31,8 @@ const CATEGORY_LABEL = {SIGNATURE: 'The quiet signature', GRAPHIC: 'The graphic 
 // work with JavaScript disabled.
 export function catalogCard(p, index = 0) {
   const href = `/collection/${p.slug}/`;
-  const price = p.price === null || p.price === undefined ? 'PRICE TBA' : money(p.price);
   const reverse = p.back ? '' : 'catalog-closeup';
-  return `<article class="catalog-card" style="--order:${index % 4}"><a class="catalog-product" href="${esc(href)}" data-pid="${esc(p.id)}" aria-label="View ${esc(p.name)} in ${esc(p.color)}"><span class="catalog-image"><img class="catalog-front" ${index < 4 ? 'data-eager-image' : 'loading="lazy"'} src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}, front mockup" width="1254" height="1254"><span style="--detail-origin:${esc(p.detailFocus || '68% 31%')}" class="catalog-reverse ${reverse}"><img src="${esc(assetUrl(p.back || p.image))}" alt="" width="1254" height="1254" loading="lazy"></span><span class="catalog-view">${p.back ? 'FRONT / BACK' : 'VIEW PIECE'} ↗︎</span></span><span class="catalog-meta"><span class="catalog-title">${esc(p.name)}</span><span class="catalog-price">${esc(price)}</span><span class="catalog-color"><i style="background:${esc(p.swatch || '#20201c')}"></i>${esc(p.color)}</span><span class="catalog-category">${esc(p.category || 'SIGNATURE')}</span></span></a></article>`;
+  return `<article class="catalog-card" style="--order:${index % 4}"><a class="catalog-product" href="${esc(href)}" data-pid="${esc(p.id)}" aria-label="View ${esc(p.name)} in ${esc(p.color)}"><span class="catalog-image"><img class="catalog-front" ${index < 4 ? 'data-eager-image' : 'loading="lazy"'} src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}, front mockup" width="1254" height="1254"><span style="--detail-origin:${esc(p.detailFocus || '68% 31%')}" class="catalog-reverse ${reverse}"><img src="${esc(assetUrl(p.back || p.image))}" alt="" width="1254" height="1254" loading="lazy"></span><span class="catalog-view">${p.back ? 'FRONT / BACK' : 'VIEW PIECE'} ↗︎</span></span><span class="catalog-meta"><span class="catalog-title">${esc(p.name)}</span><span class="catalog-price">${priceMarkup(p,{compact:true})}</span><span class="catalog-color"><i style="background:${esc(p.swatch || '#20201c')}"></i>${esc(p.color)}</span><span class="catalog-category">${esc(p.category || 'SIGNATURE')}</span></span></a></article>`;
 }
 
 export const GRID_START = '<!--products:start-->';
@@ -58,16 +59,9 @@ export function homeGrid(products) {
   }).join('');
 }
 
-export function catalogGrid(products) {
-  const graphic = products.filter(p => (p.category || '').toUpperCase().includes('GRAPHIC'));
-  const signature = products.filter(p => !(p.category || '').toUpperCase().includes('GRAPHIC'));
-  const section = (label, cards) => cards.join('\n');
-  return [
-    '<div class="catalog-chapter"><h2>THE GRAPHIC EDITION</h2><p>FOUR ORIGINAL DESIGNS / 01–04</p></div>',
-    `<section class="catalog-products" id="collection" aria-label="Lyverne graphic designs">${section('graphic', graphic.map((p, i) => catalogCard(p, i)))}</section>`,
-    '<div class="catalog-chapter signature-chapter"><h2>THE QUIET SIGNATURE</h2><p>ONE EVERYDAY SHAPE / FOUR COLORS</p></div>',
-    `<section class="catalog-products" aria-label="Signature Tee colorways">${section('signature', signature.map((p, i) => catalogCard(p, i + 4)))}</section>`,
-  ].join('');
+export function catalogGrid(products,layout){
+ const groups=arrangeCollection(products,layout).filter(group=>group.products.length);
+ return `<div id="collection-grid">${groups.map((group,index)=>`<div class="catalog-chapter${index?' collection-chapter-spaced':''}"><h2>${esc(group.title.toUpperCase())}</h2><p>${group.products.length} ${group.products.length===1?'PIECE':'PIECES'}</p></div><section class="catalog-products" ${index===0?'id="collection"':''} data-collection-section="${group.key}" aria-label="${esc(group.title)}">${group.products.map((product,index)=>catalogCard(product,index)).join('')}</section>`).join('')}</div>`;
 }
 
 function header() {
@@ -138,12 +132,13 @@ ${buyable ? `<div class="pd-quantity" role="group" aria-label="Quantity">
 </div>` : ''}
 </div>
 <div class="pd-price-row">
-<p class="price-line"><strong>${priced ? esc(money(product.price)) : 'PRICE TBA'}</strong><span>${inStock ? 'IN STOCK' : 'SOLD OUT'}</span></p>
+<div class="price-line product-detail-price">${priceMarkup(product)}<span class="price-stock">${inStock ? 'IN STOCK' : 'SOLD OUT'}</span></div>
 ${colourRow(product, colourways)}
 </div>
-${sizes.length ? `<fieldset class="size-selector"><legend>SELECT SIZE</legend><div>${sizes.map(s => `<button type="button" data-size="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join('')}</div></fieldset><p class="size-error" role="alert"></p>` : ''}
+${sizes.length ? `<div class="pd-size-block"><a class="size-guide-link" href="#size-guide"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h18v10H3zM7 7v5m5-5v3m5-3v5"/></svg>Size guide</a><fieldset class="size-selector"><legend>SELECT SIZE</legend><div>${sizes.map(s => `<button type="button" data-size="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join('')}</div></fieldset><p class="size-error" role="alert"></p></div>` : ''}
 <h2 class="pd-section">Description</h2>
 <p class="product-description">${esc(product.description)}</p>
+${sizeGuide()}
 <details><summary>Fit and fabric <span aria-hidden="true">+</span></summary><p>A relaxed, dropped-shoulder silhouette with room to move. Cut for everyday wear, not for trying too hard.</p></details>
 <details><summary>Delivery and returns <span aria-hidden="true">+</span></summary><p>Delivered across Bangladesh. Orders are confirmed by Lyverne before dispatch; payment and delivery details are arranged directly with you.</p></details>
 <div class="pd-actions">
@@ -157,7 +152,7 @@ function related(origin, others) {
   if (!others.length) return '';
   return `<section class="product-page-related" aria-labelledby="related-heading">
 <div class="catalog-chapter"><h2 id="related-heading">MORE FROM THE COLLECTION</h2><p>KEEP LOOKING</p></div>
-<div class="product-page-related-grid">${others.map(p => `<article class="catalog-card"><a class="catalog-product" href="${esc(productUrl(origin, p))}" aria-label="View ${esc(p.name)} in ${esc(p.color)}"><span class="catalog-image"><img class="catalog-front" src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}" width="1254" height="1254" loading="lazy"></span><span class="catalog-meta"><span class="catalog-title">${esc(p.name)}</span><span class="catalog-price">${p.price !== null && p.price !== undefined ? esc(money(p.price)) : 'PRICE TBA'}</span><span class="catalog-color">${esc(p.color)}</span></span></a></article>`).join('')}</div>
+<div class="product-page-related-grid">${others.map(p => `<article class="catalog-card"><a class="catalog-product" href="${esc(productUrl(origin, p))}" aria-label="View ${esc(p.name)} in ${esc(p.color)}"><span class="catalog-image"><img class="catalog-front" src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}" width="1254" height="1254" loading="lazy"></span><span class="catalog-meta"><span class="catalog-title">${esc(p.name)}</span><span class="catalog-price">${priceMarkup(p,{compact:true})}</span><span class="catalog-color">${esc(p.color)}</span></span></a></article>`).join('')}</div>
 </section>`;
 }
 

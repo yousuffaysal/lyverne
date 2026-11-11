@@ -196,3 +196,55 @@ test('uploaded front, back and custom images save together and malformed uploads
   for(const item of images){assert.ok(html.includes(item.url));assert.ok(html.includes(item.label));}
  }finally{app.DB.close();}
 });
+
+test('collection section and product ordering persists and is shared by API and rendered storefront',async()=>{
+ const app=await setup();try{
+  app.env.ASSETS={fetch:async()=>new Response('<html><head><title>Collection</title></head><body><!--products:start-->old<!--products:end--></body></html>',{headers:{'Content-Type':'text/html'}})};
+  const create=async(name,category)=>(await app.request('/api/admin/products','POST',{...product,name,category},'owner')).data.product;
+  const first=await create('Signature One','SIGNATURE'),second=await create('Signature Two','SIGNATURE'),graphic=await create('Graphic One','GRAPHIC EDITION');
+  const layout={version:0,sections:['signature','graphic'],products:{signature:[first.id,second.id],graphic:[graphic.id]}};
+  assert.equal((await app.request('/api/admin/collection-layout')).status,403);
+  assert.equal((await app.request('/api/admin/collection-layout','PUT',layout)).status,403);
+  assert.equal((await app.request('/api/admin/collection-layout','PUT',layout,'owner')).status,200);
+  const saved=(await app.request('/api/admin/collection-layout','GET',null,'owner')).data.layout;
+  assert.equal(saved.version,1);assert.deepEqual(saved.sections,layout.sections);assert.deepEqual(saved.products,layout.products);
+  const publicData=(await app.request('/api/products','GET',null,null)).data;
+  assert.deepEqual(publicData.collectionLayout.sections,layout.sections);assert.deepEqual(publicData.collectionLayout.products.signature,[first.id,second.id]);
+  const page=await worker.fetch(new Request(origin+'/collection/'),app.env,{});assert.equal(page.status,200);const html=await page.text();
+  assert.ok(html.indexOf('THE QUIET SIGNATURE')<html.indexOf('THE GRAPHIC EDITION'));
+  assert.ok(html.indexOf('data-pid="'+first.id+'"')<html.indexOf('data-pid="'+second.id+'"'));
+  assert.equal((await app.request('/api/admin/collection-layout','PUT',layout,'owner')).status,409,'stale layout cannot overwrite another save');
+  const added=await create('Signature New','SIGNATURE');
+  assert.deepEqual((await app.request('/api/products','GET',null,null)).data.collectionLayout.products.signature,[first.id,second.id,added.id],'new products are appended, never hidden');
+  for(const bad of [{...layout,version:1,sections:['graphic','graphic']},{...layout,version:1,products:{signature:[first.id,first.id],graphic:[]}},{...layout,version:1,products:{signature:[graphic.id],graphic:[]}}])assert.equal((await app.request('/api/admin/collection-layout','PUT',bad,'owner')).status,400);
+  assert.equal((await app.request('/api/admin/collection-layout','GET',null,'owner')).data.layout.version,1);
+ }finally{app.DB.close();}
+});
+
+test('product discounts persist and the storefront, checkout and order use the same price',async()=>{
+ const app=await setup();try{
+  const response=await app.request('/api/admin/products','POST',{...product,price:2000,discount_type:'percent',discount_value:20},'owner');assert.equal(response.status,201);const p=response.data.product;
+  assert.equal(p.price,2000);assert.equal(p.discount_type,'percent');assert.equal(p.discount_value,20);
+  const published=(await app.request('/api/products','GET',null,null)).data.products[0];assert.equal(published.discount_value,20);
+  const page=await worker.fetch(new Request(origin+'/collection/'+p.slug+'/'),app.env,{});const html=await page.text();
+  assert.match(html,/<strong class="current-price">৳1,600<\/strong>/);assert.match(html,/<del[^>]*>৳2,000<\/del>/);assert.match(html,/20% off/);assert.match(html,/You save ৳400/);
+  const schema=[...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map(match=>JSON.parse(match[1])).find(item=>item['@type']==='Product');assert.equal(schema.offers.price,'1600');
+  await app.request('/api/admin/promotions','POST',{code:'EXTRA10',kind:'percent',value:10,minimum:0,limit:null,starts:'',ends:'',active:true},'owner');
+  const payload={...order(p.id),promoCode:'EXTRA10',items:[{id:p.id,size:'M',quantity:2,price:1,discount_value:99}]};
+  const quote=(await app.request('/api/checkout/quote','POST',payload)).data.quote;
+  assert.equal(quote.items[0].price,1600);assert.equal(quote.items[0].regular_price,2000);assert.equal(quote.items[0].product_discount,400);assert.equal(quote.subtotal,3200);assert.equal(quote.discount,320);assert.equal(quote.total,2880);
+  const placed=await app.request('/api/orders','POST',payload);assert.equal(placed.status,201);assert.equal(placed.data.order.total,2880);assert.equal(placed.data.order.items[0].price,1600);
+  assert.equal((await app.request('/api/admin/products/'+p.id,'PUT',{...product,price:2500,discount_type:'none',discount_value:0,version:2},'owner')).status,200);
+  const saved=(await app.request('/api/orders/'+placed.data.order.id)).data.order;assert.equal(saved.items[0].price,1600);assert.equal(saved.items[0].regular_price,2000,'later price edits do not change existing orders');
+ }finally{app.DB.close();}
+});
+
+test('fixed discounts can be removed and invalid product discounts cannot be saved',async()=>{
+ const app=await setup();try{
+  for(const patch of [{discount_type:'percent',discount_value:100},{discount_type:'percent',discount_value:-1},{discount_type:'percent',discount_value:2.5},{discount_type:'fixed',discount_value:1800},{discount_type:'fixed',discount_value:2000},{price:null,discount_type:'percent',discount_value:10},{price:10,discount_type:'percent',discount_value:1},{discount_type:'bad',discount_value:2}])assert.equal((await app.request('/api/admin/products','POST',{...product,...patch},'owner')).status,400);
+  const p=(await app.request('/api/admin/products','POST',{...product,discount_type:'fixed',discount_value:300},'owner')).data.product;
+  assert.equal((await app.request('/api/checkout/quote','POST',{items:[{id:p.id,size:'M',quantity:1}]})).data.quote.total,1500);
+  assert.equal((await app.request('/api/admin/products/'+p.id,'PUT',{...product,discount_type:'none',version:1},'owner')).status,200);
+  assert.equal((await app.request('/api/checkout/quote','POST',{items:[{id:p.id,size:'M',quantity:1}]})).data.quote.total,1800);
+ }finally{app.DB.close();}
+});

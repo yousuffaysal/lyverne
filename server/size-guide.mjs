@@ -1,0 +1,9 @@
+// Supplied garment measurements, with inches as the source of truth.
+export const SIZE_MEASUREMENTS=[
+ {size:'M',chest:42,width:21,length:28},
+ {size:'L',chest:44,width:22,length:29},
+ {size:'XL',chest:46,width:23,length:30},
+];
+export function sizeGuide(){
+ return `<section class="size-guide" id="size-guide" aria-labelledby="size-guide-title"><header class="size-guide-header"><div><p class="size-guide-eyebrow">A GOOD FIT STARTS HERE</p><h2 id="size-guide-title">Size guide</h2></div><div class="size-guide-units" role="group" aria-label="Measurement unit"><button type="button" data-size-unit="in" aria-pressed="true">IN</button><button type="button" data-size-unit="cm" aria-pressed="false">CM</button></div></header><p class="size-guide-caption" data-guide-caption>Garment measurements in inches</p><table><caption class="sr-only" data-guide-table-caption>Size chart: garment measurements in inches</caption><thead><tr><th scope="col">Size</th><th scope="col">Chest<small>Full round</small></th><th scope="col">Chest width<small>Laid flat</small></th><th scope="col">Body<small>Length</small></th></tr></thead><tbody>${SIZE_MEASUREMENTS.map(row=>`<tr data-guide-size="${row.size}"><th scope="row">${row.size}</th>${[row.chest,row.width,row.length].map(value=>`<td data-measure-inches="${value}">${value}</td>`).join('')}</tr>`).join('')}</tbody></table><div class="size-guide-help"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="m15 9 5-3h8l5 3 10 8-6 8-5-4v21H16V21l-5 4-6-8 10-8Z"/><path d="M20 6c0 6 8 6 8 0M18 23h12m-12 0 3-3m-3 3 3 3m9-3-3-3m3 3-3 3M27 14v23m0-23-3 3m3-3 3 3m-3 20-3-3m3 3 3-3"/></svg><p><strong>Measure a tee you already love.</strong> Lay it flat. Measure chest width from armpit to armpit, and length from the shoulder to the hem. Full chest round is twice the flat width.</p></div></section>`;
+}

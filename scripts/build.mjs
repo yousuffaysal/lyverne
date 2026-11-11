@@ -11,6 +11,7 @@ try{process.loadEnvFile('.env');}catch{/* no .env: the fallback origin is used *
 await mkdir('public/vendor',{recursive:true});
 for(const name of ['three.module.js','three.core.js'])await copyFile('node_modules/three/build/'+name,'public/vendor/'+name);
 await copyFile('server/domain.mjs','public/commerce.js');
+await copyFile('server/collection-layout.mjs','public/collection-layout.js');
 await copyFile('public/catalog.js','server/catalog.js');
 // The product pages are rendered in the Worker, which cannot read public/ at
 // request time. Extract the shared chrome -- SVG filters, account menu, and the

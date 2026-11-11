@@ -9,7 +9,7 @@
 // product fields, so there is nothing private in its context to extract. No
 // amount of prompt injection can reveal data that was never sent.
 
-import {Problem, str} from './domain.mjs';
+import {Problem, str,productPricing} from './domain.mjs';
 
 const DEFAULT_BASE = 'https://api.groq.com/openai/v1';
 const DEFAULT_MODEL = 'openai/gpt-oss-120b';
@@ -131,7 +131,7 @@ export function shopperCatalogue(products) {
     .map(p => ({
       name: p.name,
       colour: p.color,
-      price: p.price === null || p.price === undefined ? 'not yet announced' : `${p.price} BDT`,
+      price: p.price === null || p.price === undefined ? 'not yet announced' : `${productPricing(p).price} BDT`,
       sizes: Array.isArray(p.sizes) ? p.sizes : [],
       description: p.description,
       // Deliberately a boolean, not a count: "3 left" is a business signal.
