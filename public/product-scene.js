@@ -10,7 +10,7 @@ export async function initProductScene({paused:initialPaused=false}={}){
  renderer.outputColorSpace=THREE.SRGBColorSpace;
  const scene=new THREE.Scene();
  const camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,3000);camera.position.z=1500;
- const texture=await new THREE.TextureLoader().loadAsync('/assets/tee-front.png');texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
+ const texture=await new THREE.TextureLoader().loadAsync('/assets/hero-tee.png');texture.colorSpace=THREE.SRGBColorSpace;texture.anisotropy=4;
  const geometry=new THREE.PlaneGeometry(1,1,48,48);
  const vertices=geometry.attributes.position;
  for(let i=0;i<vertices.count;i++){const x=vertices.getX(i),y=vertices.getY(i);vertices.setZ(i,.10*Math.cos(x*3.8)+.017*Math.sin(y*12+x*10))}geometry.computeVertexNormals();

@@ -59,7 +59,7 @@ for(const module of ['./render-collection.mjs','./render-studio.mjs','./render-a
 }
 const html=(await readFile('public/index.html','utf8'))+(await readFile('public/collection/index.html','utf8'))+(await readFile('public/studio/index.html','utf8'));
 const files=[...html.matchAll(/(?:src|href)="(\/(?:assets|vendor)\/[^"#?]+)"/g)].map(m=>m[1]);
-for(const file of new Set([...files,'/films.js','/studio.css','/studio.js','/style-guide.js','/style.css','/app.js','/home.css','/home.js','/product-scene.js','/assets/tee-front.png','/assets/tee-back.png','/assets/tee-detail.png','/catalog.js','/collection.css','/collection.js','/transitions.js','/transitions.css',...products.map(p=>p.image)]))await access('public'+file);
+for(const file of new Set([...files,'/films.js','/studio.css','/studio.js','/style-guide.js','/style.css','/app.js','/home.css','/home.js','/product-scene.js','/assets/hero-tee.png','/assets/tee-front.png','/assets/tee-back.png','/assets/tee-detail.png','/catalog.js','/collection.css','/collection.js','/transitions.js','/transitions.css',...products.map(p=>p.image)]))await access('public'+file);
 await rm('dist',{recursive:true,force:true});
 await cp('public','dist/client',{recursive:true});
 await cp('server','dist/server',{recursive:true});
