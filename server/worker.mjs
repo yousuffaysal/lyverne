@@ -52,7 +52,7 @@ async function uniqueSlug(db,base){
  for(let n=2;n<=50;n++){const candidate=`${base}-${n}`;if(!await row(db,'SELECT id FROM products WHERE slug=?',candidate))return candidate;}
  return `${base}-${id().slice(0,8)}`;
 }
-async function body(req){if(Number(req.headers.get('content-length'))>30000)throw new Problem('This request is too large.',413);const text=await req.text();if(text.length>30000)throw new Problem('This request is too large.',413);try{const value=JSON.parse(text);if(!value||typeof value!=='object'||Array.isArray(value))throw Error();return value;}catch{throw new Problem('Send a valid form.');}}
+async function body(req,max=30000){if(Number(req.headers.get('content-length'))>max)throw new Problem('This request is too large.',413);const text=await req.text();if(text.length>max)throw new Problem('This request is too large.',413);try{const value=JSON.parse(text);if(!value||typeof value!=='object'||Array.isArray(value))throw Error();return value;}catch{throw new Problem('Send a valid form.');}}
 function sameOrigin(req){const origin=req.headers.get('origin');if(origin!==new URL(req.url).origin||req.headers.get('sec-fetch-site')==='cross-site')throw new Problem('Refresh this page and try again.',403);}
 // Identity comes from a Supabase JWT verified against the project's public key.
 // The previous implementation trusted oai-authenticated-user-* headers, which
@@ -344,11 +344,11 @@ async function api(req,env){
   await env.DB.batch(statements);return json({ok:true});
  }
  if(path==='/api/admin/products'&&method==='POST'){
-  const p=productInput(await body(req)),pid='product-'+id(),date=now(),slug=await uniqueSlug(env.DB,productSlug(p));await env.DB.batch([env.DB.prepare('INSERT INTO products(id,slug,name,color,description,category,price,discount_type,discount_value,stock,sizes,image,back,images,status,seo_title,seo_description,home_slot,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(pid,slug,p.name,p.color,p.description,p.category,p.price,p.discount_type,p.discount_value,p.stock,JSON.stringify(p.sizes),p.image,p.back,JSON.stringify(p.images),p.status,p.seo_title,p.seo_description,p.home_slot,date,date),activity(env.DB,user,'Created product',p.name)]);return json({product:decodeProduct(await row(env.DB,'SELECT * FROM products WHERE id=?',pid))},201);
+  const p=productInput(await body(req,60000)),pid='product-'+id(),date=now(),slug=await uniqueSlug(env.DB,productSlug(p));await env.DB.batch([env.DB.prepare('INSERT INTO products(id,slug,name,color,description,category,price,discount_type,discount_value,stock,sizes,image,back,images,status,seo_title,seo_description,home_slot,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)').bind(pid,slug,p.name,p.color,p.description,p.category,p.price,p.discount_type,p.discount_value,p.stock,JSON.stringify(p.sizes),p.image,p.back,JSON.stringify(p.images),p.status,p.seo_title,p.seo_description,p.home_slot,date,date),activity(env.DB,user,'Created product',p.name)]);return json({product:decodeProduct(await row(env.DB,'SELECT * FROM products WHERE id=?',pid))},201);
  }
  if(/^\/api\/admin\/products\/[^/]+$/.test(path)&&['PUT','DELETE'].includes(method)){
   const pid=path.split('/').pop(),current=await row(env.DB,'SELECT * FROM products WHERE id=?',pid);if(!current)throw new Problem('Product not found.',404);
-  const b=await body(req);if(Number(b.version)!==current.version)throw new Problem('This product changed. Refresh before editing.',409);
+  const b=await body(req,60000);if(Number(b.version)!==current.version)throw new Problem('This product changed. Refresh before editing.',409);
   if(method==='DELETE'){
    const result=await env.DB.prepare("UPDATE products SET status='archived',version=version+1,updated_at=? WHERE id=? AND version=?").bind(now(),pid,current.version).run();if(!result.meta.changes)throw new Problem('This product changed. Refresh first.',409);await activity(env.DB,user,'Archived product',current.name).run();return json({ok:true});
   }

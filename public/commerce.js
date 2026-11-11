@@ -43,7 +43,7 @@ export function priceMarkup(product,{compact=false}={}){
  return `<span class="product-price"><strong class="current-price">${money(pricing.price)}</strong>${pricing.discounted?`<del class="regular-price" aria-label="Regular price ${money(pricing.regular)}">${money(pricing.regular)}</del><span class="price-discount">${saving}</span>${compact?'':`<span class="price-savings">You save ${money(pricing.savings)}</span>`}`:''}</span>`;
 }
 export function productInput(b,existing){
- const name=str(b.name,100),color=str(b.color,60),description=str(b.description,2000),category=str(b.category,60)||'ESSENTIALS';
+ const name=str(b.name,100),color=str(b.color,60),description=str(b.description,10000),category=str(b.category,60)||'ESSENTIALS';
  const price=b.price===''||b.price===null?null:Number(b.price),stock=Number(b.stock),sizes=Array.isArray(b.sizes)?[...new Set(b.sizes.filter(s=>['S','M','L','XL','XXL'].includes(s)))]:[];
  const images=galleryInput(b,existing),image=images[0].url,back=images.find(image=>image.label.toLowerCase()==='back')?.url||'',status=['draft','active','archived'].includes(b.status)?b.status:'draft';
  const discount_type=b.discount_type===undefined?(existing?.discount_type||'none'):b.discount_type;
@@ -54,6 +54,7 @@ export function productInput(b,existing){
  const seoTitle=str(b.seo_title,70),seoDescription=str(b.seo_description,160);
  // 0 keeps the piece off the homepage; 1-12 is its position in that grid.
  const homeSlot=b.home_slot===''||b.home_slot===null||b.home_slot===undefined?0:Number(b.home_slot);
+ if(typeof b.description==='string'&&b.description.trim().length>10000)throw new Problem('Keep the product description within 10,000 characters.');
  if(!name||!color||!description||!sizes.length)throw new Problem('Add a name, color, description and at least one size.');
  if(price!==null&&(!Number.isInteger(price)||price<1||price>1000000))throw new Problem('Enter a whole-number price between ৳1 and ৳1,000,000.');
  if(!Number.isInteger(stock)||stock<0||stock>100000)throw new Problem('Stock must be a whole number from 0 to 100,000.');

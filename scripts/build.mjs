@@ -10,6 +10,8 @@ import {readFile,access,mkdir,copyFile,cp,rm,readdir,writeFile} from 'node:fs/pr
 try{process.loadEnvFile('.env');}catch{/* no .env: the fallback origin is used */}
 await mkdir('public/vendor',{recursive:true});
 for(const name of ['three.module.js','three.core.js'])await copyFile('node_modules/three/build/'+name,'public/vendor/'+name);
+await copyFile('node_modules/marked/lib/marked.esm.js','public/vendor/marked.esm.js');
+await writeFile('public/product-markdown.js',(await readFile('server/product-markdown.mjs','utf8')).replace("from 'marked'","from './vendor/marked.esm.js'"));
 await copyFile('server/domain.mjs','public/commerce.js');
 await copyFile('server/collection-layout.mjs','public/collection-layout.js');
 await copyFile('public/catalog.js','server/catalog.js');

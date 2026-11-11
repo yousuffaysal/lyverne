@@ -144,3 +144,17 @@
 .product-info .product-price .current-price{font-size:30px;font-weight:700;line-height:1.2}.product-info .product-price .regular-price{font-size:16px}
 .price-line .price-stock{font-size:10px;font-weight:400;color:#817667;white-space:nowrap}
 .bag-item-price{font-weight:700}.bag-item-price del{font-size:11px;color:#8b8171;font-weight:400;margin-left:8px}
+
+/* Product copy keeps its hierarchy and breathing room wherever it is shown. */
+.description-markdown{font-family:Manrope,Arial,sans-serif;font-size:14px;line-height:1.8;overflow-wrap:anywhere}
+.description-markdown> :first-child{margin-top:0}.description-markdown> :last-child{margin-bottom:0}
+.description-markdown p{font:inherit;margin:0 0 1em}
+.description-markdown h1,.description-markdown h2,.description-markdown h3,.description-markdown h4,.description-markdown h5,.description-markdown h6{font-family:Manrope,Arial,sans-serif;font-weight:700;font-size:1.1em;line-height:1.45;letter-spacing:-.015em;text-transform:none;margin:1.5em 0 .65em;color:var(--ink)}
+.description-markdown strong{font-weight:700;color:var(--ink)}.description-markdown em{font-style:italic}
+.description-markdown ul,.description-markdown ol{display:block;padding-left:1.4em;margin:0 0 1.15em;list-style-position:outside}
+.description-markdown ul{list-style-type:disc}.description-markdown ol{list-style-type:decimal}.description-markdown ul ul{list-style-type:circle}.description-markdown li{display:list-item;margin:.35em 0;padding-left:.15em}.description-markdown li::marker{color:#9e7254}.description-markdown li>p{margin:.5em 0}.description-markdown li>ul,.description-markdown li>ol{margin:.4em 0 .7em}
+.description-markdown a{text-decoration:underline;text-underline-offset:3px}.description-markdown a:hover{color:var(--orange)}
+.description-markdown blockquote{margin:1.2em 0;padding:.3em 0 .3em 1em;border-left:2px solid #b19b80;color:#7e7467}.description-markdown blockquote>p:last-child{margin-bottom:0}
+.description-markdown code{font:400 .9em/1.6 ui-monospace,SFMono-Regular,monospace;padding:.12em .35em;background:#d9d0c044;border-radius:3px}.description-markdown pre{white-space:pre;overflow-x:auto;margin:1em 0;padding:14px;background:#d9d0c044;border:1px solid var(--line)}.description-markdown pre code{padding:0;background:none}
+.description-markdown hr{border:0;border-top:1px solid var(--line);margin:1.5em 0}.description-markdown table{display:block;width:100%;max-width:100%;overflow-x:auto;border-collapse:collapse;margin:1em 0}.description-markdown th,.description-markdown td{padding:9px 12px;border:1px solid var(--line);font-size:.9em;text-align:left}.description-markdown th{font-weight:600;background:#d9d0c044}
+@media(max-width:650px){.description-markdown{font-size:13px;line-height:1.85}}

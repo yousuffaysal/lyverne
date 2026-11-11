@@ -1,3 +1,4 @@
+import {productDescriptionText} from './product-markdown.mjs';
 import {productImages,productPricing} from './domain.mjs';
 // Search-engine surface: canonical URLs, social cards, structured data,
 // robots.txt and sitemap.xml.
@@ -136,7 +137,7 @@ export function productSchema(origin, product) {
     '@type': 'Product',
     '@id': url + '#product',
     name: `${product.name} — ${product.color}`,
-    description: product.description,
+    description: productDescriptionText(product.description),
     image: images,
     sku: product.id,
     category: product.category,
@@ -253,6 +254,6 @@ export function productMeta(product) {
   return {
     title: clip(product.seo_title || `${name} | LYVERNE`, 70),
     description: clip(product.seo_description
-      || `${product.description}${priced} Bangladeshi streetwear from Lyverne, delivered across Bangladesh.`, 158),
+      || `${productDescriptionText(product.description)}${priced} Bangladeshi streetwear from Lyverne, delivered across Bangladesh.`, 158),
   };
 }

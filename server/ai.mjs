@@ -1,3 +1,4 @@
+import {productDescriptionText} from './product-markdown.mjs';
 // AI features, over any OpenAI-compatible endpoint (Groq by default; xAI, or
 // OpenAI, by changing AI_BASE_URL and AI_MODEL).
 //
@@ -133,7 +134,7 @@ export function shopperCatalogue(products) {
       colour: p.color,
       price: p.price === null || p.price === undefined ? 'not yet announced' : `${productPricing(p).price} BDT`,
       sizes: Array.isArray(p.sizes) ? p.sizes : [],
-      description: p.description,
+      description: productDescriptionText(p.description),
       // Deliberately a boolean, not a count: "3 left" is a business signal.
       available: Number(p.stock) > 0,
       url: `/collection/${p.slug}/`,

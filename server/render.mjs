@@ -1,3 +1,4 @@
+import {renderProductDescription} from './product-markdown.mjs';
 import {arrangeCollection} from './collection-layout.mjs';
 import {sizeGuide} from './size-guide.mjs';
 import {productImages,priceMarkup} from './domain.mjs';
@@ -138,7 +139,7 @@ ${colourRow(product, colourways)}
 </div>
 ${sizes.length ? `<div class="pd-size-block"><a class="size-guide-link" href="#size-guide"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 7h18v10H3zM7 7v5m5-5v3m5-3v5"/></svg>Size guide</a><fieldset class="size-selector"><legend>SELECT SIZE</legend><div>${sizes.map(s => `<button type="button" data-size="${esc(s)}" aria-pressed="false">${esc(s)}</button>`).join('')}</div></fieldset><p class="size-error" role="alert"></p></div>` : ''}
 <h2 class="pd-section">Description</h2>
-<p class="product-description">${esc(product.description)}</p>
+<div class="product-description description-markdown">${renderProductDescription(product.description)}</div>
 ${sizeGuide()}
 <details><summary>Fit and fabric <span aria-hidden="true">+</span></summary><p>A relaxed, dropped-shoulder silhouette with room to move. Cut for everyday wear, not for trying too hard.</p></details>
 <details><summary>Delivery and returns <span aria-hidden="true">+</span></summary><p>Delivered across Bangladesh. Orders are confirmed by Lyverne before dispatch; payment and delivery details are arranged directly with you.</p></details>

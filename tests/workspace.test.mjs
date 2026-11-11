@@ -1,3 +1,4 @@
+import * as descriptionAdmin from '../public/product-description-admin.js';
 import * as pricingAdmin from '../public/product-pricing-admin.js';
 import * as collectionAdmin from '../public/collection-admin.js';
 import * as media from '../public/product-media-admin.js';
@@ -25,7 +26,7 @@ function workspace({admin=true,hash=''}={}){
   '/api/admin/overview':{products:[product],orders:[order],customers:[user],activity:[],connections:{}},'/api/admin/promotions':{promotions:[],campaign:promotions.blankCampaign},
   '/api/admin/users':{users:[user],you:{chief:true}},'/api/admin/tasks':{tasks:[],team:[user]},'/api/admin/custom-orders':{enquiries:[],labels:{}},'/api/admin/orders/LY-ONE':{order,events:[]},'/api/admin/collection-layout':{layout:{sections:['graphic','signature'],products:{graphic:[],signature:[]},version:0},products:[product]}
  };
- const context=vm.createContext({...commerce,...promotions,...team,...media,...collectionAdmin,...pricingAdmin,originals:[product],money:n=>'BDT '+n,authMotion,auth:{getToken:async()=> 'test',consumeRedirect:()=>null},Response,URLSearchParams,Blob,crypto:{randomUUID:()=> 'test'},Date,
+ const context=vm.createContext({...commerce,...promotions,...team,...media,...collectionAdmin,...pricingAdmin,...descriptionAdmin,originals:[product],money:n=>'BDT '+n,authMotion,auth:{getToken:async()=> 'test',consumeRedirect:()=>null},Response,URLSearchParams,Blob,crypto:{randomUUID:()=> 'test'},Date,
   document:{body:{dataset:{page:admin?'admin':'dashboard'}},hidden:false,activeElement:{matches:()=>false},querySelector:get,querySelectorAll:()=>[],addEventListener:(name,fn)=>handlers[name]=fn},
   location:{hash,search:'',pathname:admin?'/admin/':'/dashboard/'},history:{replaceState(){}},window:{addEventListener:(name,fn)=>handlers['window:'+name]=fn,scrollTo(){}},addEventListener(){},scrollY:0,
   setTimeout:(fn,ms)=>{timers.push({fn,ms});return timers.length},clearTimeout(){},fetch:async path=>{requests.push(path);if(!data[path])throw Error('Unexpected API '+path);return new Response(JSON.stringify(data[path]),{status:200})}
