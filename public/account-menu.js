@@ -31,7 +31,7 @@ document.addEventListener('click', event => {
 
 // ------------------------------------------------------------- menu contents
 
-const ARROW = '<span aria-hidden="true">↗︎</span>';
+const ARROW = '<span aria-hidden="true"><svg class="ui-arrow" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 19 19 5M5 5h14v14"/></svg></span>';
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, c =>
   ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[c]));
 
