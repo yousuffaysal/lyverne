@@ -20,7 +20,7 @@ const PAGE = `<!doctype html><html><head><title>LYVERNE</title></head><body>`
 
 const piece = (id, slug, color, slot, status = 'active') => ({
   id, slug, color, slot, status,
-  name: 'The Signature Tee', description: 'A relaxed tee.', category: 'SIGNATURE',
+  name: 'Signature Tee '+id.toUpperCase(), description: 'A relaxed tee.', category: 'SIGNATURE',
   price: 1800, stock: 10, sizes: ['S', 'M', 'L'], image: `/assets/tee-${id}.png`, back: '',
 });
 
@@ -50,8 +50,8 @@ test('the homepage grid is the featured pieces, in the chief\'s order', async ()
   try {
     const {status, html} = await app.home();
     assert.equal(status, 200);
-    const colours = [...html.matchAll(/<span class="edition-caption">([^<]*?) </g)].map(m => m[1]);
-    assert.deepEqual(colours, ['Onyx Black', 'Warm Cream', 'Lyverne Orange'], 'home_slot decides the order');
+    const names = [...html.matchAll(/<span class="edition-name">([^<]*)<\/span>/g)].map(m => m[1]);
+    assert.deepEqual(names, ['Signature Tee A', 'Signature Tee B', 'Signature Tee C'], 'captions show product names in home_slot order');
     assert.equal(html.includes('Washed Charcoal'), false, 'slot 0 stays off the homepage');
     assert.equal(html.includes('data-product-id'), false, 'the static cards were replaced');
   } finally { app.DB.close(); }

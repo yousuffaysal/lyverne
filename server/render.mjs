@@ -54,7 +54,7 @@ export function homeGrid(products) {
     const href = `/collection/${p.slug}/`;
     return `<article><a class="edition-card" href="${esc(href)}" aria-label="View ${esc(p.name)} in ${esc(p.color)}">`
       + `<span class="edition-image"><img src="${esc(assetUrl(p.image))}" alt="${esc(p.name)}, ${esc(p.color)}" width="1254" height="1254" loading="lazy"></span>`
-      + `<span class="edition-caption">${esc(p.color)} <span class="edition-plus">+</span></span></a></article>`;
+      + `<span class="edition-caption"><span class="edition-name">${esc(p.name)}</span><span class="edition-plus">+</span></span></a></article>`;
   }).join('');
 }
 
