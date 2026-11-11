@@ -26,6 +26,29 @@ const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   }
 }
 
+// The mobile image rail folds into a small edge control. Its space is never
+// reserved beside or below the photograph.
+const gallery=$('.product-page-gallery');
+const rail=$('#product-image-rail');
+const openRail=$('[data-gallery-open]');
+const closeRail=$('[data-gallery-close]');
+if(gallery&&rail&&openRail&&closeRail){
+ const mobile=window.matchMedia('(max-width: 650px)');
+ let collapsed=false;
+ const syncRail=(focus=false)=>{
+  const hidden=mobile.matches&&collapsed;
+  gallery.classList.toggle('rail-collapsed',hidden);
+  rail.inert=hidden;rail.setAttribute('aria-hidden',String(hidden));
+  openRail.setAttribute('aria-expanded',String(!hidden));
+  if(focus){if(hidden)openRail.focus({preventScroll:true});else rail.querySelector('[aria-pressed="true"]')?.focus({preventScroll:true});}
+ };
+ closeRail.addEventListener('click',()=>{collapsed=true;syncRail(true);});
+ openRail.addEventListener('click',()=>{collapsed=false;syncRail(true);});
+ rail.addEventListener('keydown',event=>{if(event.key==='Escape'&&mobile.matches){event.preventDefault();collapsed=true;syncRail(true);}});
+ mobile.addEventListener('change',()=>syncRail());
+ syncRail();
+}
+
 // Unit conversion always starts from the supplied inch measurements.
 const sizeGuide=$('#size-guide');
 function highlightGuideSize(size){

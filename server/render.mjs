@@ -93,7 +93,8 @@ function gallery(product) {
   const tabs = views.map((v, i) => `<button type="button" class="pd-view" data-page-view="${esc(v.view)}" aria-pressed="${i === 0}"><img src="${esc(v.src)}" alt="" aria-hidden="true" loading="lazy"><span>${esc(v.label)}</span></button>`).join('');
   return `<div class="product-page-gallery">
 <figure class="product-page-frame">${shots}</figure>
-<div class="gallery-tabs" role="group" aria-label="Product view">${tabs}</div>
+<aside class="gallery-rail" id="product-image-rail" aria-label="Product images"><button type="button" class="gallery-rail-close" data-gallery-close aria-label="Hide image views"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button><div class="gallery-tabs" role="group" aria-label="Product view">${tabs}</div></aside>
+<button type="button" class="gallery-rail-toggle" data-gallery-open aria-label="Show image views" aria-controls="product-image-rail" aria-expanded="true"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="7" y="4" width="13" height="15" rx="2"/><path d="M4 8v11a3 3 0 0 0 3 3h10M10 14l3-3 4 4M15 8h.01"/></svg></button>
 </div>`;
 }
 
