@@ -14,7 +14,7 @@
 }
 
 .product-page main {
-  padding: 0 3.15vw 90px;
+  padding: 26px 3.15vw 90px;
 }
 
 .product-page-breadcrumb {
@@ -53,10 +53,10 @@
   /* Square from the column width, but never so tall that the FRONT/BACK/DETAIL
      row falls off the first screen -- at 1440x900 the square came to 691px and
      pushed the tabs 17px under the fold, so nobody would know the other views
-     were there. 238px is the nav, the breadcrumb, the tab row and its gap.
+     were there. 186px is the nav, the top spacing, the tab row and its gap.
      The image is object-fit:contain, so a shorter frame letterboxes it rather
      than cropping anything. */
-  max-height: max(420px, calc(100svh - 238px));
+  max-height: max(420px, calc(100svh - 186px));
 }
 
 /* visibility, not display: the inactive views keep their layout boxes, which

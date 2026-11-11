@@ -190,7 +190,6 @@ ${header()}
 <span class="pd-top-title">Details</span>
 <button type="button" class="pd-icon pd-save" data-save-product="${esc(product.id)}" aria-pressed="false" aria-label="Save this piece"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.6-7-9.3A4 4 0 0 1 12 8a4 4 0 0 1 7 2.7C19 15.4 12 20 12 20Z"/></svg></button>
 </div>
-<nav class="product-page-breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a> <span aria-hidden="true">/</span> <a href="/collection/">Collection</a> <span aria-hidden="true">/</span> <span aria-current="page">${esc(product.name)} — ${esc(product.color)}</span></nav>
 <div class="product-page-layout" style="--hero:color-mix(in srgb, ${swatch(product)} 20%, var(--cream))">${gallery(product)}${info(product, colourways)}</div>
 ${related(origin, others)}
 </main>
