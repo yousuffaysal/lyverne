@@ -43,13 +43,50 @@ async function submitAuth(form,action){
  set('');button.disabled=true;
  try{
   await action();
- }catch(err){set(err.message);}
+ }catch(err){hideLoader();set(err.message);}
  finally{button.disabled=false;}
 }
+// Signing in used to drop people on a bare "MY ACCOUNT. Opening your space…"
+// page while the dashboard fetched its data. Now one full-screen loader covers
+// the whole hop -- it appears the moment Sign in is tapped, the next page
+// starts with the same loader already showing, and it fades out only once the
+// dashboard is drawn underneath. A session flag then asks that page to say hello.
+const WELCOME_KEY='lyverne-welcome';
+const loaderMarkup=text=>`<div class="loader-mark"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="loader-track" cx="60" cy="60" r="52"/><circle class="loader-arc" cx="60" cy="60" r="52"/></svg><img src="/assets/lyverne-monogram.png" alt="" width="46" height="46"></div><p class="loader-text">${e(text)}<span class="loader-dots" aria-hidden="true"><i></i><i></i><i></i></span></p>`;
+function showLoader(text){
+ let el=$('#auth-loader');
+ if(!el){el=document.createElement('div');el.id='auth-loader';el.className='auth-loader';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.append(el);}
+ el.innerHTML=loaderMarkup(text);
+ void el.offsetWidth;el.classList.add('show');
+}
+function hideLoader(){$('#auth-loader')?.classList.remove('show');}
+function markWelcome(kind='back'){try{sessionStorage.setItem(WELCOME_KEY,kind);}catch{}}
+function takeWelcome(){try{const k=sessionStorage.getItem(WELCOME_KEY);sessionStorage.removeItem(WELCOME_KEY);return k;}catch{return null;}}
+function showWelcome(kind){
+ const first=e((state.user?.name||'').trim().split(/\s+/)[0]||'');
+ const dialog=document.createElement('dialog');
+ dialog.className='welcome-pop';
+ dialog.setAttribute('aria-labelledby','welcome-title');
+ dialog.innerHTML=`<svg class="welcome-seal" viewBox="0 0 120 120" aria-hidden="true"><g class="welcome-rays">${[0,45,90,135,180,225,270,315].map(a=>`<line x1="60" y1="6" x2="60" y2="16" transform="rotate(${a} 60 60)"/>`).join('')}</g><circle class="welcome-disc" cx="60" cy="60" r="36"/><path class="welcome-check" pathLength="1" d="M44 61l11 11 22-24"/></svg><p class="eyebrow">${kind==='new'?'YOUR ACCOUNT IS READY':'YOU’RE SIGNED IN'}</p><h2 id="welcome-title">${kind==='new'?'WELCOME TO<br>LYVERNE':'WELCOME<br>BACK'}${first?`, ${first}`:''}.</h2><p class="welcome-copy">${isAdmin?'Your store is ready when you are.':'Your orders, saved pieces and details are all here.'}</p><button class="btn orange" type="button" data-welcome-close>${isAdmin?'OPEN STORE ADMIN':'LET’S GO'} ↗︎</button><span class="welcome-timer" aria-hidden="true"><i></i></span>`;
+ document.body.append(dialog);
+ let closed=false;
+ const close=()=>{if(closed)return;closed=true;clearTimeout(auto);dialog.classList.add('closing');setTimeout(()=>{dialog.close();dialog.remove();},320);};
+ const auto=setTimeout(close,4200);
+ dialog.addEventListener('cancel',ev=>{ev.preventDefault();close();});
+ dialog.addEventListener('click',ev=>{if(ev.target===dialog||ev.target.closest('[data-welcome-close]'))close();});
+ dialog.showModal();
+}
 async function boot(){
+ try{await bootInner();}finally{if(!leaving)hideLoader();}
+ const welcome=takeWelcome();
+ if(welcome&&state.user&&!['login','signup'].includes(page)&&$('.workspace-layout'))showWelcome(welcome);
+}
+let leaving=false;
+addEventListener('pageshow',ev=>{if(ev.persisted)hideLoader();});
+async function bootInner(){
  const redirect=auth.consumeRedirect();
  if(redirect?.error){notify(redirect.error);}
- else if(redirect?.session&&['login','signup'].includes(page)){location.replace(await destinationAfterSignIn());return;}
+ else if(redirect?.session&&['login','signup'].includes(page)){leaving=true;showLoader('Signing you in');markWelcome(page==='signup'?'new':'back');location.replace(await destinationAfterSignIn());return;}
  try{config=await api('/api/config');state.connections.ai=config.ai;state.connections.uploads=config.uploads;const result=await api('/api/me');state.user=result.user;
  if(['login','signup'].includes(page)){renderAuth();return;}
  if(!state.user){renderGate();return;}
@@ -94,7 +131,7 @@ function render(){
  // Delivery details is the lower half of My details now, so an old #addresses
  // link lands on the tab that actually holds it rather than on no tab at all.
  if(!isAdmin&&state.view==='addresses')state.view='profile';
- root.innerHTML=`<div class="workspace-layout"><aside class="sidebar"><span class="side-label">${isAdmin?'STORE ADMIN':'YOUR EVERYDAY'}</span><nav class="side-nav" aria-label="${isAdmin?'Admin':'Account'} navigation">${nav.map(([id,icon,label])=>`<button data-tab="${id}" ${state.view===id?'aria-current="page"':''}><span class="nav-icon" aria-hidden="true">${icon}</span>${label}</button>`).join('')}</nav><div class="side-note"><span>${demo?'SAMPLE ACCOUNT':isAdmin?'STORE OWNER':'YOUR LYVERNE ACCOUNT'}</span><strong>${e(state.user.name)}</strong><a href="${demo?'/login/':signOut}">${demo?'Sign in to your account':'Sign out'} ↗︎</a></div></aside><main id="workspace-main" class="work-area"><div class="work-topline"><p class="eyebrow">LYVERNE / ${isAdmin?'OPERATIONS':'MY ACCOUNT'}</p><span class="eyebrow">${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</span></div>${demo?`<div class="mode-strip"><span>SAMPLE DATA · Explore the design. Changes here are not saved.</span><a href="/${isAdmin?'admin':'login'}/">${isAdmin?'OWNER SIGN IN':'SIGN IN'} ↗︎</a></div>`:''}<div id="view-content">${viewContent()}</div></main></div>`;
+ root.innerHTML=`<div class="workspace-layout"><aside class="sidebar${isAdmin?'':' customer-side'}"><span class="side-label">${isAdmin?'STORE ADMIN':'YOUR EVERYDAY'}</span><nav class="side-nav" aria-label="${isAdmin?'Admin':'Account'} navigation">${nav.map(([id,icon,label])=>`<button data-tab="${id}" ${state.view===id?'aria-current="page"':''}><span class="nav-icon" aria-hidden="true">${icon}</span>${label}</button>`).join('')}</nav><div class="side-note"><span>${demo?'SAMPLE ACCOUNT':isAdmin?'STORE OWNER':'YOUR LYVERNE ACCOUNT'}</span><strong>${e(state.user.name)}</strong><a href="${demo?'/login/':signOut}">${demo?'Sign in to your account':'Sign out'} ↗︎</a></div></aside><main id="workspace-main" class="work-area">${isAdmin?`<div class="work-topline"><p class="eyebrow">LYVERNE / OPERATIONS</p><span class="eyebrow">${new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})}</span></div>`:''}${demo?`<div class="mode-strip"><span>SAMPLE DATA · Explore the design. Changes here are not saved.</span><a href="/${isAdmin?'admin':'login'}/">${isAdmin?'OWNER SIGN IN':'SIGN IN'} ↗︎</a></div>`:''}<div id="view-content">${viewContent()}</div></main></div>`;
  if(state.view==='chat')scrollChat();
  if(!demo&&!isAdmin&&['overview','tracking','orders'].includes(state.view)&&state.selectedOrder)timer=setTimeout(refreshTracking,15000);
 }
@@ -106,7 +143,7 @@ function overview(){return isAdmin?adminOverview():customerOverview();}
 function viewContent(){return ({overview,orders:ordersView,tracking:trackingView,saved:savedView,addresses:profileView,profile:profileView,products:productsView,inventory:inventoryView,custom:customView,customers:customersView,team:()=>teamView(state.team,teamContext()),tasks:()=>tasksView(state.tasks,state.staff,teamContext()),chat:()=>chatView(state.messages,{youId:state.user.id,you:state.user}),analytics:analyticsView,assistant:assistantView,promotions:()=>promotionsView(state.promotions,state.campaign,money,{report:promoReport(),period:state.promoPeriod,filter:state.promoFilter,query:state.promoQuery}),activity:activityView,settings:settingsView}[state.view]||overview)();}
 function customerOverview(){
  const order=state.orders.find(o=>!['delivered','cancelled'].includes(o.status))||state.orders[0];
- return heading(`HEY, ${e(state.user.name.split(' ')[0])}.`,'Your everyday, all in one place.',`<a class="pill-link" href="/collection/">Find your next favorite ↗︎</a>`)+stats([['Orders',state.orders.length,'Your Lyverne collection'],['On the way',state.orders.filter(o=>['shipped','out-for-delivery'].includes(o.status)).length,'Follow every step'],['Delivered',state.orders.filter(o=>o.status==='delivered').length,'Already yours'],['Saved pieces',wishlist().length,'A little inspiration']])+`<div class="dash-grid"><div>${order?trackingCard(order):`<div class="panel">${empty('YOUR FIRST PIECE AWAITS.','When you place an order, its journey will appear right here.','<a class="btn orange" href="/collection/">EXPLORE COLLECTION ↗︎</a>')}</div>`}<div class="panel" style="margin-top:24px"><div class="panel-head"><h2>YOUR RECENT ORDERS</h2><button class="text-btn" data-tab="orders">View all ↗︎</button></div>${orderList(state.orders.slice(0,3))}</div></div><div class="stack"><section class="panel orange-panel"><p class="eyebrow">A NOTE FOR YOUR EVERYDAY</p><h2>FEWER THINGS.<br>BETTER<br>FEELINGS.</h2><p class="small">Build a wardrobe that feels like you. Start with one good piece.</p><a class="btn" href="/collection/">FIND YOUR PIECE ↗︎</a></section></div></div>`;
+ return heading(`HEY, ${e(state.user.name.split(' ')[0])}.`,'Your everyday, all in one place.')+stats([['Orders',state.orders.length,'Your Lyverne collection'],['On the way',state.orders.filter(o=>['shipped','out-for-delivery'].includes(o.status)).length,'Follow every step'],['Delivered',state.orders.filter(o=>o.status==='delivered').length,'Already yours'],['Saved pieces',wishlist().length,'A little inspiration']])+`<div class="dash-grid"><div>${order?trackingCard(order):`<div class="panel">${empty('YOUR FIRST PIECE AWAITS.','When you place an order, its journey will appear right here.','<a class="btn orange" href="/collection/">EXPLORE COLLECTION ↗︎</a>')}</div>`}<div class="panel" style="margin-top:24px"><div class="panel-head"><h2>YOUR RECENT ORDERS</h2><button class="text-btn" data-tab="orders">View all ↗︎</button></div>${orderList(state.orders.slice(0,3))}</div></div><div class="stack"><section class="panel orange-panel"><p class="eyebrow">A NOTE FOR YOUR EVERYDAY</p><h2>FEWER THINGS.<br>BETTER<br>FEELINGS.</h2><p class="small">Build a wardrobe that feels like you. Start with one good piece.</p><a class="btn" href="/collection/">FIND YOUR PIECE ↗︎</a></section></div></div>`;
 }
 function trackingCard(order){const index=statuses.indexOf(order.status),progress=Math.max(0,index)/4*100;const item=order.items[0];return `<section class="tracking-card"><div class="tracking-top"><span class="eyebrow">ORDER ${e(order.id)}</span>${badge(order.status)}</div><div class="tracking-body">${image(item)}<div><p class="eyebrow">${order.status==='delivered'?'WELCOME TO YOUR EVERYDAY.':order.status==='cancelled'?'ORDER CANCELLED':order.status==='confirmed'?'WE’VE GOT YOUR REQUEST.':'GOOD THINGS ARE COMING.'}</p><h2>${e(item.name)}</h2><p>${e(item.color)} · ${e(item.size)} · ${order.items.reduce((s,i)=>s+i.quantity,0)} piece(s)</p><p class="muted small">${order.delivery_date&&order.status!=='cancelled'?'Estimated arrival: '+date(order.delivery_date):'Delivery date will be confirmed by the store.'}</p></div></div>${order.status!=='cancelled'?`<div class="track" style="--progress:${progress}%" aria-label="Order progress: ${e(statusLabels[order.status])}">${statuses.map((s,i)=>`<div class="step ${i<=index?'done':''} ${i===index?'current':''}"><i aria-hidden="true"></i><span>${e(statusLabels[s])}</span></div>`).join('')}</div>`:''}<div class="track-note"><span>${demo?'SAMPLE JOURNEY':`CHECKED ${state.lastCheck?.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})||'NOW'} · REFRESHES EVERY 15 SECONDS`}</span><button class="text-btn" data-track="${e(order.id)}">Full journey ↗︎</button></div></section>`;}
 function orderList(orders){if(!orders.length)return '<p class="muted small">Your orders will appear here.</p>';return orders.map(o=>`<div class="inventory-row"><div><strong>${e(o.id)}</strong><span>${e(o.items[0]?.name)} · ${date(o.created_at)}</span></div><div>${badge(o.status)}<span>${money(o.total)}</span></div><button class="text-btn" data-${isAdmin?'order':'track'}="${e(o.id)}">View ↗︎</button></div>`).join('');}
@@ -241,7 +278,7 @@ async function action(name){if(name==='retry'){boot();return;}if(name==='close-e
  if(name==='apply-promo'){await refreshQuote($('#checkout-form [name=promoCode]').value);return;}
  if(name==='remove-promo'){$('#checkout-form [name=promoCode]').value='';try{localStorage.removeItem('lyverne-promo-code');}catch{}await refreshQuote('');return;}if(name==='checkout'){checkout();return;}if(name==='refresh-tracking'){if(state.selectedOrder){await loadTracking();render();notify('Showing the latest confirmed update.');}return;}if(name==='import'){if(!writeAllowed())return;await api('/api/admin/import',{method:'POST',body:'{}'});await loadData();render();notify('Original collection imported as drafts. Set prices and stock before publishing.');return;}if(name==='export-orders'){const safe=v=>'"'+String(v??'').replace(/^[=+@-]/,"'").replaceAll('"','""')+'"';const csv=[['Order','Date','Status','Payment','Total BDT'],...filteredOrders().map(o=>[o.id,o.created_at,o.status,o.payment,o.total])].map(r=>r.map(safe).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));const a=document.createElement('a');a.href=url;a.download='lyverne-orders.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);return;}}
 document.addEventListener('click',async ev=>{const target=ev.target.closest('button,a');if(!target)return;
- if(target.dataset.action==='google'){ev.preventDefault();try{await auth.signInWithGoogle(location.origin+'/login/'+(new URLSearchParams(location.search).get('return_to')?location.search:''));}catch(err){notify(err.message);}return;}
+ if(target.dataset.action==='google'){ev.preventDefault();showLoader('Opening Google');try{await auth.signInWithGoogle(location.origin+'/login/'+(new URLSearchParams(location.search).get('return_to')?location.search:''));}catch(err){hideLoader();notify(err.message);}return;}
  if(target.dataset.action==='sign-out'){ev.preventDefault();await auth.signOut();location.assign('/login/');return;}
  if(target.dataset.action==='forgot'){ev.preventDefault();const email=$('#auth-password input[name=email]')?.value?.trim();if(!email){notify('Enter your email address first, then choose this again.');return;}try{await auth.sendPasswordReset({email,redirectTo:location.origin+'/login/'});notify('If that address has an account, a reset link is on its way.');}catch(err){notify(err.message);}return;}
  try{
@@ -271,13 +308,15 @@ document.addEventListener('submit',async ev=>{
   ev.preventDefault();
   const data=Object.fromEntries(new FormData(authForm));
   const back=returnTarget();
+  showLoader(page==='signup'?'Creating your account':'Signing you in');
   await submitAuth(authForm,async()=>{
    if(page==='signup'){
     const {confirmationRequired}=await auth.signUp({email:data.email,password:data.password,name:data.name});
-    if(confirmationRequired){authForm.innerHTML='<p class="auth-copy">Almost there. Confirm your email address, then sign in.</p>';return;}
+    if(confirmationRequired){hideLoader();authForm.innerHTML='<p class="auth-copy">Almost there. Confirm your email address, then sign in.</p>';return;}
    }else{
     await auth.signIn({email:data.email,password:data.password});
    }
+   markWelcome(page==='signup'?'new':'back');
    location.assign(await destinationAfterSignIn());
   });
   return;
@@ -285,7 +324,7 @@ document.addEventListener('submit',async ev=>{
  ev.preventDefault();const form=ev.target,submit=$('[type=submit],button:not([type])',form),err=$('.error',form);if(err)err.textContent='';
  if(form.id!=='assistant-form'&&!writeAllowed())return;const fd=new FormData(form),b=Object.fromEntries(fd);if(submit)submit.disabled=true;
  try{
- if(form.id==='signup-form'||form.id==='profile-form'||form.id==='address-form'){const result=await api('/api/me',{method:'PUT',body:JSON.stringify({...state.user,...b})});state.user=result.user;if(form.id==='signup-form'){location.href='/dashboard/';return;}notify('Your details are saved.');}
+ if(form.id==='signup-form'||form.id==='profile-form'||form.id==='address-form'){const result=await api('/api/me',{method:'PUT',body:JSON.stringify({...state.user,...b})});state.user=result.user;if(form.id==='signup-form'){markWelcome('new');showLoader('Getting things ready');location.href='/dashboard/';return;}notify('Your details are saved.');}
  if(form.id==='promo-form'){const payload={...b,active:fd.has('active'),version:Number(form.dataset.version)};for(const field of ['starts','ends'])payload[field]=b[field]?new Date(b[field]).toISOString():'';await api('/api/admin/promotions'+(form.dataset.id?'/'+form.dataset.id:''),{method:form.dataset.id?'PUT':'POST',body:JSON.stringify(payload)});closeEditor();await loadData();render();notify('Promo code saved.');}
  if(form.id==='campaign-form'){await api('/api/admin/campaign',{method:'PUT',body:JSON.stringify({...b,enabled:fd.has('enabled'),version:Number(form.dataset.version)})});await loadData();render();notify('Opening promotion saved.');}
  if(form.id==='product-form'){await api('/api/admin/products'+(form.dataset.id?'/'+form.dataset.id:''),{method:form.dataset.id?'PUT':'POST',body:JSON.stringify({...b,sizes:fd.getAll('sizes'),version:Number(form.dataset.version)})});closeEditor();await loadData();render();notify('Product saved.');}

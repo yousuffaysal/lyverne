@@ -168,3 +168,58 @@ tr.is-blocked td:first-child strong{text-decoration:line-through;text-decoration
  .auth-divider{margin:14px 0;font-size:11px}
  .google-btn{font-size:13px}
 }
+/* Sign-in loader: one full-screen layer that covers the hop from the login
+   form to the dashboard, so nothing half-loaded shows in between. */
+.auth-loader{position:fixed;inset:0;z-index:300;display:grid;place-content:center;justify-items:center;gap:22px;background:var(--cream);color:var(--ink);opacity:0;visibility:hidden;transition:opacity .45s ease,visibility 0s linear .45s}
+.auth-loader.show{opacity:1;visibility:visible;transition:opacity .3s ease}
+.loader-mark{position:relative;width:108px;height:108px;display:grid;place-items:center}
+.loader-mark svg{position:absolute;inset:0;width:100%;height:100%;animation:loader-spin 1.8s linear infinite}
+.loader-track{fill:none;stroke:var(--line);stroke-width:2.5}
+.loader-arc{fill:none;stroke:var(--orange);stroke-width:3.5;stroke-linecap:round;stroke-dasharray:20 307;animation:loader-dash 1.8s cubic-bezier(.45,0,.25,1) infinite}
+.loader-mark img{width:46px;height:46px;display:block;animation:loader-breathe 1.8s ease-in-out infinite}
+.loader-text{display:flex;align-items:baseline;font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;animation:loader-rise .6s .1s ease both}
+.loader-dots{display:inline-flex;gap:3px;margin-left:5px}.loader-dots i{width:3px;height:3px;border-radius:50%;background:currentColor;animation:loader-dot 1.2s ease-in-out infinite}.loader-dots i:nth-child(2){animation-delay:.15s}.loader-dots i:nth-child(3){animation-delay:.3s}
+@keyframes loader-spin{to{transform:rotate(360deg)}}
+@keyframes loader-dash{0%{stroke-dasharray:12 315;stroke-dashoffset:0}50%{stroke-dasharray:170 157;stroke-dashoffset:-50}100%{stroke-dasharray:12 315;stroke-dashoffset:-327}}
+@keyframes loader-breathe{50%{transform:scale(.9) rotate(-4deg)}}
+@keyframes loader-dot{0%,100%{opacity:.2;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}
+@keyframes loader-rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+/* Welcome popup shown once the dashboard has loaded behind it. */
+.welcome-pop{width:min(420px,calc(100vw - 32px));padding:38px 30px 30px;border:1px solid var(--ink);background:var(--cream);color:var(--ink);text-align:center;box-shadow:8px 8px 0 var(--orange);overflow:hidden}
+.welcome-pop[open]{animation:welcome-in .6s cubic-bezier(.2,.9,.25,1.12) both}
+.welcome-pop.closing{animation:welcome-out .32s ease forwards}
+.welcome-pop::backdrop{background:#181812a8;backdrop-filter:blur(7px);animation:welcome-fade .4s ease both}
+.welcome-pop.closing::backdrop{animation:welcome-fade .32s ease reverse forwards}
+.welcome-seal{width:104px;height:104px;margin:0 auto 18px;display:block;overflow:visible}
+.welcome-disc{fill:var(--orange);transform-origin:60px 60px;animation:welcome-disc .55s .1s cubic-bezier(.2,.9,.3,1.35) both}
+.welcome-check{fill:none;stroke:var(--ink);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;animation:seal-draw .45s .5s ease forwards}
+.welcome-rays line{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.welcome-rays{transform-origin:60px 60px;animation:welcome-rays .8s .55s ease both}
+.welcome-pop .eyebrow{color:var(--muted);animation:loader-rise .5s .35s ease both}
+.welcome-pop h2{font-size:clamp(42px,11vw,56px);line-height:.95;margin:10px 0 12px;overflow-wrap:anywhere;animation:loader-rise .5s .45s ease both}
+.welcome-copy{color:var(--muted);font-size:15px;margin-bottom:24px;animation:loader-rise .5s .55s ease both}
+.welcome-pop .btn{width:100%;min-height:52px;animation:loader-rise .5s .65s ease both}
+.welcome-timer{position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--line)}.welcome-timer i{display:block;height:100%;background:var(--ink);transform-origin:left;animation:welcome-timer 4.2s linear both}
+@keyframes welcome-in{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes welcome-out{to{opacity:0;transform:translateY(-14px) scale(.98)}}
+@keyframes welcome-fade{from{opacity:0}to{opacity:1}}
+@keyframes welcome-disc{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes welcome-rays{from{opacity:0;transform:scale(.6) rotate(-20deg)}to{opacity:1;transform:none}}
+@keyframes welcome-timer{from{transform:scaleX(1)}to{transform:scaleX(0)}}
+@media(prefers-reduced-motion:reduce){.welcome-check{stroke-dashoffset:0}.welcome-timer{display:none}}
+/* Phone account page: all four tabs visible at once (no sideways scrolling
+   to find "My details"), bigger thumb targets, and tighter stat tiles. */
+@media(max-width:760px){
+ .customer-side{padding:12px 16px}
+ .customer-side .side-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;overflow:visible;padding:0}
+ .customer-side .side-nav button{flex-direction:column;justify-content:center;gap:5px;min-height:64px;padding:10px 4px;font-size:12px;line-height:1.2;white-space:normal;text-align:center;border:1px solid var(--line)}
+ .customer-side .side-nav button[aria-current]{border-color:var(--ink)}
+ .customer-side .side-nav .nav-icon{display:block;width:auto;font-size:19px;line-height:1}
+ body[data-page=dashboard] .work-area{padding-top:22px}
+ body[data-page=dashboard] .work-heading{margin-bottom:20px}
+ body[data-page=dashboard] .work-heading h1{font-size:46px}
+ body[data-page=dashboard] .stats{margin-bottom:20px}
+ body[data-page=dashboard] .stat{padding:14px 16px}
+ body[data-page=dashboard] .stat strong{font-size:30px;margin:4px 0 0}
+ body[data-page=dashboard] .stat small{display:none}
+}
