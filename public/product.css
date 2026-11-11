@@ -318,3 +318,6 @@
     box-shadow: 0 -22px 22px -12px var(--cream);
   }
 }
+/* style.css gives every .add-to-bag space-between (built for a label plus a
+   price); on the product page both buttons hold one centred label. */
+.pd-actions .btn-add, .pd-actions .btn-buy { display: flex; align-items: center; justify-content: center; text-align: center; }
