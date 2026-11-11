@@ -46,40 +46,39 @@ async function submitAuth(form,action){
  }catch(err){hideLoader();set(err.message);}
  finally{button.disabled=false;}
 }
-// Signing in used to drop people on a bare "MY ACCOUNT. Opening your space…"
-// page while the dashboard fetched its data. Now one full-screen loader covers
-// the whole hop -- it appears the moment Sign in is tapped, the next page
-// starts with the same loader already showing, and it fades out only once the
-// dashboard is drawn underneath. A session flag then asks that page to say hello.
+// Keep the loader through navigation. Confirm success only after the signed-in
+// account has rendered; ordinary page loads and errors never show a checkmark.
 const WELCOME_KEY='lyverne-welcome';
 const loaderMarkup=authMotion;
 function showLoader(text){
  let el=$('#auth-loader');
  if(!el){el=document.createElement('div');el.id='auth-loader';el.className='auth-loader';el.setAttribute('role','status');el.setAttribute('aria-live','polite');document.body.append(el);}
  el.innerHTML=loaderMarkup(text);
- void el.offsetWidth;el.classList.add('show');
+ el.classList.remove('complete');el.classList.add('show');
 }
 function hideLoader(){$('#auth-loader')?.classList.remove('show');}
 function markWelcome(kind='back'){try{sessionStorage.setItem(WELCOME_KEY,kind);}catch{}}
 function takeWelcome(){try{const k=sessionStorage.getItem(WELCOME_KEY);sessionStorage.removeItem(WELCOME_KEY);return k;}catch{return null;}}
-function showWelcome(kind){
- const first=e((state.user?.name||'').trim().split(/\s+/)[0]||'');
- const welcome=document.createElement('section');
- welcome.className='welcome-toast';
- welcome.setAttribute('aria-label','Sign-in confirmation');
- welcome.innerHTML=`<span class="welcome-checkmark" aria-hidden="true"><svg viewBox="0 0 24 24"><path pathLength="1" d="m5 12 4 4L19 6"/></svg></span><div role="status"><strong>${kind==='new'?'Welcome to Lyverne':'Welcome back'}${first?`, ${first}`:''}.</strong><p>${isAdmin?'Your store is ready.':'Make yourself at home.'}</p></div><button type="button" aria-label="Dismiss welcome message">×</button>`;
- document.body.append(welcome);
- let closed=false;
- const close=()=>{if(closed)return;closed=true;clearTimeout(auto);welcome.classList.add('closing');setTimeout(()=>welcome.remove(),300);};
- const auto=setTimeout(close,4000);
- $('button',welcome).addEventListener('click',close);
+async function completeLoader(){
+ const loader=$('#auth-loader');
+ if(!loader)return;
+ const label=$('.loader-text',loader);
+ if(label)label.textContent='Signed in';
+ loader.classList.add('show','complete');
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ await new Promise(resolve=>setTimeout(resolve,reduced?200:850));
+ hideLoader();
+}
+async function boot(){
+ try{
+  await bootInner();
+  if(leaving)return;
+  const signedIn=takeWelcome();
+  if(signedIn&&state.user&&!['login','signup'].includes(page)&&$('.workspace-layout'))await completeLoader();
+  else hideLoader();
+ }catch(error){hideLoader();throw error;}
 }
 
-async function boot(){
- try{await bootInner();}finally{if(!leaving)hideLoader();}
- const welcome=takeWelcome();
- if(welcome&&state.user&&!['login','signup'].includes(page)&&$('.workspace-layout'))showWelcome(welcome);
-}
 let leaving=false;
 addEventListener('pageshow',ev=>{if(ev.persisted)hideLoader();});
 async function bootInner(){
