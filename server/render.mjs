@@ -1,3 +1,4 @@
+import {productImages} from './domain.mjs';
 // Request-time rendering of the per-product pages.
 //
 // These pages did not exist before: the collection was a single URL holding
@@ -92,15 +93,10 @@ function footer() {
 // the tab row it has always had. One set of buttons either way, so there is
 // only ever one control per view for a screen reader to find.
 function gallery(product) {
-  const views = [
-    {view: 'front', src: assetUrl(product.image), label: 'FRONT', alt: `${product.name} in ${product.color}, front view`},
-    ...(product.back ? [{view: 'back', src: assetUrl(product.back), label: 'BACK', alt: `${product.name} in ${product.color}, back view`}] : []),
-    {view: 'detail', src: assetUrl(product.detail || product.image), label: 'DETAIL',
-     crop: !product.detail, alt: `${product.name} in ${product.color}, fabric and signature detail`},
-  ];
+  const views=productImages(product).map((image,index)=>({view:'image-'+index,src:assetUrl(image.url),label:image.label,alt:`${product.name} in ${product.color}, ${image.label}`}));
   const origin = product.detailFocus || '65% 30%';
   const shots = views.map((v, i) => `<img class="product-page-shot${v.crop ? ' detail-crop' : ''}" data-view="${esc(v.view)}"${i === 0 ? ' data-active' : ''} src="${esc(v.src)}" alt="${esc(v.alt)}" width="1254" height="1254" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}${v.crop ? ` style="transform-origin:${esc(origin)}"` : ''}>`).join('');
-  const tabs = views.map((v, i) => `<button type="button" class="pd-view" data-page-view="${esc(v.view)}" aria-pressed="${i === 0}"><img src="${esc(v.src)}" alt="" aria-hidden="true" loading="lazy"><span>${v.label}</span></button>`).join('');
+  const tabs = views.map((v, i) => `<button type="button" class="pd-view" data-page-view="${esc(v.view)}" aria-pressed="${i === 0}"><img src="${esc(v.src)}" alt="" aria-hidden="true" loading="lazy"><span>${esc(v.label)}</span></button>`).join('');
   return `<div class="product-page-gallery">
 <figure class="product-page-frame">${shots}</figure>
 <div class="gallery-tabs" role="group" aria-label="Product view">${tabs}</div>

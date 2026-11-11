@@ -16,7 +16,7 @@ async function identities(){
  const token=name=>new SignJWT({email:name==='owner'?'owner@example.test':name+'@example.test',user_metadata:{full_name:name}}).setProtectedHeader({alg:'ES256',kid:'test-key'}).setIssuer(SUPABASE+'/auth/v1').setAudience('authenticated').setSubject(uuid(name)).setIssuedAt().setExpirationTime('1h').sign(privateKey);
  return {JWKS:createLocalJWKSet({keys:[jwk]}),token,uuid};
 }
-async function setup(){const DB=await localDatabase(':memory:');const {JWKS,token,uuid}=await identities();const env={DB,ADMIN_EMAIL:'owner@example.test',SUPABASE_URL:SUPABASE,JWKS};return {DB,uuid,async request(path,method='GET',data,user='customer',custom={}){const headers={'Content-Type':'application/json',Origin:origin,...custom};if(user)headers.Authorization='Bearer '+await token(user);const response=await worker.fetch(new Request(origin+path,{method,headers,body:method==='GET'?undefined:JSON.stringify(data)}),env,{});return {status:response.status,data:await response.json()};}};}
+async function setup(){const DB=await localDatabase(':memory:');const {JWKS,token,uuid}=await identities();const env={DB,ADMIN_EMAIL:'owner@example.test',SUPABASE_URL:SUPABASE,JWKS};return {DB,uuid,env,token,async request(path,method='GET',data,user='customer',custom={}){const headers={'Content-Type':'application/json',Origin:origin,...custom};if(user)headers.Authorization='Bearer '+await token(user);const response=await worker.fetch(new Request(origin+path,{method,headers,body:method==='GET'?undefined:JSON.stringify(data)}),env,{});return {status:response.status,data:await response.json()};}};}
 const product={name:'Test Tee',color:'Black',description:'A test garment.',category:'SIGNATURE',price:1800,stock:2,sizes:['M','L'],image:'/assets/tee-front.png',back:'',status:'active'};
 const order=(pid,key=crypto.randomUUID())=>({items:[{id:pid,size:'M',quantity:1}],address:'Test street, Dhaka 1205',division:'Dhaka',district:'Dhaka',thana:'Dhanmondi',postcode:'1205',phone:'01700000000',requestKey:key});
 test('anonymous and customer requests cannot use admin endpoints; cross-origin mutations rejected',async()=>{const app=await setup();try{assert.equal((await app.request('/api/admin/overview','GET',null,null)).status,401);assert.equal((await app.request('/api/admin/overview')).status,403);assert.equal((await app.request('/api/admin/products','POST',product,'owner',{Origin:'https://untrusted.test'})).status,403);assert.equal((await app.request('/api/admin/products','POST',product,'customer')).status,403);}finally{app.DB.close();}});
@@ -151,5 +151,48 @@ test('invalid form objects and impossible delivery dates are refused without wri
   const placed=(await app.request('/api/orders','POST',order(p.id))).data.order;
   const response=await app.request('/api/admin/orders/'+placed.id,'PUT',{status:'shipped',payment:'pending',version:1,delivery_date:'2026-02-30'},'owner');
   assert.equal(response.status,400);assert.equal((await app.request('/api/orders/'+placed.id)).data.order.version,1);
+ }finally{app.DB.close();}
+});
+
+test('a labelled gallery persists through product creation, metadata edits and cover changes',async()=>{
+ const app=await setup();try{
+  const images=[{url:'/assets/tee-front.png',label:'Front'},{url:'/assets/tee-back.png',label:'Back'},{url:'/assets/tee-detail.png',label:'Stitching close-up'}];
+  const created=await app.request('/api/admin/products','POST',{...product,images},'owner');assert.equal(created.status,201);const p=created.data.product;
+  assert.deepEqual(p.images,images);assert.equal(p.image,images[0].url);assert.equal(p.back,images[1].url);
+  assert.equal((await app.request('/api/admin/products/'+p.id,'PUT',{...product,back:p.back,name:'Renamed tee',version:1},'owner')).status,200);
+  let saved=(await app.request('/api/products','GET',null,null)).data.products[0];assert.deepEqual(saved.images,images,'legacy metadata update preserves additional photos');
+  const reordered=[images[2],images[0]];
+  assert.equal((await app.request('/api/admin/products/'+p.id,'PUT',{...product,images:reordered,version:2},'owner')).status,200);
+  saved=(await app.request('/api/products','GET',null,null)).data.products[0];assert.deepEqual(saved.images,reordered);assert.equal(saved.image,images[2].url);assert.equal(saved.back,'');
+  const page=await worker.fetch(new Request(origin+'/collection/'+p.slug+'/'),app.env,{});
+  const html=await page.text();assert.equal(page.status,200);assert.match(html,/Stitching close-up/);assert.match(html,/data-page-view="image-1"/);
+  const schema=[...html.matchAll(/<script type="application\/ld\+json">(.*?)<\/script>/g)].map(match=>JSON.parse(match[1])).find(item=>item['@type']==='Product');
+  assert.ok(schema);assert.equal(schema.image.length,2);
+
+ }finally{app.DB.close();}
+});
+
+test('gallery validation refuses unsafe URLs, duplicates, unnamed images and excessive images',async()=>{
+ const app=await setup();try{
+  for(const images of [[],null,[{url:'javascript:alert(1)',label:'Front'}],[{url:'/assets/tee-front.png',label:''}],[{url:'/assets/tee-front.png',label:'x'.repeat(41)}],[{url:'/assets/tee-front.png',label:'Front'},{url:'/assets/tee-front.png',label:'Back'}],Array.from({length:13},(_,i)=>({url:'/media/image-'+i+'.png',label:'Image '+i}))]){
+   assert.equal((await app.request('/api/admin/products','POST',{...product,images},'owner')).status,400);
+  }
+  assert.equal((await app.request('/api/products','GET',null,null)).data.products.length,0);
+ }finally{app.DB.close();}
+});
+
+test('uploaded front, back and custom images save together and malformed uploads cannot write storage',async()=>{
+ const app=await setup();try{
+  const stored=new Map();app.env.BUCKET={async put(key,body){stored.set(key,new Uint8Array(body))}};
+  const png=Uint8Array.from(Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a2ioAAAAASUVORK5CYII=','base64'));
+  const upload=async(bytes,user='owner')=>worker.fetch(new Request(origin+'/api/admin/upload',{method:'POST',headers:{Origin:origin,'Content-Type':'image/png',Authorization:'Bearer '+await app.token(user)},body:bytes}),app.env,{});
+  const images=[];
+  for(const label of ['Front','Back','Sleeve detail']){const response=await upload(png);assert.equal(response.status,201);images.push({url:(await response.json()).url,label});}
+  assert.equal(stored.size,3);
+  assert.equal((await upload(new TextEncoder().encode('not an image'))).status,400);
+  assert.equal((await upload(png,'customer')).status,403);assert.equal(stored.size,3);
+  const created=await app.request('/api/admin/products','POST',{...product,images},'owner');assert.equal(created.status,201);assert.deepEqual(created.data.product.images,images);
+  const html=await (await worker.fetch(new Request(origin+'/collection/'+created.data.product.slug+'/'),app.env,{})).text();
+  for(const item of images){assert.ok(html.includes(item.url));assert.ok(html.includes(item.label));}
  }finally{app.DB.close();}
 });

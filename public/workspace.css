@@ -343,3 +343,17 @@ body[data-page=dashboard] .work-heading h1{overflow-wrap:anywhere}
 .delivery-fields{margin:18px 0}.delivery-fields small{font-size:12px;font-weight:400}
 .track-detail .order-delivery{border:0;padding:0;margin:0 0 18px}
 @media(max-width:600px){.order-stage-picker{grid-template-columns:repeat(2,minmax(0,1fr))}.order-stage-picker label{min-height:55px;padding:12px}.order-delivery{gap:18px}}
+
+/* A product's labelled image collection, in storefront display order. */
+.product-media-editor{margin-top:12px;border-top:1px solid var(--line);padding-top:24px}
+.product-media-editor .panel-head{align-items:flex-start;margin-bottom:16px}.product-media-editor h3{font-size:28px;margin-bottom:7px}
+.product-media-list{display:grid;gap:12px;margin:0 0 20px;padding:0;list-style:none}
+.product-media-row{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid var(--line);min-width:0}
+.product-media-row[data-cover]{border-color:#a99b86;background:#eae4d855}
+.product-media-row>img{width:72px;height:86px;object-fit:contain;background:var(--soft);flex:none}
+.product-media-name{flex:1;min-width:0}.product-media-name label{font-size:12px}.product-media-name input{padding:8px 10px}.product-media-name>span{display:block;font-size:11px;margin-top:7px}
+.product-media-actions{display:grid;justify-items:end;gap:8px;flex:none}.product-media-actions>div{display:flex;align-items:center;gap:12px}
+.product-media-actions button{font-size:12px}.product-media-actions button[data-media-action=up],.product-media-actions button[data-media-action=down]{min-width:34px;min-height:38px;background:transparent;border:1px solid var(--line);font-size:18px}
+.product-media-upload{padding:18px;border:1px dashed #b5aa98;background:var(--soft);gap:12px}.product-media-upload input{border:0;padding:0}.product-media-upload small{font-size:11px;font-weight:400;color:#766e61}
+.product-media-editor [data-media-feedback]{margin-top:12px;overflow-wrap:anywhere}.product-media-library summary{cursor:pointer;padding:12px 0;font-size:14px}
+@media(max-width:600px){.product-media-row{flex-wrap:wrap;gap:12px;padding:12px}.product-media-row>img{width:58px;height:74px}.product-media-actions{display:flex;align-items:center;justify-content:space-between;width:100%;border-top:1px solid var(--line);padding-top:8px}.product-media-editor .panel-head{gap:10px}.product-media-editor .panel-head>span{white-space:nowrap}}

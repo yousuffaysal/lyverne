@@ -1,3 +1,4 @@
+import {productImages} from './domain.mjs';
 // Search-engine surface: canonical URLs, social cards, structured data,
 // robots.txt and sitemap.xml.
 //
@@ -129,7 +130,7 @@ export function breadcrumbs(origin, trail) {
 // of zero, which would be a false claim in search results.
 export function productSchema(origin, product) {
   const url = productUrl(origin, product);
-  const images = [product.image, product.back].filter(Boolean).map(i => absolute(origin, i));
+  const images = productImages(product).map(image => absolute(origin, image.url));
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'Product',

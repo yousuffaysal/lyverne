@@ -129,3 +129,7 @@
  background:var(--ink);color:var(--cream);border:1px solid var(--ink);
  pointer-events:none;box-shadow:0 10px 24px #20201c2e}
 .bag-flight-dock svg{width:21px;height:21px}
+
+/* Every uploaded product view is reachable inside the quick-view dialog. */
+.product-dialog .gallery-tabs{max-width:calc(100% - 32px);overflow-x:auto;justify-content:flex-start;overscroll-behavior-x:contain}
+.product-dialog .gallery-tabs button{flex:none;min-height:44px;max-width:140px;white-space:normal;overflow-wrap:anywhere}

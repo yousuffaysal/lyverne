@@ -2,10 +2,35 @@ export const statuses=['confirmed','packing','shipped','out-for-delivery','deliv
 export const statusLabels={'confirmed':'Confirmed','packing':'Being packed','shipped':'On the way','out-for-delivery':'Out for delivery','delivered':'Delivered','cancelled':'Cancelled'};
 export class Problem extends Error{constructor(message,status=400){super(message);this.status=status;}}
 export function str(value,max=160){return typeof value==='string'?value.trim().slice(0,max):'';}
-export function productInput(b){
+export const MAX_PRODUCT_IMAGES=12;
+const imagePath=/^\/(assets\/[a-z0-9-]+\.(png|webp)|media\/[a-z0-9-]+\.(png|jpeg|webp))$/i;
+export function productImages(product){
+ const images=typeof product.images==='string'?JSON.parse(product.images||'[]'):product.images;
+ if(Array.isArray(images)&&images.length)return images.map(image=>({url:image.url,label:image.label}));
+ return [{url:product.image,label:'Front'},...(product.back&&product.back!==product.image?[{url:product.back,label:'Back'}]:[]),...(product.detail?[{url:product.detail,label:'Detail'}]:[])].filter(image=>image.url);
+}
+function galleryInput(body,existing){
+ let images=body.images;
+ if(images===undefined){
+  images=productImages(existing||body);
+  // Keep legacy image/back clients compatible without dropping extra photos.
+  if(existing&&body.image&&body.image!==existing.image){if(images.length)images[0]={...images[0],url:body.image};else images.push({url:body.image,label:'Front'});}
+  if(existing&&body.back!==undefined&&body.back!==existing.back){images=images.filter(image=>image.label.toLowerCase()!=='back');if(body.back)images.push({url:body.back,label:'Back'});}
+ }
+ if(!Array.isArray(images)||!images.length||images.length>MAX_PRODUCT_IMAGES)throw new Problem(`Add between 1 and ${MAX_PRODUCT_IMAGES} product images.`);
+ const seen=new Set();
+ return images.map(image=>{
+  if(!image||typeof image.url!=='string'||image.url.length>200||!imagePath.test(image.url))throw new Problem('Choose or upload a valid product image.');
+  const label=typeof image.label==='string'?image.label.trim():'';
+  if(!label||label.length>40)throw new Problem('Give each image a name of 1–40 characters, such as Front, Back or Detail.');
+  if(seen.has(image.url))throw new Problem('The same image is already in this product.');
+  seen.add(image.url);return {url:image.url,label};
+ });
+}
+export function productInput(b,existing){
  const name=str(b.name,100),color=str(b.color,60),description=str(b.description,2000),category=str(b.category,60)||'ESSENTIALS';
  const price=b.price===''||b.price===null?null:Number(b.price),stock=Number(b.stock),sizes=Array.isArray(b.sizes)?[...new Set(b.sizes.filter(s=>['S','M','L','XL','XXL'].includes(s)))]:[];
- const image=str(b.image,200),back=str(b.back,200),status=['draft','active','archived'].includes(b.status)?b.status:'draft';
+ const images=galleryInput(b,existing),image=images[0].url,back=images.find(image=>image.label.toLowerCase()==='back')?.url||'',status=['draft','active','archived'].includes(b.status)?b.status:'draft';
  const seoTitle=str(b.seo_title,70),seoDescription=str(b.seo_description,160);
  // 0 keeps the piece off the homepage; 1-12 is its position in that grid.
  const homeSlot=b.home_slot===''||b.home_slot===null||b.home_slot===undefined?0:Number(b.home_slot);
@@ -19,7 +44,7 @@ export function productInput(b){
  // Only a published piece may sit on the homepage: a draft would render a card
  // linking to a product page that refuses to load.
  if(homeSlot>0&&status!=='active')throw new Problem('Publish the piece before putting it on the homepage.');
- return {name,color,description,category,price,stock,sizes,image,back,status,seo_title:seoTitle,seo_description:seoDescription,home_slot:homeSlot};
+ return {name,color,description,category,price,stock,sizes,image,back,images,status,seo_title:seoTitle,seo_description:seoDescription,home_slot:homeSlot};
 }
 // URL-safe slug for the per-product pages. Accents are folded rather than
 // dropped so "Café" becomes "cafe", not "caf".
@@ -33,7 +58,7 @@ export function productSlug(p){return slugify(`${p.name} ${p.color}`)||'piece';}
 // travel through several helpers and decoding twice must not throw, because a
 // JSON.parse of an already-parsed array would.
 const decodeJson=value=>typeof value==='string'?JSON.parse(value||'[]'):(Array.isArray(value)?value:[]);
-export function decodeProduct(p){return {...p,sizes:decodeJson(p.sizes)};}
+export function decodeProduct(p){return {...p,sizes:decodeJson(p.sizes),images:productImages(p)};}
 export function decodeOrder(o){return {...o,items:decodeJson(o.items)};}
 export function analytics(orders,products,days=30,now=Date.now()){
  const filtered=orders.filter(o=>new Date(o.created_at).getTime()>=now-days*86400000);
