@@ -3,7 +3,7 @@ const reduced=matchMedia('(prefers-reduced-motion:reduce)');
 let paused=document.body.classList.contains('motion-paused')||reduced.matches;
 document.body.classList.add('home-motion');
 const observe=new IntersectionObserver(entries=>entries.forEach(entry=>entry.target.classList.toggle('is-inview',entry.isIntersecting)),{threshold:.18});
-document.querySelectorAll('.hand-note,.circled-word,.orbit-heading,.detail-copy,.specs').forEach(el=>observe.observe(el));
+document.querySelectorAll('.hand-note,.circled-word,.orbit-heading,.detail-copy,.specs,.essence').forEach(el=>observe.observe(el));
 document.querySelectorAll('main .oval-link').forEach(link=>{
  link.classList.add('drawn-cta');
  const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.classList.add('cta-sketch');svg.setAttribute('viewBox','0 0 220 76');svg.setAttribute('preserveAspectRatio','none');svg.setAttribute('aria-hidden','true');

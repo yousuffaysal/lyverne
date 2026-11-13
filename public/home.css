@@ -498,3 +498,38 @@ html.is-loading:not(.hero-in) .home-page .stage-inner{opacity:0;translate:0 16vh
 .home-motion .specs.is-inview>div:nth-child(2){transition-delay:.1s}.home-motion .specs.is-inview>div:nth-child(3){transition-delay:.2s}.home-motion .specs.is-inview>div:nth-child(4){transition-delay:.3s}
 @media(prefers-reduced-motion:reduce){.home-motion .detail-copy>*,.home-motion .detail-label,.home-motion .specs>div{opacity:1;transform:none;scale:1;transition:none}.home-motion .specs:before{transform:none;transition:none}}
 @media(max-width:650px){.home-page .specs i{font:700 11px/1 Khand,sans-serif;letter-spacing:.14em;color:var(--orange);font-style:normal}}
+
+/* ----------------------------------------------------------- Essence panel
+   The two halves of the line arrive from their own sides, "noise" gets struck
+   through by hand, and quiet rings sit behind the tee. */
+.essence-eyebrow{display:none}
+.noise-word{position:relative;display:inline-block}
+.noise-strike{position:absolute;left:-4%;top:42%;width:108%;height:.26em;overflow:visible;pointer-events:none}
+.noise-strike path{fill:none;stroke:var(--orange);stroke-width:7;stroke-linecap:round;vector-effect:non-scaling-stroke;stroke-dasharray:1;stroke-dashoffset:1}
+.essence.is-inview .noise-strike path{stroke-dashoffset:0;transition:stroke-dashoffset .7s cubic-bezier(.6,0,.2,1) 1s}
+body:not(.home-motion) .noise-strike path{stroke-dashoffset:0}
+@media(min-width:651px){
+ .home-page .essence{background:radial-gradient(30vw 34vw at 50% 52%,#f26b2418,transparent 72%)}
+ .home-page .essence:before,.home-page .essence:after{content:'';position:absolute;left:50%;top:52%;width:min(60vw,92svh);aspect-ratio:1;border-radius:50%;translate:-50% -50%;border:1px solid #20201c1c;pointer-events:none}
+ .home-page .essence:after{width:min(72vw,110svh);border-style:dashed;border-color:#20201c24;animation:orbit-ring 120s linear infinite}
+ .home-page .essence-eyebrow{display:flex;align-items:center;gap:12px;position:relative;z-index:5}
+ .home-page .essence-eyebrow:before{content:'';width:34px;height:2px;background:var(--orange)}
+ .home-page .essence .split-title{font-size:clamp(84px,min(10.6vw,19.5svh),196px);line-height:.86}
+ .home-page .essence-bottom p{position:relative;padding-top:42px;max-width:300px;font-size:clamp(14px,1.15vw,17px);color:#4b4a43}
+ .home-page .essence-bottom p br{display:none}
+ .home-page .essence-bottom p:last-child{max-width:330px}
+ .home-page .essence-bottom p:before{content:'THE THOUGHT';position:absolute;left:0;top:14px;font:700 12px/1 Khand,sans-serif;letter-spacing:.14em;color:var(--orange)}
+ .home-page .essence-bottom p:last-child:before{content:'THE PIECE'}
+ .home-page .essence-bottom p:after{content:'';position:absolute;left:0;right:0;top:0;height:1px;background:var(--ink);opacity:.3;transform-origin:left}
+ .home-page .essence-bottom p:last-child:after{transform-origin:right}
+}
+.home-motion .essence .split-title>span{opacity:0;transform:translateX(-9vw);transition:opacity .9s ease,transform 1.3s cubic-bezier(.22,1,.36,1)}
+.home-motion .essence .split-title>span:last-child{transform:translateX(9vw);transition-delay:.15s}
+.home-motion .essence.is-inview .split-title>span{opacity:1;transform:none}
+.home-motion .essence-bottom p,.home-motion .essence-eyebrow{opacity:0;transform:translateY(22px);transition:opacity .8s ease .5s,transform .9s cubic-bezier(.22,1,.36,1) .5s}
+.home-motion .essence.is-inview .essence-bottom p,.home-motion .essence.is-inview .essence-eyebrow{opacity:1;transform:none}
+.home-motion .essence.is-inview .essence-bottom p:last-child{transition-delay:.65s}
+.home-motion .essence-bottom p:after{transform:scaleX(0);transition:transform 1.1s cubic-bezier(.22,1,.36,1) .7s}
+.home-motion .essence.is-inview .essence-bottom p:after{transform:none}
+.home-page.motion-paused .essence:after{animation-play-state:paused}
+@media(prefers-reduced-motion:reduce){.home-motion .essence .split-title>span,.home-motion .essence-bottom p,.home-motion .essence-eyebrow{opacity:1;transform:none;transition:none}.home-motion .essence-bottom p:after{transform:none}.noise-strike path{stroke-dashoffset:0;transition:none}.home-page .essence:after{animation:none}}
