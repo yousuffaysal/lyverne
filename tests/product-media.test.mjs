@@ -42,7 +42,10 @@ test('multi-file uploads retain successful images when one fails and unlock savi
 test('invalid types and oversized files fail before any image is uploaded',async()=>{
  const app=editor();let calls=0;const api=async()=>{calls++;return {url:'/media/unused.png'}};
  app.input.files=[{name:'file.svg',type:'image/svg+xml',size:100}];await assert.rejects(uploadProductImages(app.input,api),/PNG, JPG or WebP/);
- app.input.files=[{name:'large.png',type:'image/png',size:6*1024*1024}];await assert.rejects(uploadProductImages(app.input,api),/under 5 MB/);
+ app.input.files=[{name:'huge.png',type:'image/png',size:26*1024*1024}];await assert.rejects(uploadProductImages(app.input,api),/under 25 MB/);
+ // Large sources are accepted and compressed first; one that cannot be brought
+ // under the server's 5 MB limit is refused without being sent.
+ app.input.files=[{name:'large.png',type:'image/png',size:6*1024*1024}];await assert.rejects(uploadProductImages(app.input,api),/over 5 MB after compression/);
  assert.equal(calls,0);assert.equal(app.save.disabled,false);
 });
 

@@ -21,10 +21,9 @@ body.is-leaving main{transform:translateY(-20px);transition:transform .55s ease}
 /* Homepage opener: four orange panels under a white wordmark. */
 .page-loader.page-opener{background:none}
 .opener-panels{position:absolute;inset:0}
-/* Four exact quarters. The 1px outer shadow closes sub-pixel seams; the inner
-   one is the faint pane line. */
+/* Four exact quarters, plain orange: the panels only show as separate pieces
+   once they lift. The 1px shadow closes sub-pixel seams on phones. */
 .opener-panel{position:absolute;top:0;bottom:0;left:calc(var(--n)*25%);width:25%;overflow:hidden;background:var(--orange);box-shadow:1px 0 0 var(--orange);will-change:transform}
-.opener-panel:not(:last-child):after{content:'';position:absolute;top:0;bottom:0;right:0;width:1px;background:#ffffff26}
 /* Every panel lays out the whole screen inside itself and shows only its own
    quarter, so the wordmark reads as one logo until the panels part. */
 .opener-slice{position:absolute;top:0;height:100%;width:400%;left:calc(var(--n)*-100%);display:grid;place-items:center}
@@ -32,7 +31,9 @@ body.is-leaving main{transform:translateY(-20px);transition:transform .55s ease}
 html.is-loading .page-opener.is-lifting{pointer-events:none}
 .opener-brand{width:min(600px,78vw);overflow:hidden}
 .opener-mark{position:relative;transform:translateY(110%);transition:transform 1.1s cubic-bezier(.22,1,.36,1)}
-.opener-mark img{display:block;width:100%;height:auto;filter:url(#logo-white)}
+/* The wordmark file has a hairline dark border; the white filter turned it
+   into faint vertical marks beside the logo, so trim it off. */
+.opener-mark img{display:block;width:100%;height:auto;filter:url(#logo-white);clip-path:inset(1.5%)}
 .opener-ghost{opacity:.26}
 .opener-fill{position:absolute;inset:0;clip-path:inset(0 100% 0 0);transition:clip-path .35s linear}
 .page-opener.brand-in .opener-mark{transform:none}
