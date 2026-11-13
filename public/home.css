@@ -324,3 +324,27 @@ html.is-loading:not(.hero-in) .home-page .stage-inner{opacity:0;translate:0 16vh
 .seo-about-copy p[lang=bn]{color:var(--muted);line-height:1.85}
 .seo-about .oval-link{grid-column:2;justify-self:start}
 @media(max-width:760px){.seo-about{grid-template-columns:1fr;padding:70px 5vw 80px}.seo-about .oval-link{grid-column:1}.seo-about h2{font-size:12vw}.seo-about-copy p{font-size:15px}}
+
+/* Orbit seals: each badge is an inked stamp -- ring lettering, a rough edge
+   and worn patches -- that presses onto the page when the section arrives. */
+.seal-defs{position:absolute}
+.orbit-badge{border:0;background:none;--seal:var(--orange);--mark:var(--ink);--accent:var(--ink)}
+.badge-two,.badge-three{background:none;--seal:var(--ink);--mark:var(--cream);--accent:var(--orange)}
+.seal{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 14px #20201c1f)}
+.seal-disc{fill:var(--seal)}
+.seal-line{fill:none;stroke:var(--mark);stroke-width:1.1}
+.seal-edge{stroke:var(--accent);stroke-width:2.2}
+.seal-dash{stroke-dasharray:1.5 4.5;stroke-linecap:round;opacity:.75}
+.seal-star{fill:var(--accent)}
+.seal-ring{fill:var(--mark);font:600 8.6px Manrope,Arial,sans-serif;letter-spacing:.2em}
+.seal-word{fill:var(--mark);font-family:Khand,Impact,sans-serif;font-weight:700;letter-spacing:-.01em}
+.seal-sub{fill:var(--mark);font:500 10.5px Manrope,Arial,sans-serif;letter-spacing:-.02em}
+.orbit-badge .seal-label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+/* The stamp lands: it arrives oversized and turned, then presses flat. */
+.home-motion .orbit-badge .seal{opacity:0;transform:scale(1.55) rotate(-16deg);transition:opacity .25s ease,transform .55s cubic-bezier(.2,1.5,.4,1)}
+.home-motion .orbit-heading.is-inview~.orbit-badge .seal{opacity:1;transform:none}
+.home-motion .orbit-heading.is-inview~.badge-one .seal{transition-delay:.2s}
+.home-motion .orbit-heading.is-inview~.badge-four .seal{transition-delay:.38s}
+.home-motion .orbit-heading.is-inview~.badge-two .seal{transition-delay:.56s}
+.home-motion .orbit-heading.is-inview~.badge-three .seal{transition-delay:.74s}
+@media(prefers-reduced-motion:reduce){.home-motion .orbit-badge .seal{opacity:1;transform:none;transition:none}}
