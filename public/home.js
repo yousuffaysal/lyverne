@@ -21,6 +21,7 @@ const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 function updateScroll(){
  pending=false;
  document.body.classList.toggle('on-dark',darkSections.some(section=>{const r=section.getBoundingClientRect();const cap=section.querySelector(':scope > .scallop-edge')?.getBoundingClientRect().height||0;const start=section.classList.contains('lyverne-footer')?r.top+cap:r.top-cap;return start<=52&&r.bottom>52}));
+ updateReel();updateDeck();
  if(paused||reduced.matches)return;
  const r=orbit.getBoundingClientRect();
  const progress=clamp((innerHeight-r.top)/(r.height+innerHeight),0,1);
@@ -29,6 +30,38 @@ function updateScroll(){
  orbit.style.setProperty('--orbit-p',travel.toFixed(4));
  badges.forEach((badge,i)=>{const direction=i%2===0?1:-1;const tilt=parseFloat(getComputedStyle(badge).getPropertyValue('--tilt'))||0;badge.style.setProperty('--badge-y',`${travel*(innerWidth<=650?75:180)*direction}px`);badge.style.setProperty('--badge-turn',`${tilt+travel*55*direction}deg`)});
  photos.forEach((photo,i)=>{const bounds=photo.parentElement.getBoundingClientRect();const amount=clamp((innerHeight/2-bounds.top)/innerHeight,-1,1);photo.style.setProperty('--photo-y',`${amount*(i===1?-25:i===2?18:32)}px`)});
+}
+// The lookbook: one photograph, read three ways. Scrolling through the pinned
+// stage moves the frame from the whole look to the chest mark to the drape,
+// and the caption beside it steps along. Runs even with motion paused, since
+// it is how the three captions are reached at all.
+const reel=document.querySelector('.look-reel');
+const reelImage=reel?.querySelector('.reel-window img');
+const reelSteps=reel?[...reel.querySelectorAll('.reel-steps li')]:[];
+const reelCount=reel?.querySelector('.reel-count');
+const reelViews=[{x:50,y:50,s:1},{x:57,y:25,s:2.5},{x:48,y:80,s:1.9}];
+const ease=t=>t*t*(3-2*t);
+function updateReel(){
+ if(!reel)return;
+ const r=reel.getBoundingClientRect();
+ if(r.bottom<-200||r.top>innerHeight+200)return;
+ const p=clamp(-r.top/Math.max(1,r.height-innerHeight),0,1);
+ reel.style.setProperty('--reel-p',p.toFixed(4));
+ const step=p<.25?0:p<.75?1:2;
+ reelSteps.forEach((li,i)=>li.classList.toggle('is-current',i===step));
+ if(reelCount)reelCount.textContent='0'+(step+1);
+ const t=p*2,seg=Math.min(1,Math.floor(t)),f=ease(clamp((t-seg-.25)/.5,0,1));
+ const a=reelViews[seg],b=reelViews[seg+1],mix=k=>a[k]+(b[k]-a[k])*f;
+ reelImage.style.transformOrigin=`${mix('x').toFixed(2)}% ${mix('y').toFixed(2)}%`;
+ reelImage.style.transform=`scale(${mix('s').toFixed(3)})`;
+}
+// The studio's colour chips fan out from behind the photograph as it arrives.
+const deck=document.querySelector('.invite-deck');
+function updateDeck(){
+ if(!deck)return;
+ const r=deck.getBoundingClientRect();
+ if(r.bottom<-200||r.top>innerHeight+200)return;
+ deck.style.setProperty('--fan',ease(clamp((innerHeight-r.top)/(innerHeight*.85),0,1)).toFixed(4));
 }
 function requestUpdate(){if(!pending){pending=true;requestAnimationFrame(updateScroll)}}
 window.addEventListener('scroll',requestUpdate,{passive:true});window.addEventListener('resize',requestUpdate,{passive:true});
