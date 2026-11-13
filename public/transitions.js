@@ -21,23 +21,25 @@ if(loader&&opener&&!reduced&&!fromInternal){
  const total=assets.length+1,ready=()=>loaded++;
  assets.forEach(src=>{const img=new Image();img.onload=ready;img.onerror=ready;img.src=src});
  document.fonts.ready.then(ready,ready);
- const bar=loader.querySelector('.opener-line i'),hold=1900;
+ const fills=[...loader.querySelectorAll('.opener-fill')],hold=2100;
  requestAnimationFrame(()=>requestAnimationFrame(()=>loader.classList.add('brand-in')));
  function finish(){
-  loader.classList.add('brand-out');
-  setTimeout(()=>loader.classList.add('is-lifting'),450);
-  setTimeout(()=>root.classList.add('hero-in'),830);
+  // The wordmark does not leave first: each panel carries its slice of it up.
+  loader.classList.add('is-lifting');
+  setTimeout(()=>root.classList.add('hero-in'),380);
   // Both classes leave together: every hero element is already at rest, so
   // nothing moves when the opening-only transitions are switched off.
-  setTimeout(()=>{reveal();root.classList.remove('hero-in')},2950);
+  setTimeout(()=>{reveal();root.classList.remove('hero-in')},2500);
  }
  function tick(now){
   const elapsed=now-start;
   progress=Math.max(progress,Math.min(loaded/total,elapsed/hold));
   // Never leave the visitor behind the opener if an asset stalls.
   if(elapsed>5000)progress=1;
-  if(bar)bar.style.transform=`scaleX(${progress})`;
-  if(progress>=1){finish();return}
+  // The wordmark itself is the progress bar: white pours in from the left.
+  // Each panel holds its own copy of the wordmark, so fill them together.
+  const clip=`inset(0 ${(100-progress*100).toFixed(2)}% 0 0)`;fills.forEach(fill=>{fill.style.clipPath=clip});
+  if(progress>=1){setTimeout(finish,380);return}
   requestAnimationFrame(tick);
  }
  requestAnimationFrame(tick);
