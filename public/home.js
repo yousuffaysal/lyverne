@@ -26,6 +26,7 @@ function updateScroll(){
  const progress=clamp((innerHeight-r.top)/(r.height+innerHeight),0,1);
  const travel=(progress-.5);
  shirt.style.setProperty('--shirt-turn',`${-7+progress*14}deg`);
+ orbit.style.setProperty('--orbit-p',travel.toFixed(4));
  badges.forEach((badge,i)=>{const direction=i%2===0?1:-1;const tilt=parseFloat(getComputedStyle(badge).getPropertyValue('--tilt'))||0;badge.style.setProperty('--badge-y',`${travel*(innerWidth<=650?75:180)*direction}px`);badge.style.setProperty('--badge-turn',`${tilt+travel*55*direction}deg`)});
  photos.forEach((photo,i)=>{const bounds=photo.parentElement.getBoundingClientRect();const amount=clamp((innerHeight/2-bounds.top)/innerHeight,-1,1);photo.style.setProperty('--photo-y',`${amount*(i===1?-25:i===2?18:32)}px`)});
 }

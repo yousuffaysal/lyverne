@@ -352,3 +352,41 @@ html.is-loading:not(.hero-in) .home-page .stage-inner{opacity:0;translate:0 16vh
 .home-motion .orbit-heading.is-inview~.badge-two .seal{transition-delay:.56s}
 .home-motion .orbit-heading.is-inview~.badge-three .seal{transition-delay:.74s}
 @media(prefers-reduced-motion:reduce){.home-motion .orbit-badge .seal{opacity:1;transform:none;transition:none}}
+
+/* Signature stage, premium pass: the headline becomes oversized background
+   type the tee sits on, faint orbit rings turn behind it, and a dot field
+   fills the empty corners. Everything here is decoration under the content. */
+.orbit-pattern{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.orbit-pattern:before{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,#20201c 1.2px,transparent 1.6px);background-size:26px 26px;opacity:.13;-webkit-mask-image:radial-gradient(ellipse 46% 52% at 50% 52%,transparent 62%,#000 100%);mask-image:radial-gradient(ellipse 46% 52% at 50% 52%,transparent 62%,#000 100%)}
+.orbit-rings{position:absolute;left:50%;top:52%;width:min(118vh,92vw);aspect-ratio:1;translate:-50% -50%;scale:calc(1 + var(--orbit-p,0)*.12);fill:none;stroke:var(--ink);stroke-width:1.6;opacity:.2}
+.orbit-rings g{transform-origin:500px 500px}
+.ring-slow{animation:orbit-ring 90s linear infinite}
+.ring-back{animation:orbit-ring 70s linear infinite reverse}
+.ring-dot{fill:var(--ink);stroke:none}
+.ring-dot-orange{fill:var(--orange)}
+.ring-plus{stroke-width:2.4;stroke-linecap:round}
+.orbit-mark{position:absolute;width:22px;height:22px;opacity:.3;background:linear-gradient(var(--ink),var(--ink)) center/100% 1.5px no-repeat,linear-gradient(var(--ink),var(--ink)) center/1.5px 100% no-repeat;animation:orbit-mark 7s ease-in-out infinite}
+.mark-a{left:7%;top:24%}.mark-b{right:6%;top:20%;animation-delay:-2s;background-image:linear-gradient(var(--orange),var(--orange)),linear-gradient(var(--orange),var(--orange));opacity:.6}.mark-c{right:17%;bottom:16%;animation-delay:-4s}.mark-d{left:38%;bottom:7%;animation-delay:-5.5s;width:14px;height:14px}
+@keyframes orbit-ring{to{transform:rotate(360deg)}}
+@keyframes orbit-mark{50%{transform:rotate(90deg) scale(1.25)}}
+.orbit-stage .orbit-heading{z-index:0;top:4%}
+.orbit-stage .orbit-shirt{z-index:1}
+.orbit-stage .orbit-heading h2{font-size:clamp(96px,13.4vw,270px);line-height:.84;margin-top:12px;letter-spacing:-.035em;white-space:nowrap;color:#20201c24;translate:calc(var(--orbit-p,0)*-7vw) 0;text-shadow:0 18px 38px #20201c14}
+.orbit-stage .orbit-heading h2 em{color:#f26b248c;font-style:normal}
+/* The headline settles in: it rises, tightens and sharpens. */
+.home-motion .orbit-stage .orbit-heading h2{opacity:0;transform:translateY(46px) scale(1.04);filter:blur(10px);transition:opacity 1s ease,transform 1.3s cubic-bezier(.22,1,.36,1),filter 1.1s ease}
+.home-motion .orbit-stage .orbit-heading.is-inview h2{opacity:1;transform:none;filter:none}
+.home-motion .orbit-stage .orbit-heading .eyebrow{opacity:0;transition:opacity .8s ease .35s}
+.home-motion .orbit-stage .orbit-heading.is-inview .eyebrow{opacity:1}
+/* The tee breathes; the scroll-driven turn stays on its wrapper. */
+.orbit-shirt img{animation:orbit-float 7s ease-in-out infinite}
+@keyframes orbit-float{50%{transform:translateY(-12px)}}
+.home-page.motion-paused :is(.ring-slow,.ring-back,.orbit-mark,.orbit-shirt img){animation-play-state:paused}
+@media(max-width:760px){
+ .orbit-stage .orbit-heading{top:6%}
+ .orbit-stage .orbit-heading h2{font-size:19.5vw;white-space:normal;line-height:.84;margin-top:8px;translate:0 0}
+ .orbit-rings{width:150vw;opacity:.16}
+ .orbit-pattern:before{background-size:20px 20px}
+ .mark-d{display:none}
+}
+@media(prefers-reduced-motion:reduce){.ring-slow,.ring-back,.orbit-mark,.orbit-shirt img{animation:none}.home-motion .orbit-stage .orbit-heading h2,.home-motion .orbit-stage .orbit-heading .eyebrow{opacity:1;transform:none;filter:none;transition:none}}
