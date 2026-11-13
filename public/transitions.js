@@ -1,5 +1,6 @@
 const root=document.documentElement;
-const loader=document.querySelector('.page-loader');
+// The homepage carries its own opener beside the shared loader; prefer it.
+const loader=document.querySelector('.page-opener')||document.querySelector('.page-loader');
 const reduced=matchMedia('(prefers-reduced-motion:reduce)').matches;
 const stack=[...document.querySelectorAll('.loader-stack img')];
 const count=document.querySelector('.loader-count');
@@ -10,7 +11,37 @@ function reveal(){root.classList.remove('is-loading');root.classList.add('page-r
 // Moving between pages already has the orange curtain, and playing both meant
 // every navigation ran two loaders back to back. Arriving from an internal
 // link reveals immediately, so the curtain is the whole transition.
-if(loader&&!reduced&&!fromInternal){
+// The homepage opener: an orange screen with the white wordmark, then four
+// vertical panels lift one after another while the hero copy slides in from
+// the sides and the tee rises. The other pages keep the stacked-photo loader.
+const opener=loader?.classList.contains('page-opener');
+if(loader&&opener&&!reduced&&!fromInternal){
+ const start=performance.now();let loaded=0,progress=0;
+ const assets=[...new Set([...document.querySelectorAll('[data-eager-image]')].map(i=>i.src).concat(['/assets/lyverne-navbar.png']))];
+ const total=assets.length+1,ready=()=>loaded++;
+ assets.forEach(src=>{const img=new Image();img.onload=ready;img.onerror=ready;img.src=src});
+ document.fonts.ready.then(ready,ready);
+ const bar=loader.querySelector('.opener-line i'),hold=1900;
+ requestAnimationFrame(()=>requestAnimationFrame(()=>loader.classList.add('brand-in')));
+ function finish(){
+  loader.classList.add('brand-out');
+  setTimeout(()=>loader.classList.add('is-lifting'),450);
+  setTimeout(()=>root.classList.add('hero-in'),830);
+  // Both classes leave together: every hero element is already at rest, so
+  // nothing moves when the opening-only transitions are switched off.
+  setTimeout(()=>{reveal();root.classList.remove('hero-in')},2950);
+ }
+ function tick(now){
+  const elapsed=now-start;
+  progress=Math.max(progress,Math.min(loaded/total,elapsed/hold));
+  // Never leave the visitor behind the opener if an asset stalls.
+  if(elapsed>5000)progress=1;
+  if(bar)bar.style.transform=`scaleX(${progress})`;
+  if(progress>=1){finish();return}
+  requestAnimationFrame(tick);
+ }
+ requestAnimationFrame(tick);
+}else if(loader&&!reduced&&!fromInternal){
  const start=performance.now();let loaded=0,shown=-1,progress=0,finishing=false;
  const assets=[...new Set([...document.querySelectorAll('[data-eager-image]')].map(i=>i.src).concat(['/assets/lyverne-navbar.png']))];
  const total=assets.length+1;

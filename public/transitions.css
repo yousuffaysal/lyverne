@@ -18,3 +18,23 @@ html.is-loading .page-loader{visibility:visible;pointer-events:auto;clip-path:in
 body.is-leaving main{transform:translateY(-20px);transition:transform .55s ease}
 @media(max-width:650px){.loader-count{font-size:18px;left:auto;right:9vw;top:calc(50% + 100px)}}
 @media(prefers-reduced-motion:reduce){.page-loader,.page-curtain{display:none!important}}
+/* Homepage opener: four orange panels under a white wordmark. */
+.page-loader.page-opener{background:none}
+.opener-panels{position:absolute;inset:0;display:flex}
+.opener-panels i{flex:1 0 0;margin-right:-1px;background:var(--orange);box-shadow:inset -1px 0 0 #ffffff26;will-change:transform}
+.opener-panels i:last-child{margin-right:0;box-shadow:none}
+.page-opener.is-lifting .opener-panels i{transform:translateY(-101%);transition:transform 1.05s cubic-bezier(.76,0,.24,1)}
+.page-opener.is-lifting .opener-panels i:nth-child(2){transition-delay:.1s}
+.page-opener.is-lifting .opener-panels i:nth-child(3){transition-delay:.2s}
+.page-opener.is-lifting .opener-panels i:nth-child(4){transition-delay:.3s}
+html.is-loading .page-opener.is-lifting{pointer-events:none}
+.opener-brand{position:relative;z-index:2;width:min(440px,62vw);overflow:hidden}
+.opener-brand img{display:block;width:100%;filter:brightness(0) invert(1);transform:translateY(110%);transition:transform 1s cubic-bezier(.22,1,.36,1)}
+.page-opener.brand-in .opener-brand img{transform:none}
+.page-opener.brand-out .opener-brand img{transform:translateY(-110%);transition:transform .6s cubic-bezier(.76,0,.24,1)}
+.opener-line{position:absolute;z-index:2;left:50%;top:calc(50% + min(78px,11vw));width:min(180px,34vw);height:1px;background:#ffffff45;transform:translateX(-50%);transition:opacity .35s}
+.opener-line i{display:block;height:100%;background:#fff;transform:scaleX(0);transform-origin:left;transition:transform .25s linear}
+.page-opener.brand-out .opener-line{opacity:0}
+/* The shared stacked-photo loader stays in the homepage markup because the
+   other pages are generated from it, but the homepage shows the opener. */
+.home-page>.page-loader:not(.page-opener){display:none}
