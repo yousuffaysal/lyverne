@@ -6,7 +6,7 @@ import {DIVISIONS,isRegion,normalisePhone,isPostcode,formatAddress} from './bang
 import {ORG_TYPES,PRODUCTS,DESIGN_ROUTES,SIZES,MIN_QUANTITY,MAX_QUANTITY,STATUS_LABELS,isStatus,customOrderInput,decodeCustomOrder} from './custom-orders.mjs';
 import {Problem,str,productInput,productSlug,decodeProduct,decodeOrder,analytics,insights,allowedStatus,statusLabels} from './domain.mjs';
 import {verifyRequest,isChief,isStaff} from './auth.mjs';
-import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc,lowestPrice} from './seo.mjs';
+import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc,lowestPrice,breadcrumbs} from './seo.mjs';
 import {productPage,productNotFound,catalogGrid,GRID_START,GRID_END,homeGrid,HOME_START,HOME_END} from './render.mjs';
 import {createStorage} from './storage.mjs';
 import {createDatabase} from './db.mjs';
@@ -440,7 +440,7 @@ async function renderCollection(req,env){
   .replace('</head>',metaTags({origin,path:'/collection/',title,
    description:`Shop Lyverne, a streetwear brand in Bangladesh: oversized drop shoulder t-shirts, raglan tees and original graphic tees${from===null?'':' from '+money(from)}. Delivered across Bangladesh.`,
    image:products[0]?.image||'/assets/tee-front.png'})
-   +jsonLd(collectionSchema(origin,products))+jsonLd(organisation(origin))+jsonLd(website(origin))+'</head>');
+   +jsonLd(collectionSchema(origin,products))+jsonLd(breadcrumbs(origin,[{name:'Lyverne',path:'/'},{name:'Collection',path:'/collection/'}]))+jsonLd(organisation(origin))+jsonLd(website(origin))+'</head>');
  return html2(html,200,{'Cache-Control':'public, max-age=0, must-revalidate'});
 }
 // Renders /collection/<slug>/ from the database at request time, so a product

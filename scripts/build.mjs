@@ -87,15 +87,25 @@ await optimizeReferences('dist/client');await optimizeReferences('dist/server');
 // account pages are marked noindex: they hold nothing worth ranking and would
 // otherwise dilute the storefront's relevance.
 {
- const {siteOrigin,metaTags,jsonLd,organisation,website}=await import('../server/seo.mjs');
+ const {siteOrigin,metaTags,jsonLd,organisation,website,breadcrumbs}=await import('../server/seo.mjs');
  const origin=siteOrigin(process.env);
  const pages={
   'dist/client/index.html':{path:'/',title:'Lyverne — Streetwear Brand in Bangladesh | Drop Shoulder T-Shirts',image:'/assets/tee-front.png',
    description:'Lyverne is a streetwear brand from Dhaka, Bangladesh. Oversized drop shoulder t-shirts, raglan tees and original graphic tees, delivered across Bangladesh.',
    schema:o=>[organisation(o),website(o)]},
   'dist/client/studio/index.html':{path:'/studio/',title:'Style Studio — Lyverne, Bangladeshi Streetwear',image:'/assets/studio-hero.png',
-   description:'The Lyverne Style Studio. Find your colours, build a look, and discover the small things that make it yours.',schema:()=>[]},
+   description:'The Lyverne Style Studio. Find your colours, build a look, and discover the small things that make it yours.',
+   schema:o=>[breadcrumbs(o,[{name:'Lyverne',path:'/'},{name:'Style Studio',path:'/studio/'}])]},
  };
+ // Team orders keeps the title and description its generator writes; it only
+ // needs the trail that tells Google it sits under the Lyverne homepage.
+ {
+  const file='dist/client/custom/index.html';
+  try{
+   const html=await readFile(file,'utf8');
+   if(!html.includes('BreadcrumbList'))await writeFile(file,html.replace('</head>',jsonLd(breadcrumbs(origin,[{name:'Lyverne',path:'/'},{name:'Team Orders',path:'/custom/'}]))+'</head>'));
+  }catch{}
+ }
  const noindex=['login','signup','dashboard','admin'];
  for(const [file,page] of Object.entries(pages)){
   let html;try{html=await readFile(file,'utf8');}catch{continue;}

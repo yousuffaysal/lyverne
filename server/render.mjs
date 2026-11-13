@@ -165,7 +165,7 @@ export function productPage({product, origin, others = [], colourways = [], camp
     metaTags({origin, path, title, description, image: product.image, type: 'product'}),
     jsonLd(productSchema(origin, product)),
     jsonLd(breadcrumbs(origin, [
-      {name: 'Home', path: '/'},
+      {name: 'Lyverne', path: '/'},
       {name: 'Collection', path: '/collection/'},
       {name: `${product.name} — ${product.color}`, path},
     ])),
