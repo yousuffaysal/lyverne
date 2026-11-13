@@ -313,3 +313,14 @@ html.is-loading:not(.hero-in) .home-page :is(.hero-copy,.hero-monogram){opacity:
 html.is-loading:not(.hero-in) .home-page .hero-bottom{opacity:0}
 html.is-loading:not(.hero-in) .home-page .site-nav{opacity:0;translate:0 -24px}
 html.is-loading:not(.hero-in) .home-page .stage-inner{opacity:0;translate:0 16vh}
+
+/* About Lyverne: plain, readable copy that tells search engines (and people)
+   what the brand makes, in English and Bangla. */
+.seo-about{padding:110px 3.15vw 120px;display:grid;grid-template-columns:1fr 1.25fr;gap:26px 6vw;align-items:start}
+.seo-about>.eyebrow{grid-column:1/-1;color:var(--muted)}
+.seo-about h2{font-size:clamp(42px,5vw,84px);line-height:.92;letter-spacing:-.03em}
+.seo-about-copy{display:grid;gap:18px;max-width:620px}
+.seo-about-copy p{font-size:16px;line-height:1.7;letter-spacing:-.01em}
+.seo-about-copy p[lang=bn]{color:var(--muted);line-height:1.85}
+.seo-about .oval-link{grid-column:2;justify-self:start}
+@media(max-width:760px){.seo-about{grid-template-columns:1fr;padding:70px 5vw 80px}.seo-about .oval-link{grid-column:1}.seo-about h2{font-size:12vw}.seo-about-copy p{font-size:15px}}

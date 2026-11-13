@@ -17,7 +17,7 @@ import {productImages,priceMarkup} from './domain.mjs';
 import {money} from './catalog.js';
 import {filters, accountMenu, dialogs, siteNav, siteFooter} from './shell.js';
 import {
-  esc, jsonLd, metaTags, productMeta, productSchema,
+  esc, jsonLd, metaTags, productMeta, productSchema, productKind,
   breadcrumbs, organisation, productUrl, assetUrl,
 } from './seo.mjs';
 
@@ -88,7 +88,7 @@ function footer() {
 // the tab row it has always had. One set of buttons either way, so there is
 // only ever one control per view for a screen reader to find.
 function gallery(product) {
-  const views=productImages(product).map((image,index)=>({view:'image-'+index,src:assetUrl(image.url),label:image.label,alt:`${product.name} in ${product.color}, ${image.label}`}));
+  const views=productImages(product).map((image,index)=>({view:'image-'+index,src:assetUrl(image.url),label:image.label,alt:`${product.name} in ${product.color}, ${image.label} — ${productKind(product).toLowerCase()} by Lyverne`}));
   const origin = product.detailFocus || '65% 30%';
   const shots = views.map((v, i) => `<img class="product-page-shot${v.crop ? ' detail-crop' : ''}" data-view="${esc(v.view)}"${i === 0 ? ' data-active' : ''} src="${esc(v.src)}" alt="${esc(v.alt)}" width="1254" height="1254" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}${v.crop ? ` style="transform-origin:${esc(origin)}"` : ''}>`).join('');
   const tabs = views.map((v, i) => `<button type="button" class="pd-view" data-page-view="${esc(v.view)}" aria-pressed="${i === 0}"><img src="${esc(v.src)}" alt="" aria-hidden="true" loading="lazy"><span>${esc(v.label)}</span></button>`).join('');

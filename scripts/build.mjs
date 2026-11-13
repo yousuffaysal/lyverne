@@ -90,8 +90,8 @@ await optimizeReferences('dist/client');await optimizeReferences('dist/server');
  const {siteOrigin,metaTags,jsonLd,organisation,website}=await import('../server/seo.mjs');
  const origin=siteOrigin(process.env);
  const pages={
-  'dist/client/index.html':{path:'/',title:'Lyverne — Bangladeshi Streetwear Brand | Oversized Tees, Dhaka',image:'/assets/tee-front.png',
-   description:'Lyverne is a Bangladeshi streetwear brand from Dhaka. Oversized drop-shoulder tees and original graphic designs in premium cotton, delivered across Bangladesh.',
+  'dist/client/index.html':{path:'/',title:'Lyverne — Streetwear Brand in Bangladesh | Drop Shoulder T-Shirts',image:'/assets/tee-front.png',
+   description:'Lyverne is a streetwear brand from Dhaka, Bangladesh. Oversized drop shoulder t-shirts, raglan tees and original graphic tees, delivered across Bangladesh.',
    schema:o=>[organisation(o),website(o)]},
   'dist/client/studio/index.html':{path:'/studio/',title:'Style Studio — Lyverne, Bangladeshi Streetwear',image:'/assets/studio-hero.png',
    description:'The Lyverne Style Studio. Find your colours, build a look, and discover the small things that make it yours.',schema:()=>[]},

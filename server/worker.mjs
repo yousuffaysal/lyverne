@@ -1,12 +1,12 @@
 import {readCollectionLayout,collectionLayoutInput,arrangeCollection} from './collection-layout.mjs';
 import {deliveryInput} from './delivery.mjs';
 import {couponInput,campaignInput,readCampaign,publicCampaign,quoteOrder} from './promotions.mjs';
-import {products as originalProducts} from './catalog.js';
+import {products as originalProducts,money} from './catalog.js';
 import {DIVISIONS,isRegion,normalisePhone,isPostcode,formatAddress} from './bangladesh.mjs';
 import {ORG_TYPES,PRODUCTS,DESIGN_ROUTES,SIZES,MIN_QUANTITY,MAX_QUANTITY,STATUS_LABELS,isStatus,customOrderInput,decodeCustomOrder} from './custom-orders.mjs';
 import {Problem,str,productInput,productSlug,decodeProduct,decodeOrder,analytics,insights,allowedStatus,statusLabels} from './domain.mjs';
 import {verifyRequest,isChief,isStaff} from './auth.mjs';
-import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc} from './seo.mjs';
+import {siteOrigin,robots,sitemap,metaTags,jsonLd,collectionSchema,organisation,website,esc,lowestPrice} from './seo.mjs';
 import {productPage,productNotFound,catalogGrid,GRID_START,GRID_END,homeGrid,HOME_START,HOME_END} from './render.mjs';
 import {createStorage} from './storage.mjs';
 import {createDatabase} from './db.mjs';
@@ -432,12 +432,13 @@ async function renderCollection(req,env){
  // Strip every build-time tag we are about to replace. Leaving the static
  // description in place would win, because Google reads the first one, and the
  // static canonical points at whichever host the build ran on.
- const title='Shop Streetwear — Oversized Tees in Bangladesh | Lyverne';
+ const title='Oversized & Drop Shoulder T-Shirts in Bangladesh | Lyverne';
+ const from=lowestPrice(products);
  html=html.replace(/<link rel="canonical"[^>]*>/g,'')
   .replace(/<meta name="description"[^>]*>/g,'')
   .replace(/<title>[^<]*<\/title>/,`<title>${esc(title)}</title>`)
   .replace('</head>',metaTags({origin,path:'/collection/',title,
-   description:'Shop Lyverne, Bangladeshi streetwear: oversized drop-shoulder t-shirts and original graphic tees in premium cotton, from ৳1,800. Delivered across Bangladesh.',
+   description:`Shop Lyverne, a streetwear brand in Bangladesh: oversized drop shoulder t-shirts, raglan tees and original graphic tees${from===null?'':' from '+money(from)}. Delivered across Bangladesh.`,
    image:products[0]?.image||'/assets/tee-front.png'})
    +jsonLd(collectionSchema(origin,products))+jsonLd(organisation(origin))+jsonLd(website(origin))+'</head>');
  return html2(html,200,{'Cache-Control':'public, max-age=0, must-revalidate'});
@@ -449,6 +450,10 @@ async function renderCollection(req,env){
 async function renderProduct(slug,env){
  const record=await row(env.DB,"SELECT * FROM products WHERE slug=? AND status='active'",slug);
  const origin=siteOrigin(env);
+ // A retired piece keeps whatever links and ranking it earned: a permanent
+ // redirect hands them to the collection instead of ending on a 404. Drafts
+ // were never public, so they still 404.
+ if(!record&&await row(env.DB,"SELECT id FROM products WHERE slug=? AND status='archived'",slug))return Response.redirect(origin+'/collection/',301);
  if(!record)return html2(productNotFound(origin),404,{'Cache-Control':'public, max-age=60'});
  const product=decodeProduct(record);
  const others=(await all(env.DB,"SELECT * FROM products WHERE status='active' AND id!=? ORDER BY created_at DESC LIMIT 4",product.id)).map(decodeProduct);
