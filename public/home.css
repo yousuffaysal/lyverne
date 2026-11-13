@@ -328,17 +328,21 @@ html.is-loading:not(.hero-in) .home-page .stage-inner{opacity:0;translate:0 16vh
 /* Orbit seals: each badge is an inked stamp -- ring lettering, a rough edge
    and worn patches -- that presses onto the page when the section arrives. */
 .seal-defs{position:absolute}
-.orbit-badge{border:0;background:none;--seal:var(--orange);--mark:var(--ink);--accent:var(--ink)}
-.badge-two,.badge-three{background:none;--seal:var(--ink);--mark:var(--cream);--accent:var(--orange)}
-.seal{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 14px #20201c1f)}
-.seal-disc{fill:var(--seal)}
-.seal-line{fill:none;stroke:var(--mark);stroke-width:1.1}
-.seal-edge{stroke:var(--accent);stroke-width:2.2}
-.seal-dash{stroke-dasharray:1.5 4.5;stroke-linecap:round;opacity:.75}
-.seal-star{fill:var(--accent)}
-.seal-ring{fill:var(--mark);font:600 8.6px Manrope,Arial,sans-serif;letter-spacing:.2em}
-.seal-word{fill:var(--mark);font-family:Khand,Impact,sans-serif;font-weight:700;letter-spacing:-.01em}
-.seal-sub{fill:var(--mark);font:500 10.5px Manrope,Arial,sans-serif;letter-spacing:-.02em}
+.orbit-badge{border:0;background:none;--seal:var(--ink);--paper:var(--cream);--ribbon:var(--orange);--word:var(--cream)}
+.badge-two{background:none;--seal:var(--orange);--ribbon:var(--ink);--word:var(--cream)}
+.badge-three{background:none;--seal:#2c5b45;--ribbon:#e9b949;--word:var(--ink)}
+.badge-four{--seal:#7c2b2e;--ribbon:var(--cream);--word:#7c2b2e;--paper:#f6e3d3}
+.seal{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 10px 14px #20201c24)}
+.seal-body,.seal-core{fill:var(--seal)}
+.seal-band{fill:var(--paper)}
+.seal-line{fill:none;stroke:var(--seal);stroke-width:1.6}
+.seal-arc{fill:var(--seal);font:700 15.5px Khand,Impact,sans-serif;letter-spacing:.13em}
+.seal-stars{fill:var(--paper)}
+.seal-ribbon{fill:var(--ribbon)}
+.seal-tail{fill:var(--ribbon);filter:brightness(.8)}
+.seal-fold{fill:var(--ribbon);filter:brightness(.55)}
+.seal-stitch{fill:none;stroke:var(--word);stroke-width:.9;opacity:.75}
+.seal-word{fill:var(--word);font-family:Khand,Impact,sans-serif;font-weight:700;letter-spacing:.02em}
 .orbit-badge .seal-label{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 /* The stamp lands: it arrives oversized and turned, then presses flat. */
 .home-motion .orbit-badge .seal{opacity:0;transform:scale(1.55) rotate(-16deg);transition:opacity .25s ease,transform .55s cubic-bezier(.2,1.5,.4,1)}
