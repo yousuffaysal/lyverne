@@ -127,7 +127,7 @@
 .team-form-shell .btn:active{transform:translate(0,0);box-shadow:2px 2px 0 var(--orange)}
 .team-form-shell .btn span{transition:transform .25s var(--ease)}
 .team-form-shell .btn:hover span{transform:translate(3px,-3px)}
-.team-form-shell .btn.orange{background:var(--orange);color:var(--ink)}
+.team-form-shell .btn.orange{background:var(--orange);color:var(--cream)}
 .team-form-shell .btn.ghost{background:transparent;color:var(--ink)}
 .team-form-shell .btn:disabled{opacity:.55;cursor:wait;transform:none;box-shadow:none}
 /* Every author display rule beats the UA's [hidden]{display:none}, so each one

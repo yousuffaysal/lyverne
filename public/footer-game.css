@@ -10,7 +10,7 @@
 .footer-game-instruction strong{display:block;font-family:Khand,sans-serif;letter-spacing:.06em;font-size:23px;color:var(--orange)}
 .footer-game-keyboard{font-size:12px;opacity:.65;display:block;margin-top:5px}
 .footer-game-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
-.footer-game-button{background:var(--orange);color:var(--ink);min-height:44px;padding:10px 20px;border-radius:28px;font-size:14px;font-weight:600}
+.footer-game-button{background:var(--orange);color:var(--cream);min-height:44px;padding:10px 20px;border-radius:28px;font-size:14px;font-weight:600}
 .footer-game-button.secondary{background:transparent;color:var(--cream);border:1px solid #f3eee455}
 .footer-game-button[hidden]{display:none}
 .footer-game-scoreboard{display:flex;align-items:center;gap:16px;border:1px solid #f3eee44a;border-radius:50px;padding:7px 20px;min-height:50px;white-space:nowrap}

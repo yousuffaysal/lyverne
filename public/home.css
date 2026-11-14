@@ -106,7 +106,7 @@
 .box-carousel.is-switching .carousel-product-image{transform:translateX(calc(var(--direction,1)*-45px)) rotate(-8deg);opacity:0}
 .carousel-arrow{position:absolute;top:48%;width:55px;height:55px;border-radius:50%;background:var(--ink);color:var(--cream);z-index:4;display:grid;place-items:center;transition:transform .2s,background .2s}
 .carousel-arrow svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.carousel-arrow:hover{background:var(--orange);color:var(--ink);transform:scale(1.08)}
+.carousel-arrow:hover{background:var(--orange);color:var(--cream);transform:scale(1.08)}
 .carousel-arrow:hover path{stroke-dasharray:100;animation:arrow-button .55s ease-out}
 @keyframes arrow-button{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
 .carousel-prev{left:25px}.carousel-next{right:25px}
