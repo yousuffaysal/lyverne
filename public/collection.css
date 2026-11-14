@@ -18,3 +18,42 @@
 .catalog-seo p{font-size:15px;line-height:1.65;letter-spacing:-.015em}
 .catalog-seo p[lang=bn]{opacity:.8;line-height:1.85}
 @media(max-width:650px){.catalog-seo{grid-template-columns:1fr;padding:70px 16px 0}.catalog-seo h2{font-size:10vw}.catalog-seo p{font-size:14px}}
+
+/* ------------------------------------------------------------ Film stage
+   A dark cinema band across the cream page: outlined type drifting behind,
+   the film in an offset orange frame, and a play button that breathes. */
+.collection-film{position:relative;overflow:hidden;overflow:clip;margin-top:90px;padding:clamp(70px,9vw,150px) 5vw clamp(80px,9vw,150px) 4vw;grid-template-columns:.72fr 1.28fr;gap:clamp(30px,5vw,90px);background:radial-gradient(60% 80% at 74% 50%,#f26b2424,transparent 70%),var(--ink);color:var(--cream)}
+.film-type{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:14px 0;pointer-events:none}
+.film-type span{display:block;white-space:nowrap;font:700 clamp(110px,19vw,360px)/.86 Khand,Impact,sans-serif;letter-spacing:-.02em;color:transparent;-webkit-text-stroke:1px #f3eee41f;animation:film-drift 46s linear infinite alternate}
+.film-type span:last-child{-webkit-text-stroke-color:#f26b2436;animation-direction:alternate-reverse}
+@keyframes film-drift{from{transform:translateX(0)}to{transform:translateX(-32%)}}
+.film-copy,.film-frame{position:relative;z-index:1;min-width:0}
+.collection-film .film-eyebrow{display:flex;align-items:center;gap:12px;font-size:11px;font-weight:600;letter-spacing:.12em;color:#f3eee4b3}
+.film-eyebrow:before{content:'';width:34px;height:2px;background:var(--orange);flex:none}
+.collection-film h2{font-family:Khand,Impact,sans-serif;font-weight:700;font-size:clamp(46px,5.4vw,104px);line-height:.9;letter-spacing:-.02em;margin:22px 0 24px;color:var(--cream)}
+.collection-film h2 em{font-style:normal;color:var(--orange)}
+.collection-film .film-lede{font-size:clamp(14px,1.15vw,17px);line-height:1.6;color:#f3eee4c9;max-width:34ch}
+.film-meta{list-style:none;display:flex;margin:38px 0 0;padding:0;border-top:1px solid #f3eee42e}
+.film-meta li{flex:1;padding:16px 16px 0 18px;border-left:1px solid #f3eee42e}
+.film-meta li:first-child{padding-left:0;border-left:0}
+.film-meta b{display:block;font:700 clamp(30px,3vw,52px)/1 Khand,sans-serif;color:var(--cream)}
+.film-meta span{display:block;margin-top:5px;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:#f3eee499}
+.film-frame{transform:rotate(1.2deg);transition:transform .7s var(--ease)}
+.film-frame:hover{transform:none}
+.film-frame:before{content:'';position:absolute;left:-16px;right:16px;top:16px;bottom:22px;background:var(--orange)}
+.collection-film .film-player{border-radius:0;background:#bdb7ad;box-shadow:0 34px 60px -28px #000c}
+.collection-film .film-play{flex-direction:column;background:linear-gradient(#20201c00 40%,#20201ca6);gap:20px;font-size:12px;font-weight:600;letter-spacing:.2em;text-shadow:0 1px 8px #000}
+.collection-film .film-play>span{position:relative;width:92px;height:92px;font-size:38px;padding-left:5px}
+.collection-film .film-play>span:before,.collection-film .film-play>span:after{content:'';position:absolute;inset:0;border-radius:50%;border:1.5px solid var(--orange);animation:film-pulse 2.6s ease-out infinite}
+.collection-film .film-play>span:after{animation-delay:1.3s}
+@keyframes film-pulse{from{transform:scale(1);opacity:.9}to{transform:scale(1.75);opacity:0}}
+.collection-film .film-caption{position:relative;display:flex;justify-content:space-between;margin-top:46px;font-size:10px;letter-spacing:.14em;color:#f3eee48c}
+/* The frame settles as it scrolls into view, where the browser supports
+   scroll-driven animation; elsewhere it simply sits in place. */
+@supports (animation-timeline:view()){
+ .film-player{animation:film-arrive linear both;animation-timeline:view();animation-range:entry 0% cover 42%}
+ @keyframes film-arrive{from{clip-path:inset(14% 10% 14% 10%);transform:scale(1.06)}to{clip-path:inset(0);transform:none}}
+}
+@media(max-width:1000px){.collection-film{grid-template-columns:1fr;margin-top:60px;padding:64px 20px 70px}.film-frame{transform:none;margin-left:14px}}
+@media(max-width:650px){.collection-film{padding:54px 16px 60px;gap:34px}.collection-film h2{font-size:13.5vw}.film-type span{font-size:34vw}.collection-film .film-play>span{width:66px;height:66px;font-size:28px}.film-frame:before{left:-10px;right:10px;top:10px;bottom:16px}.collection-film .film-caption{margin-top:26px}.film-meta{margin-top:28px}}
+@media(prefers-reduced-motion:reduce){.film-type span,.collection-film .film-play>span:before,.collection-film .film-play>span:after,.film-player{animation:none}}

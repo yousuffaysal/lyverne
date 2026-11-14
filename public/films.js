@@ -2,7 +2,9 @@
 document.querySelectorAll('.film-player').forEach(player=>{
  const video=player.querySelector('video'),button=player.querySelector('.film-play');
  button.addEventListener('click',async()=>{try{await video.play()}catch{button.textContent='TRY PLAYING AGAIN ▷'}});
- video.addEventListener('play',()=>{button.hidden=true});
+ // A film that starts without the native bar gains it the moment it plays, so
+ // the still frame stays clean and playback stays fully controllable.
+ video.addEventListener('play',()=>{button.hidden=true;video.controls=true});
  video.addEventListener('ended',()=>{button.hidden=false});
  video.addEventListener('error',()=>{button.textContent='FILM UNAVAILABLE';button.disabled=true});
  video.addEventListener('pause',()=>{if(!video.currentTime)button.hidden=false});
