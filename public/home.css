@@ -550,3 +550,32 @@ body:not(.home-motion) .noise-strike path{stroke-dashoffset:0}
 .home-page .home-dark{margin-top:-100svh;z-index:6}
 .home-page .orbit-stage:after{content:'';position:absolute;inset:0;z-index:9;background:var(--ink);opacity:calc(var(--cover,0)*.55);pointer-events:none}
 @media(max-width:650px){.home-page .signature-orbit{height:235svh;min-height:1690px;margin-bottom:0}}
+
+/* ---------- phone: hero copy and the essence section ----------
+   Hero: the forced line breaks were written for a wide column; in a narrow one
+   they stranded single words. The copy now wraps on its own beside the link.
+   Essence: the tee is as wide as the screen here, so the headline opens a gap
+   for it -- LESS NOISE above, MORE YOU below -- and product-scene.js docks the
+   tee in that gap (.is-docked) instead of letting it hang over the words. */
+@media(max-width:650px){
+ .home-page .hero-copy{align-items:center;gap:14px;bottom:58px}
+ .home-page .hero-copy p{flex:1;min-width:0;font-size:13px;line-height:1.55;text-wrap:balance}
+ .home-page .hero-copy p br{display:none}
+ .home-page .hero-bottom{bottom:14px}
+ .home-page .essence{height:auto;min-height:calc(180vw + 24svh + 20px);padding:10vw 5vw 48px;justify-content:flex-start}
+ .home-page .essence .split-title{margin-top:0;font-size:21vw;line-height:.9}
+ .home-page .essence .split-title>span:last-child{margin-top:90vw}
+ .home-page .essence-bottom{margin-top:12vw;gap:18px}
+ .home-page .essence-bottom p,.home-page .essence-bottom p:last-child{flex:1;max-width:none;position:relative;padding-top:36px;font-size:13px;line-height:1.55;color:#4b4a43}
+ .home-page .essence-bottom p br{display:none}
+ .home-page .essence-bottom p:before{content:'THE THOUGHT';position:absolute;left:0;top:13px;font:700 11px/1 Khand,sans-serif;letter-spacing:.14em;color:var(--orange)}
+ .home-page .essence-bottom p:last-child:before{content:'THE PIECE'}
+ .home-page .essence-bottom p:after{content:'';position:absolute;left:0;right:0;top:0;height:1px;background:var(--ink);opacity:.3;transform-origin:left}
+ /* With the 3D tee running, hold the headline back until the tee has docked,
+    so the words slide in around it rather than passing behind it. Without the
+    tee (no WebGL) the ordinary in-view reveal above still applies. */
+ body.webgl-ready.home-motion .essence.is-inview:not(.is-docked) .split-title>span{opacity:0;transform:translateX(-9vw)}
+ body.webgl-ready.home-motion .essence.is-inview:not(.is-docked) .split-title>span:last-child{transform:translateX(9vw)}
+ body.webgl-ready.home-motion .essence:not(.is-docked) .noise-strike path{stroke-dashoffset:1;transition:none}
+ body.webgl-ready.home-motion .essence.is-docked .noise-strike path{transition-delay:.6s}
+}
