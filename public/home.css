@@ -533,3 +533,20 @@ body:not(.home-motion) .noise-strike path{stroke-dashoffset:0}
 .home-motion .essence.is-inview .essence-bottom p:after{transform:none}
 .home-page.motion-paused .essence:after{animation-play-state:paused}
 @media(prefers-reduced-motion:reduce){.home-motion .essence .split-title>span,.home-motion .essence-bottom p,.home-motion .essence-eyebrow{opacity:1;transform:none;transition:none}.home-motion .essence-bottom p:after{transform:none}.noise-strike path{stroke-dashoffset:0;transition:none}.home-page .essence:after{animation:none}}
+
+/* The essence rings turn, and a turning square's corners reach past the
+   screen edge, which widened the page and left a gap on the right. Clip the
+   panel itself. Do not clip html/body instead: that was tried and it stopped
+   every sticky stage on the page from pinning. */
+.home-page .essence{overflow:hidden;overflow:clip}
+
+/* ------------------------------------------------- Sticky stack (curtain)
+   The signature stage stays pinned for one extra screen while the dark
+   chapter slides up over it, scalloped edge first. The stage dims as it is
+   covered, so the two read as layers rather than as one page scrolling.
+   (The stage is not scaled: resizing it re-rasterises the seals' filters
+   every frame and Chrome drops them mid-way.) */
+.home-page .signature-orbit{height:255svh;min-height:1800px;margin-bottom:0}
+.home-page .home-dark{margin-top:-100svh;z-index:6}
+.home-page .orbit-stage:after{content:'';position:absolute;inset:0;z-index:9;background:var(--ink);opacity:calc(var(--cover,0)*.55);pointer-events:none}
+@media(max-width:650px){.home-page .signature-orbit{height:235svh;min-height:1690px;margin-bottom:0}}

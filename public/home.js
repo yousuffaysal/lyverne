@@ -12,6 +12,8 @@ document.querySelectorAll('main .oval-link').forEach(link=>{
 const heroArrow=document.querySelector('.hero-note svg');
 if(heroArrow){heroArrow.classList.add('draw-arrow');heroArrow.querySelector('path').setAttribute('pathLength','1');observe.observe(heroArrow.parentElement)}
 const orbit=document.querySelector('.signature-orbit');
+const orbitStage=document.querySelector('.orbit-stage');
+const manifesto=document.querySelector('.home-dark');
 const shirt=document.querySelector('.orbit-shirt');
 const badges=[...document.querySelectorAll('.orbit-badge')];
 const photos=[...document.querySelectorAll('.collage-photo')];
@@ -22,6 +24,8 @@ function updateScroll(){
  pending=false;
  document.body.classList.toggle('on-dark',darkSections.some(section=>{const r=section.getBoundingClientRect();const cap=section.querySelector(':scope > .scallop-edge')?.getBoundingClientRect().height||0;const start=section.classList.contains('lyverne-footer')?r.top+cap:r.top-cap;return start<=52&&r.bottom>52}));
  updateReel();updateDeck();
+ // How far the manifesto has slid over the pinned signature stage (0 to 1).
+ if(manifesto&&orbitStage){const top=manifesto.getBoundingClientRect().top;orbitStage.style.setProperty('--cover',clamp(1-top/innerHeight,0,1).toFixed(4))}
  if(paused||reduced.matches)return;
  const r=orbit.getBoundingClientRect();
  const progress=clamp((innerHeight-r.top)/(r.height+innerHeight),0,1);
