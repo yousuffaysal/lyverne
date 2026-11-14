@@ -376,3 +376,84 @@ body[data-page=dashboard] .work-heading h1{overflow-wrap:anywhere}
 .description-compose{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);min-width:0}.description-compose>div{min-width:0;padding:14px}.description-compose textarea{font:400 13px/1.75 ui-monospace,SFMono-Regular,monospace;min-height:240px;background:var(--cream);resize:vertical}.description-compose #product-description-help{font-size:11px;line-height:1.8;margin-top:10px}.description-compose #product-description-help code{font-size:10px;background:var(--soft);padding:2px 3px}
 .description-preview{min-width:0;padding:14px;background:#faf7f0;border-left:1px solid var(--line)}.description-preview>summary{font-size:11px;font-weight:600;letter-spacing:.06em;color:var(--muted);cursor:pointer;padding:4px 0 15px}.description-preview .description-markdown{font-size:13px;line-height:1.85;max-height:460px;overflow-y:auto;padding-right:5px}
 @media(max-width:700px){.description-compose{grid-template-columns:1fr}.description-preview{border-left:0;border-top:1px solid var(--line)}.description-compose textarea{min-height:200px}.description-toolbar button{min-height:42px}.description-preview .description-markdown{max-height:320px}}
+
+/* ---------- delivery map (delivery-map.js) ----------
+   Beside the checkout form on a wide screen: the dialog grows a second column
+   for it the first time an area field is touched. On a narrow screen it opens
+   inside the form, just above the area fields, and stays pinned there. Its inner box keeps a fixed size so
+   the map is not re-framed while the panel is still sliding open. */
+.country-fixed select{background:var(--soft);opacity:1;color:var(--ink);cursor:default}
+.editor{transition:width .7s var(--ease)}
+#editor:has(#editor-content>.bd-map.is-open){width:min(1132px,calc(100vw - 28px))}
+#editor-content:has(>.bd-map){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
+#editor-content:has(>.bd-map)>*{grid-column:1}
+#editor-content>.bd-map{grid-column:2;grid-row:1/span 6;position:sticky;top:28px;width:0;overflow:hidden;opacity:0;transition:width .7s var(--ease),margin-left .7s var(--ease),opacity .5s ease .15s}
+#editor-content>.bd-map.is-open{width:424px;margin-left:28px;opacity:1}
+#editor-content>.bd-map .bd-map-inner{width:424px}
+#editor-content>.bd-map .bd-map-stage{height:min(470px,calc(90vh - 230px))}
+.bd-map.is-inline{grid-column:1/-1;display:grid;grid-template-rows:0fr;margin-top:-18px;opacity:0;transition:grid-template-rows .6s var(--ease),margin-top .6s var(--ease),opacity .4s ease}
+.bd-map.is-inline.is-open{grid-template-rows:1fr;margin-top:0;opacity:1}
+.bd-map.is-inline .bd-map-inner{min-height:0;overflow:hidden}
+.bd-map.is-inline:not(.is-open) .bd-map-inner{border-width:0}
+/* Inline, it stays pinned to the top of the dialog while the area and address
+   fields scroll under it, so the zoom and the pin are seen from whichever field
+   caused them. It gives up height while the keyboard is up. */
+.bd-map.is-inline.is-open{position:sticky;top:6px;z-index:5}
+.bd-map.is-inline .bd-map-inner{box-shadow:0 12px 26px #20201c26}
+.bd-map.is-inline .bd-map-stage{height:210px;transition:height .45s var(--ease)}
+.delivery-fields:has(:is(input,textarea):focus) .bd-map.is-inline .bd-map-stage{height:128px}
+.bd-map.is-inline .bd-map-head{padding:9px 12px 8px}
+.bd-map.is-inline .bd-map-head .eyebrow{display:none}
+.bd-map.is-inline .bd-map-trail{font-size:17px;margin:0;min-height:20px}
+.bd-map.is-inline .bd-map-foot{padding:7px 12px 8px;gap:1px}
+.bd-map.is-inline .bd-map-hint{font-size:12px}
+.bd-map.is-inline .bd-map-foot small{font-size:8px}
+.delivery-fields:has(.bd-map.is-inline.is-open) :is(input,select,textarea){scroll-margin-top:330px}
+.bd-map-inner{border:1px solid var(--ink);background:var(--cream)}
+.bd-map-head{padding:14px 16px 12px;border-bottom:1px solid var(--line)}
+.bd-map-head .eyebrow{font-size:11px;letter-spacing:.12em;color:var(--muted)}
+.bd-map-trail{margin:4px 0 0;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 7px;font:700 21px/1.15 Khand,sans-serif;letter-spacing:.02em;text-transform:uppercase;min-height:24px}
+.bd-map-trail i{font-style:normal;color:var(--muted);font-weight:400}
+.bd-map-trail span{white-space:nowrap;animation:bd-trail-in .5s var(--ease) both}
+.bd-map-trail .is-last{color:var(--orange)}
+@keyframes bd-trail-in{from{opacity:0;transform:translateY(6px)}}
+.bd-map-stage{position:relative;overflow:hidden;background:#e4ded1 radial-gradient(#20201c14 1px,transparent 1.5px) 0 0/14px 14px}
+.bd-map-stage>svg{display:block;width:100%;height:100%;touch-action:manipulation}
+.bd-map-stage path{vector-effect:non-scaling-stroke;stroke-linejoin:round}
+.bd-land path{fill:#fbf8f1;stroke:#fbf8f1;stroke-width:1}
+.bd-districts path{fill:transparent;stroke:#d3ccbe;stroke-width:.7;cursor:pointer;transition:fill .6s ease,stroke .4s ease}
+.bd-districts path:hover{fill:#f26b2424}
+.bd-outline path{fill:none;stroke:#9a9588;stroke-width:.9;pointer-events:none;transition:stroke .4s ease}
+.bd-outline path.is-on{stroke:var(--ink);stroke-width:1.5}
+/* One level deep is solid orange; what it sits inside fades to a tint. */
+[data-level=division] .bd-districts path.is-in{fill:#f26b24e6;stroke:#fbe3d4}
+[data-level=division] .bd-districts path.is-in:hover{fill:var(--orange);stroke:#fff}
+[data-level=district] .bd-districts path.is-in,[data-level=upazila] .bd-districts path.is-in{fill:#f26b2429;stroke:#ecb898}
+[data-level=district] .bd-districts path.is-in:not(.is-on):hover,[data-level=upazila] .bd-districts path.is-in:not(.is-on):hover{fill:#f26b2450}
+[data-level=district] .bd-districts path.is-on{fill:#f26b24e6;stroke:var(--ink);stroke-width:1.1}
+[data-level=upazila] .bd-districts path.is-on{fill:#f26b2445;stroke:var(--ink);stroke-width:1.1}
+.bd-upazilas path{fill:transparent;stroke:#fff3ea;stroke-width:.8;cursor:pointer;transition:fill .5s ease;animation:bd-fade .6s ease .35s both}
+.bd-upazilas path:hover{fill:#20201c22}
+[data-level=upazila] .bd-upazilas path{stroke:#e2a17c}
+.bd-upazilas path.is-on,.bd-upazilas path.is-on:hover{fill:var(--orange);stroke:var(--ink);stroke-width:1.2}
+@keyframes bd-fade{from{opacity:0}}
+.bd-map-pin{position:absolute;left:0;top:0;width:0;height:0;pointer-events:none}
+.bd-map-pin svg{position:absolute;left:-15px;top:-41px;width:30px;height:41px;overflow:visible;opacity:0;transform-origin:50% 100%;filter:drop-shadow(0 3px 3px #0000004d)}
+.bd-map-pin path{fill:#e5352b;stroke:#9c1a14;stroke-width:1.2}
+.bd-map-pin circle{fill:#7d120e}
+.bd-map-pin i{position:absolute;left:-13px;top:-13px;width:26px;height:26px;border-radius:50%;background:#e5352b;opacity:0}
+.bd-map-pin.is-dropped svg{animation:bd-pin-drop .75s cubic-bezier(.3,.7,.4,1) both}
+.bd-map-pin.is-dropped i{animation:bd-pin-pulse 2.2s ease-out .7s infinite}
+@keyframes bd-pin-drop{0%{opacity:0;transform:translateY(-70px)}45%{opacity:1;transform:translateY(0) scale(1.08,.84)}68%{transform:translateY(-11px) scale(.97,1.04)}84%{transform:translateY(0) scale(1.03,.95)}100%{opacity:1;transform:none}}
+@keyframes bd-pin-pulse{0%{opacity:.45;transform:scale(.25)}70%,100%{opacity:0;transform:scale(1.9)}}
+.bd-map-hover{position:absolute;left:0;top:0;padding:3px 8px;background:var(--ink);color:var(--cream);font-size:11px;font-weight:600;letter-spacing:.04em;white-space:nowrap;pointer-events:none}
+.bd-map-foot{display:grid;gap:3px;padding:10px 16px 12px;border-top:1px solid var(--line)}
+.bd-map-hint{font-size:13px;font-weight:600}
+.bd-map-foot small{font-size:9px;line-height:1.4;color:var(--muted);font-weight:400}
+.bd-suggest-wrap{position:relative}
+.bd-suggest{position:absolute;left:0;right:0;top:100%;z-index:6;margin:4px 0 0;padding:4px;list-style:none;background:var(--cream);border:1px solid var(--ink);max-height:236px;overflow:auto;box-shadow:0 16px 32px #20201c2e}
+.bd-suggest li{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 10px;font-size:14px;cursor:pointer}
+.bd-suggest li strong{font-weight:600}
+.bd-suggest li span{font-size:12px;font-weight:400;color:var(--muted);text-align:right}
+.bd-suggest li:hover,.bd-suggest li[aria-selected=true]{background:#f26b2422}
+@media(prefers-reduced-motion:reduce){.bd-map-pin.is-dropped svg{animation:none;opacity:1}.bd-map-pin.is-dropped i{animation:none}}
