@@ -62,7 +62,9 @@ test('admin order editor offers all five stages and the complete delivery snapsh
 test('checkout and saved-address form include structured delivery and optional contact fields',async()=>{
  const app=workspace({admin:false});await app.run('bootInner()');
  const html=app.run('deliveryFields(state.user)');
- for(const name of ['phone','alternate_phone','division','district','thana','local_area','address','postcode','delivery_note'])assert.ok(html.includes(`name="${name}"`),name);
+ for(const name of ['phone','alternate_phone','division','district','thana','address','postcode','delivery_note'])assert.ok(html.includes(`name="${name}"`),name);
+ // Locality is written into the address itself, and the shop only delivers within Bangladesh.
+ assert.ok(!html.includes('name="local_area"')&&!/Country/.test(html));
  assert.ok(!app.run('profileView()').includes('name="delivery_note"'),'delivery note belongs to the order');
 });
 

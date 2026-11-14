@@ -382,7 +382,6 @@ body[data-page=dashboard] .work-heading h1{overflow-wrap:anywhere}
    for it the first time an area field is touched. On a narrow screen it opens
    inside the form, just above the area fields, and stays pinned there. Its inner box keeps a fixed size so
    the map is not re-framed while the panel is still sliding open. */
-.country-fixed select{background:var(--soft);opacity:1;color:var(--ink);cursor:default}
 .editor{transition:width .7s var(--ease)}
 #editor:has(#editor-content>.bd-map.is-open){width:min(1132px,calc(100vw - 28px))}
 #editor-content:has(>.bd-map){display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start}
